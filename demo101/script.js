@@ -31,20 +31,28 @@ function updateCoordinatesValuesForm(e) {
 
     if (valuesType == "cartesian") {
         coordinatesValuesFrom
-        .AddNumber("coordinatesValues", new NumberInput("x", "x = ", "м"))
-        .AddNumber("coordinatesValues", new NumberInput("y", "y = ", "м"))
-        .AddNumber("coordinatesValues", new NumberInput("z", "z = ", "м"))
+        .AddNumber("coordinatesValues", new NumberInput("x", "x = ", "м", 0.001))
+        .AddNumber("coordinatesValues", new NumberInput("y", "y = ", "м", 0.001))
+        .AddNumber("coordinatesValues", new NumberInput("z", "z = ", "м", 0.001))
     } else if (valuesType == "cylindical") {
         coordinatesValuesFrom
-        .AddNumber("coordinatesValues", new NumberInput("r", "r = ", "м"))
-        .AddNumber("coordinatesValues", new NumberInput("phi", "phi = ", "rad"))
-        .AddNumber("coordinatesValues", new NumberInput("z", "z = ", "м"))
+        .AddNumber("coordinatesValues", new NumberInput("r", "r = ", "м", 0.001))
+        .AddNumber("coordinatesValues", new NumberInput("phi", "phi = ", "rad", 0.001))
+        .AddNumber("coordinatesValues", new NumberInput("phi_deg", "", "deg", 0.001))
+        .AddNumber("coordinatesValues", new NumberInput("z", "z = ", "м", 0.001))
+        .ConnectNumbers('phi', 'phi_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; })
     } else if (valuesType == "spherical") {
         coordinatesValuesFrom
-        .AddNumber("coordinatesValues", new NumberInput("r", "r = ", "м"))
-        .AddNumber("coordinatesValues", new NumberInput("phi", "phi = ", "rad"))
-        .AddNumber("coordinatesValues", new NumberInput("theta", "theta = ", "rad"));
+        .AddNumber("coordinatesValues", new NumberInput("r", "r = ", "м", 0.001))
+        .AddNumber("coordinatesValues", new NumberInput("phi", "phi = ", "rad", 0.001))
+        .AddNumber("coordinatesValues", new NumberInput("phi_deg", "", "deg", 0.001))
+        .AddNumber("coordinatesValues", new NumberInput("theta", "theta = ", "rad", 0.001))
+        .AddNumber("coordinatesValues", new NumberInput("theta_deg", "", "deg", 0.001))
+        .ConnectNumbers('phi', 'phi_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; })
+        .ConnectNumbers('theta', 'theta_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; });
     }
+
+
 
     
 }
