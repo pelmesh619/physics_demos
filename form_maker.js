@@ -202,4 +202,31 @@ class FormMaker {
 
         return values;
     }
+
+    ConnectNumbers(id1, id2, func1To2, func2To1) {
+        const elem1 = document.getElementById(this.formId + '-' + id1);
+        const elem2 = document.getElementById(this.formId + '-' + id2);
+        if (elem1 === null || elem2 === null) {
+            return this;
+        }
+
+        elem1.addEventListener("change", (e) => {
+            elem2.value = roundByStep(
+                func1To2(parseFloat(elem1.value)), 
+                elem2.step ? parseFloat(elem2.step) : 1, 
+                elem2.min ? parseFloat(elem2.min) : 0
+            );
+        });
+
+        elem2.addEventListener("change", (e) => {
+            elem1.value = roundByStep(
+                func2To1(parseFloat(elem2.value)), 
+                elem1.step ? parseFloat(elem1.step) : 1, 
+                elem1.min ? parseFloat(elem1.min) : 0
+            );
+        });
+
+        return this;
+
+    }
 }
