@@ -1,7 +1,11 @@
 class Constants {
     static get g() { return 9.8; }
+}
+
+class ElectricConstants {
     static get k() { return 9 * Math.pow(10, 9); }
 
+    static get epsilon0() { return 8.85 * Math.pow(10, -11); }
 }
 
 function round(number, a=0) {
@@ -35,8 +39,24 @@ class Vec2 {
     }
 
     set xy(c) {
-        x = c[0];
-        y = c[1];
-        return [x, y]
+        [this.x, this.y] = c;
+        return this.xy;
+    }
+}
+
+class Vec3 {
+    constructor(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    get xyz() {
+        return [this.x, this.y, this.z];
+    }
+
+    set xyz(c) {
+        [this.x, this.y, this.z] = c;
+        return this.xyz;
     }
 }
