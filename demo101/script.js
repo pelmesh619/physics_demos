@@ -3,25 +3,22 @@ function main() {
 
     coordinatesSystemForm
     .AddRadio(
-        "outputProjection", 
-        new RadioInput("isometric", "Изометрическая", true)
+        new RadioInput("outputProjection", "isometric", "Изометрическая", true)
     )
     .AddRadio(
-        "outputProjection", 
-        new RadioInput("dimetric", "Диметрическая")
+        new RadioInput("outputProjection", "dimetric", "Диметрическая")
     ).AddRadio(
-        "coordinatesType", 
-        new RadioInput("cartesian", "Прямоугольная система", true, updateCoordinatesValuesForm)
+        new RadioInput("coordinatesType", "cartesian", "Прямоугольная система", true, updateCoordinatesValuesForm)
     ).AddRadio(
-        "coordinatesType", 
-        new RadioInput("cylindical", "Цилиндрическая система", false, updateCoordinatesValuesForm)
+        new RadioInput("coordinatesType", "cylindical", "Цилиндрическая система", false, updateCoordinatesValuesForm)
     ).AddRadio(
-        "coordinatesType", 
-        new RadioInput("spherical", "Сферическая система", false, updateCoordinatesValuesForm)
+        new RadioInput("coordinatesType", "spherical", "Сферическая система", false, updateCoordinatesValuesForm)
     ).AddChildForm("coordinatesValuesForm")
     .AddChildForm("coordinatesOutputForm")
-    .AddSubmitButton("submit", "Подтвердить", (v) => { console.log(v); })
-    .AddCheckbox("otherParams", new CheckboxInput("stop", "Остановить симуляцию?"));
+    .AddSubmitButton("submit", "Подтвердить", (v) => { window.alert(JSON.stringify(v)); })
+    .AddCheckbox(new CheckboxInput("otherParams", "stop", "Остановить симуляцию?"));
+
+    updateCoordinatesValuesForm();
 }
 
 function updateCoordinatesValuesForm(e) {
