@@ -3,17 +3,19 @@ function makeInputId(formId, inputId) {
 }
 
 class RadioInput {
-    constructor(id, value, label, defaultValue=false, func=(e) => { }) {
+    constructor(id, groupId, label, defaultValue=false, func=(e) => { }) {
         this.id = id;
         this.label = label;
-        this.value = value;
+        this.groupId = groupId;
         this.defaultValue = defaultValue;
         this.func = func;
     }
 
     get type() { return "radio"; }
 
-    get key() { return this.id; }
+    get key() { return this.groupId; }
+
+    get value() { return this.id; }
 
     GetValue(formId) {
         const elem = document.getElementById(makeInputId(formId, this.value));
@@ -21,23 +23,25 @@ class RadioInput {
             return null
         }
 
-        let radio = document.querySelector(`input[name="${elem.name}"]:checked`);
+        let radio = document.querySelector(`#${formId} input[name="${elem.name}"]:checked`);
         return radio == null ? null : radio.value;
     }
 }
 
 class CheckboxInput {
-    constructor(id, value, label, defaultValue=false, func=(e) => { }) {
+    constructor(id, groupId, label, defaultValue=false, func=(e) => { }) {
         this.id = id;
         this.label = label;
-        this.value = value;
+        this.groupId = groupId;
         this.defaultValue = defaultValue;
         this.func = func;
     }
 
     get type() { return "checkbox"; }
 
-    get key() { return this.value; }
+    get key() { return this.id; }
+
+    get value() { return this.id; }
 
     GetValue(formId) {
         const elem = document.getElementById(makeInputId(formId, this.value));
@@ -60,6 +64,8 @@ class NumberInput {
     get type() { return "number"; }
 
     get key() { return this.id; }
+
+    get groupId() { return this.id; }
 
     GetValue(formId) {
         const elem = document.getElementById(makeInputId(formId, this.id));
@@ -92,15 +98,15 @@ class FormMaker {
                 ));
             } else if (el.type == 'checkbox') {
                 this.inputObjects.push(new CheckboxInput(
-                    el.name,
                     el.value,
+                    el.name,
                     label.innerHTML,
                     el.checked
                 ));
             } else if (el.type == 'radio') {
                 this.inputObjects.push(new RadioInput(
-                    el.name,
                     el.value,
+                    el.name,
                     label.innerHTML,
                     el.checked
                 ));
@@ -120,18 +126,27 @@ class FormMaker {
         label.innerHTML = text;
         label.setAttribute('purpose', purpose);
 
-        return label
+        return label;
+    }
+
+    MakeBasicInputNode(object) {
+        const node = document.createElement("input");
+
+        node.type = object.type;
+        node.id = makeInputId(this.formId, object.id);
+        node.name = object.groupId;
+        if (object.type != 'checkbox') {
+            node.required = true;
+        }
+        node.value = object.value;
+
+        return node;
     }
     
     AddRadio(radioObject) {
-        const inputId = `${this.formId}-${radioObject.value}`;
-        const node = document.createElement("input");
+        const inputId = makeInputId(this.formId, radioObject.id);
+        const node = this.MakeBasicInputNode(radioObject);
 
-        node.type = "radio";
-        node.id = inputId;
-        node.name = radioObject.id;
-        node.value = radioObject.value;
-        node.required = true;
         node.checked = radioObject.defaultValue;
 
         this.DOMObject.appendChild(node);
@@ -145,19 +160,10 @@ class FormMaker {
     }
     
     AddCheckbox(checkboxObject) {
-        const inputId = `${this.formId}-${checkboxObject.value}`;
-        const node = document.createElement("input");
+        const inputId = makeInputId(this.formId, checkboxObject.id);
+        const node = this.MakeBasicInputNode(checkboxObject);
 
-        node.type = "checkbox";
-        node.id = inputId;
-        node.name = checkboxObject.id;
-        node.value = checkboxObject.value;
         node.checked = checkboxObject.defaultValue;
-
-        const label = document.createElement("label");
-        label.htmlFor = inputId;
-        label.innerHTML = checkboxObject.label;
-        label.setAttribute('purpose', 'label');
 
         this.DOMObject.appendChild(node);
         this.DOMObject.appendChild(this.MakeLabel(checkboxObject.label, inputId));
@@ -169,13 +175,10 @@ class FormMaker {
         return this;
     }
 
-    AddNumber(name, number) {
+    AddNumber(number) {
         const inputId = makeInputId(this.formId, number.id);
-        const node = document.createElement("input");
+        const node = this.MakeBasicInputNode(number);
 
-        node.type = "number";
-        node.id = inputId;
-        node.name = `${this.formId}-${name}`;
         node.step = number.step;
         if (number.min != null) {
             node.min = number.min;
@@ -183,7 +186,6 @@ class FormMaker {
         if (number.max != null) {
             node.max = number.max;
         }
-        node.value = number.value;
         node.required = true;
 
         this.DOMObject.appendChild(this.MakeLabel(number.label, inputId));
@@ -252,8 +254,8 @@ class FormMaker {
     }
 
     ConnectNumbers(id1, id2, func1To2, func2To1) {
-        const elem1 = document.getElementById(this.formId + '-' + id1);
-        const elem2 = document.getElementById(this.formId + '-' + id2);
+        const elem1 = document.getElementById(makeInputId(this.formId, id1));
+        const elem2 = document.getElementById(makeInputId(this.formId, id2));
         if (elem1 === null || elem2 === null) {
             return this;
         }
