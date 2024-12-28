@@ -314,6 +314,8 @@ class FormMaker {
         const node = document.createElement('p');
         node.innerHTML = text;
         this.DOMObject.append(node);
+
+        return this;
     }
 
     AddChildForm(id) {
