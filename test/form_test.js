@@ -1,5 +1,5 @@
 function main() {
-    var coordinatesSystemForm = new FormMaker("coordinatesSystemForm");
+    var coordinatesSystemForm = new FormMaker("myForm");
 
     coordinatesSystemForm
     .AddRadio(
@@ -16,13 +16,14 @@ function main() {
     ).AddChildForm("coordinatesValuesForm")
     .AddChildForm("coordinatesOutputForm")
     .AddSubmitButton("submit", "Подтвердить", (v) => { window.alert(JSON.stringify(v)); })
-    .AddCheckbox(new CheckboxInput("otherParams", "stop", "Остановить симуляцию?"));
+    .AddCheckbox(new CheckboxInput("otherParams", "stop", "Остановить симуляцию?"))
+    .AddVec2(new Vec2Input('someVector', new NumberInput('', 'x', 'м', value=0), new NumberInput('', 'y', 'м', value=0)));
 
     updateCoordinatesValuesForm();
 }
 
 function updateCoordinatesValuesForm(e) {
-    const coordinatesSystemForm = new FormMaker("coordinatesSystemForm");
+    const coordinatesSystemForm = new FormMaker("myForm");
     const valuesType = coordinatesSystemForm.GetValues()["coordinatesType"];
     const coordinatesValuesFrom = new FormMaker("coordinatesValuesForm").Clear();
 
