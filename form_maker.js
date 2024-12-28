@@ -118,7 +118,14 @@ class FormMaker {
 
     }
 
-    get DOMObject() { return document.getElementById(this.formId); }
+    get DOMObject() { 
+        const obj = document.getElementById(this.formId);
+        if (obj === null) {
+            window.alert(`Форма '${this.formId}' не найдена в DOM. Убедитесь, что такое имя валидно`);
+            throw Error(`Form with id=${this.formId} was not found!`);
+        } 
+        return obj;
+    }
 
     MakeLabel(text, forId, purpose='label') {
         const label = document.createElement("label");
