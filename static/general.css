@@ -43,3 +43,11 @@ a:active {
     padding-top: 0.5em;
     margin-top: 0;
 }
+
+form {
+    padding: 10px;
+}
+
+input {
+    margin: 5px;
+}
