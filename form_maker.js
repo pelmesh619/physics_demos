@@ -186,7 +186,6 @@ class FormMaker {
         if (number.max != null) {
             node.max = number.max;
         }
-        node.required = true;
 
         this.DOMObject.appendChild(this.MakeLabel(number.label, inputId));
         this.DOMObject.appendChild(node);
@@ -197,6 +196,12 @@ class FormMaker {
 
         this.inputObjects.push(number)
         return this;
+    }
+
+    AddParagraph(text) {
+        const node = document.createElement('p');
+        node.innerHTML = text;
+        this.DOMObject.append(node);
     }
 
     AddChildForm(id) {
