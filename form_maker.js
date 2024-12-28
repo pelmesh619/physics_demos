@@ -2,6 +2,12 @@ function makeInputId(formId, inputId) {
     return formId + '-' + inputId;
 }
 
+function spanFactory(text) {
+    const t = document.createElement('span');
+    t.innerHTML = text;
+    return t;
+}
+
 class RadioInput {
     constructor(id, groupId, label, defaultValue=false, func=(e) => { }) {
         this.id = id;
@@ -51,14 +57,15 @@ class CheckboxInput {
 }
 
 class NumberInput {
-    constructor(id, label, units, step=1, value=0, min=null, max=null) {
+    constructor(id, label, domain, changeFunc) {
         this.id = id;
         this.label = label;
-        this.units = units;
-        this.value = value;
-        this.step = step;
-        this.min = min;
-        this.max = max;
+        this.func = changeFunc;
+
+        if (domain === undefined) {
+            domain = new NumberDomain();
+        }
+        this.domain = domain;
     }
 
     get type() { return "number"; }
@@ -67,10 +74,49 @@ class NumberInput {
 
     get groupId() { return this.id; }
 
+    get value() { return this.domain.value; }
+
+
     GetValue(formId) {
         const elem = document.getElementById(makeInputId(formId, this.id));
         
         return elem === null ? null : parseFloat(elem.value);
+    }
+}
+
+class NumberDomain {
+    constructor(value=0, units='', step=1, min=null, max=null) {
+        this.value = value;
+        this.units = units;
+        this.step = step;
+        this.min = min;
+        this.max = max;
+    }
+}
+
+class Vec2Input {
+    constructor(id, label, numberDomain1, numberDomain2, changeFunc) {
+        this.id = id;
+        this.label = label;
+        this.numberDomain1 = numberDomain1;
+        this.numberDomain2 = numberDomain2;
+        this.func = changeFunc;
+
+        this.numberObject1 = new NumberInput(id + '-x', '', numberDomain1);
+        this.numberObject2 = new NumberInput(id + '-y', '', numberDomain2);
+    }
+
+    get type() { return "vec2"; }
+
+    get key() { return this.id; }
+
+    get groupId() { return this.id; }
+
+    GetValue(formId) {
+        const x = this.numberObject1.GetValue(formId);
+        const y = this.numberObject2.GetValue(formId);
+        
+        return x === null || y === null ? null : new Vec2(x, y);
     }
 }
 
@@ -84,17 +130,19 @@ class FormMaker {
         
         for (const el of document.querySelectorAll(`#${formId} input`)) {
             const label = document.querySelector(`#${formId} label[for="${el.id}"][purpose="label"]`);
-            if (el.type == 'number') {
+            if (el.type == 'number' && el.getAttribute('purpose') == 'solo') {
                 const unitsLabel = document.querySelector(`#${formId} label[for="${el.id}"][purpose="units"]`);
 
                 this.inputObjects.push(new NumberInput(
                     el.id.replace(formId + '-', ''),
                     label.innerHTML,
-                    unitsLabel.innerHTML,
-                    el.step,
-                    el.value,
-                    el.min,
-                    el.max
+                    new NumberDomain(
+                        el.value,
+                        unitsLabel.innerHTML,
+                        el.step,
+                        el.min,
+                        el.max
+                    )
                 ));
             } else if (el.type == 'checkbox') {
                 this.inputObjects.push(new CheckboxInput(
@@ -185,24 +233,81 @@ class FormMaker {
     AddNumber(number) {
         const inputId = makeInputId(this.formId, number.id);
         const node = this.MakeBasicInputNode(number);
+        node.setAttribute('purpose', 'solo');
 
-        node.step = number.step;
-        if (number.min != null) {
-            node.min = number.min;
+        node.step = number.domain.step;
+        if (number.domain.min != null) {
+            node.min = number.domain.min;
         }
-        if (number.max != null) {
-            node.max = number.max;
+        if (number.domain.max != null) {
+            node.max = number.domain.max;
         }
 
         this.DOMObject.appendChild(this.MakeLabel(number.label, inputId));
         this.DOMObject.appendChild(node);
-        this.DOMObject.appendChild(this.MakeLabel(number.units, inputId, 'units'));
+        this.DOMObject.appendChild(this.MakeLabel(number.domain.units, inputId, 'units'));
         this.DOMObject.appendChild(document.createElement("br"));
 
         document.getElementById(inputId).addEventListener("change", number.func);
 
-        this.inputObjects.push(number)
+        this.inputObjects.push(number);
         return this;
+    }
+
+    AddVec2(vec2Object) {
+        const inputId = makeInputId(this.formId, vec2Object.id);
+        const node1 = this.MakeBasicInputNode(vec2Object.numberObject1);
+
+        node1.step = vec2Object.numberDomain1.step;
+        if (vec2Object.numberDomain1.min != null) {
+            node1.min = vec2Object.numberDomain1.min;
+        }
+        if (vec2Object.numberDomain1.max != null) {
+            node1.max = vec2Object.numberDomain1.max;
+        }
+
+        const node2 = this.MakeBasicInputNode(vec2Object.numberObject2);
+
+        node2.step = vec2Object.numberDomain2.step;
+        if (vec2Object.numberDomain2.min != null) {
+            node2.min = vec2Object.numberDomain2.min;
+        }
+        if (vec2Object.numberDomain2.max != null) {
+            node2.max = vec2Object.numberDomain2.max;
+        }
+
+        this.DOMObject.appendChild(this.MakeLabel(vec2Object.label, inputId));
+        this.DOMObject.appendChild(spanFactory(' ('));
+        this.DOMObject.appendChild(node1);
+        this.DOMObject.appendChild(
+            this.MakeLabel(
+                vec2Object.numberDomain1.units, 
+                makeInputId(this.formId, vec2Object.numberObject1.id), 
+                'units'
+            )
+        );
+        this.DOMObject.appendChild(spanFactory(', '));
+        this.DOMObject.appendChild(node2);
+        this.DOMObject.appendChild(
+            this.MakeLabel(
+                vec2Object.numberDomain2.units, 
+                makeInputId(this.formId, vec2Object.numberObject2.id), 
+                'units'
+            )
+        );
+        this.DOMObject.appendChild(spanFactory(')'));
+        this.DOMObject.appendChild(document.createElement("br"));
+
+        document.getElementById(
+            makeInputId(this.formId, vec2Object.numberObject2.id)
+        ).addEventListener("change", vec2Object.func);
+        document.getElementById(
+            makeInputId(this.formId, vec2Object.numberObject1.id)
+        ).addEventListener("change", vec2Object.func);
+
+        this.inputObjects.push(vec2Object)
+        return this;
+        
     }
 
     AddParagraph(text) {
