@@ -5,6 +5,7 @@
     --secondary-background-color: #2A4480;
     --primary-text-color: #0d245b;
     --secondary-text-color: #85C6E1;
+    --secondary-darker-text-color: #21769a;
 }
 
 body, html {
@@ -51,4 +52,38 @@ form {
 
 input {
     margin: 5px;
+}
+
+#hintDiv {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+#hintDiv svg {
+    margin: 2.5vh;
+    width: 5vh; 
+    height: 5vh;
+}
+
+#hintDiv:hover {
+    color: var(--secondary-darker-text-color);
+}
+
+#hintText {
+    display: none;
+    padding: 10px;
+    max-width: 50vw;
+    max-height: 40vh;
+    overflow-y: auto;
+    color: var(--secondary-text-color);
+    background-color: var(--secondary-background-color);
+    text-align: left;
+
+    border-top-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
 }
