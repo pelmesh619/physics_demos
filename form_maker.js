@@ -123,7 +123,6 @@ class Vec2Input {
 class FormMaker {
     constructor(formId) {
         this.formId = formId;
-        this.eventListeners = {};
         this.inputIds = [];
         this.childForms = [];
         this.inputObjects = [];
@@ -322,7 +321,7 @@ class FormMaker {
         const node = document.createElement("div");
 
         node.id = id;
-        node.class = "childForm";
+        node.classList.add("childForm");
 
         this.DOMObject.appendChild(node);
         this.DOMObject.appendChild(document.createElement("br"));
@@ -345,6 +344,15 @@ class FormMaker {
             e.preventDefault();
             func(this.GetValues());
         });
+        return this;
+    }
+
+    AddDisplay(id) {
+        const node = document.createElement("div");
+        node.id = makeInputId(this.formId, id);
+
+        this.DOMObject.appendChild(node);
+
         return this;
     }
 
@@ -396,6 +404,9 @@ class FormMaker {
         });
 
         return this;
+    }
 
+    GetElement(id) {
+        return document.getElementById(makeInputId(this.formId, id));
     }
 }
