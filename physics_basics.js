@@ -27,6 +27,41 @@ function round(number, a=0) {
 function roundByStep(number, step, min=0) {
     return round((number - min) / step) * step + min;
 }
+  
+function digitnumber(number) {
+    let a = 0;
+    if (number == 0) {
+        return 0;
+    }
+    number = Math.abs(number);
+    if (number > 1) {
+        while (number > 10) {
+            number /= 10;
+            a++;
+        }
+        return a;
+    }
+    while (number < 1) {
+        number *= 10;
+        a--;
+    }
+    return a;
+}
+  
+function toScientificNotation(number) {
+    exponent = digitnumber(number);
+    if (exponent > 2 || exponent < -2) {
+        number = number * Math.pow(10, -exponent);
+    }
+  
+    let string = round(number, 3);
+    if (exponent > 2 || exponent < -2) {
+        string += ' x 10^(' + exponent + ')';
+    }
+    return string;
+}
+  
+
 
 class Vec2 {
     constructor(x, y) {
