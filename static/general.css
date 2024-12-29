@@ -83,6 +83,11 @@ input {
     background-color: var(--secondary-background-color);
     text-align: left;
 
+    
+    scrollbar-color: var(--secondary-background-color) var(--secondary-text-color);
+    scrollbar-width: thin;
+    scroll-behavior: smooth;
+
     border-top-left-radius: 10px;
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
