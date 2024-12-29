@@ -2,3 +2,13 @@
     display: flex;
     justify-content: center;
 }
+
+#coordinatesSystemForm {
+    width: max(50vw, 250px);
+    min-height: 100%;
+    border-style: solid;
+    border-radius: 10px;
+    border-width: 10px;
+    border-color: burlywood;
+    padding: 20px;
+}
