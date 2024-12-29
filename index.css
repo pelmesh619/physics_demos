@@ -1,0 +1,46 @@
+* {
+    --modelCellWidth: 29vw;
+    --modelCellInRow: 3;
+    --modelCellMargin: calc((100vw - var(--modelCellWidth) * var(--modelCellInRow)) / var(--modelCellInRow));
+}
+
+.modelCell {
+    width: var(--modelCellWidth);
+    height: 19vw;
+    border-radius: 10px;
+    border-width: 0px;
+    margin: var(--modelCellMargin);
+    border-color: rgba(0, 0, 0, 0);
+    border-style: solid;
+    overflow: hidden;
+    
+    transition: transform .7s;
+}
+
+.modelRow {
+    display: flex; 
+    flex-direction: row;
+}
+
+.modelCellHeader {
+    height: 30%;
+    min-height: fit-content;
+    width: 100%;
+    background-color: var(--secondary-background-color);
+    color: var(--secondary-text-color);
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    font-size: 1.6vw;
+    
+}
+
+.modelCellImage {
+    height: 70%;
+    width: 100%;
+}
+
+.modelCell:hover {
+    transform: scale(1.3);
+}
+
