@@ -35,14 +35,15 @@ function updateDisplays(event) {
         let rhoValue = Math.hypot(values['x'], values['y'], values['z']);
         rho.innerText = toScientificNotation(rhoValue) + ' м';
         alpha.innerText = toScientificNotation(Math.atan2(values['y'], values['x'])) + ' rad';
-        theta.innerText = (rhoValue != 0 ? toScientificNotation(Math.acos(values['z'] / rhoValue)) : 0) + ' rad';
+        theta.innerText = toScientificNotation(rhoValue != 0 ? Math.acos(values['z'] / rhoValue) : 0) + ' rad';
     } else if (values["coordinatesType"] == "cylindrical") {
         z.innerText = values['z'] + ' м';
         x.innerText = toScientificNotation(Math.cos(values['phi']) * values['r']) + ' м';
         y.innerText = toScientificNotation(Math.sin(values['phi']) * values['r']) + ' м';
-        rho.innerText = toScientificNotation(Math.hypot(values['r'], values['z'])) + ' м';
+        let rhoValue = Math.hypot(values['r'], values['z']);
+        rho.innerText = toScientificNotation(rhoValue) + ' м';
         alpha.innerText = toScientificNotation(values['phi']) + ' rad';
-        theta.innerText = toScientificNotation(Math.acos(values['z'] / Math.hypot(values['r'], values['z']))) + ' rad';
+        theta.innerText = toScientificNotation(rhoValue != 0 ? Math.acos(values['z'] / rhoValue) : 0) + ' rad';
     } else if (values["coordinatesType"] == "spherical") {
         z.innerText = toScientificNotation(values['r'] * Math.sin(values['theta'])) + ' м';
         x.innerText = toScientificNotation(values['r'] * Math.cos(values['theta']) * Math.cos(values['phi'])) + ' м';
