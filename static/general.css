@@ -29,10 +29,11 @@ a:active {
 
 #header {
     width: 100%;
-    height: 5em;
+    height: 10vh;
     background-color: var(--secondary-background-color);
     color: var(--secondary-text-color);
     text-align: center;
+    font-size: 2vh;
 }
 
 #header h1 {

@@ -14,7 +14,7 @@
     border-style: solid;
     overflow: hidden;
     
-    transition: transform .7s;
+    transition: transform .5s;
 }
 
 .modelRow {
@@ -32,7 +32,6 @@
     display: flex;
     align-items: center;
     font-size: 1.6vw;
-    
 }
 
 .modelCellImage {
@@ -43,4 +42,3 @@
 .modelCell:hover {
     transform: scale(1.3);
 }
-

@@ -5,6 +5,14 @@
         <title>Моделирование</title>
         <link rel="stylesheet" href="static/general.css">
         <link rel="stylesheet" href="./index.css">
+
+        <script>
+function redirect(originElement, link) {
+    if (link != undefined) {
+        setTimeout(() => { location.href = link }, 100);
+    }
+}
+        </script>
     </head>
 
     <body>
@@ -12,10 +20,10 @@
             <h1>Моделирования по физике</h1>
         </div>
 
-        <div style="display: flex; flex-direction: column;">
+        <div id="modelTable" style="display: flex; flex-direction: column;">
             <div class="modelRow">
-                <div class="modelCell" onclick="location.href = './demo101/index.html';">
-                    <div class="modelCellHeader">1.01 Перевод координат</div>
+                <div class="modelCell" onclick="redirect(this, './demo101/index.html')">
+                    <div class="modelCellHeader"><span>1.01 Перевод координат</span></div>
                     <image class="modelCellImage" src="static/1-01.png" alt="картинка"/>
                 </div>
 
