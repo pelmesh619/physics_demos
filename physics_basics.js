@@ -77,6 +77,38 @@ class Vec2 {
         [this.x, this.y] = c;
         return this.xy;
     }
+
+    get length() {
+        return Math.hypot(this.x, this.y);
+    }
+
+    add(other) {
+        return new Vec2(this.x + other.x, this.y + other.y);
+    }
+
+    subtract(other) {
+        return new Vec2(this.x - other.x, this.y - other.y);
+    }
+
+    multiply(number) {
+        return new Vec2(this.x * number, this.y * number);
+    }
+
+    scalarProduct(other) {
+        return this.x * other.x + this.y * other.y;
+    }
+
+    determinant(other) {
+        return this.x * other.y - this.y * other.x;
+    }
+
+    rotateClockwise90() {
+        return new Vec2(this.y, -this.x);
+    }
+
+    normalize() {
+        return new Vec2(this.x / this.length, this.y / this.length);
+    }
 }
 
 class Vec3 {
@@ -93,5 +125,29 @@ class Vec3 {
     set xyz(c) {
         [this.x, this.y, this.z] = c;
         return this.xyz;
+    }
+}
+
+class Edge {
+    constructor(vec1, vec2) {
+        this.vec1 = vec1;
+        this.vec2 = vec2;
+    }
+}
+
+// https://web.archive.org/web/20141127210836/http://content.gpwiki.org/index.php/Polygon_Collision
+
+function edgeIntersection(edge1, edge2){
+    let a = edge1.vec1;
+    let b = edge1.vec2;
+    let c = edge2.vec1;
+    let d = edge2.vec2;
+    let det = determinant(b.subtract(a), c.subtract(d));
+    let t   = determinant(c.subtract(a), c.subtract(d)) / det;
+    let u   = determinant(b.subtract(a), c.subtract(a)) / det;
+    if ((t < 0) || (u < 0) || (t > 1) || (u > 1)) {
+        return null;
+    } else {
+        return a * (1 - t) + t * b;
     }
 }
