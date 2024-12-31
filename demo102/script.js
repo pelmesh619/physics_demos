@@ -1,5 +1,10 @@
-const frameRenderTime = 1 / 5;
+const frameRenderTime = 1 / 50;
 const ticksPerFrame = 10;
+const timeScale = 1;
+
+function dt() {
+    return frameRenderTime / ticksPerFrame * timeScale;
+}
 
 const borderWidth = 10;
 
@@ -214,6 +219,10 @@ class CircleBody {
         this.position = this.position.add(this.velocity.multiply(frameRenderTime / ticksPerFrame));
         this.rigidbody.position = this.position;
     }
+
+    get nextPosition() {
+        return this.position.add(this.velocity.multiply(dt()))
+    }
 }
 
 class LineBody {
@@ -245,7 +254,7 @@ class SimulationModel {
         this.objects.forEach(
             (obj) => {
                 if (!obj.immoveable) {
-                    obj.velocity.y -= Constants.g * frameRenderTime / ticksPerFrame;
+                    obj.velocity.y -= Constants.g * dt();
                 }
                 obj.nextTick();
             }
