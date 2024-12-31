@@ -18,8 +18,9 @@ class Main {
     reloadModel() {
         this.renderer = new Renderer('ballisticSimulation', borderWidth);
         this.simulationModel = new SimulationModel(this.form, this.renderer);
-        this.simulationModel.objects.push(new CircleBody(2, new Vec2(0, 0)));
-        this.simulationModel.objects.push(new LineBody(new Vec2(0, 0)));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(-2.5, 3)));
+        this.simulationModel.objects.push(new LineBody(new Vec2(-8, 0), new Vec2(10, 0)));
+        // this.simulationModel.objects.push(new LineBody(new Vec2(-8, 0), new Vec2(0, 8)));
     }
 
     nextTick() {
@@ -27,9 +28,8 @@ class Main {
             for (let i = 0; i < ticksPerFrame; i++) {
                 this.simulationModel.nextTick();
             }
+            this.simulationModel.renderFrame();
         }
-
-        // this.simulationModel.renderFrame();
     }
 
     nextTickFactory() {
@@ -47,7 +47,13 @@ function main() {
     .AddNumber(new NumberInput("v", "|v| = ", new NumberDomain(1, "м/с", 0.001, 0)))
     .AddNumber(new NumberInput("alpha", "α = ", new NumberDomain(0.71, "рад", 0.001, -1.570, 1.570)))
     .AddNumber(new NumberInput("h", "h = ", new NumberDomain(1, "м", 0.001, 0)))
-    .AddSubmitButton('submitButton', "Перезапустить симуляцию", mainObject.reloadModel)
+    .AddSubmitButton('submitButton', "Перезапустить симуляцию", () => { mainObject.reloadModel(); })
+    .AddButton('nextStepButton', "Следующий шаг симуляции", () => { 
+        for (let i = 0; i < ticksPerFrame; i++) {
+            mainObject.simulationModel.nextTick();
+        }
+        mainObject.simulationModel.renderFrame();
+    })
     .AddCheckbox(new CheckboxInput('stopSimulation', "checkboxes", "Остановить симуляцию", false, 
         (e) => {
             mainObject.stopped = e.target.checked;
