@@ -347,6 +347,22 @@ class FormMaker {
         return this;
     }
 
+    AddButton(id, label, func) {
+        const node = document.createElement("button");
+
+        node.id = `${this.formId}-${id}`;
+        node.innerHTML = label;
+
+        this.DOMObject.appendChild(node);
+        this.DOMObject.appendChild(document.createElement("br"));
+        
+        node.addEventListener("click", (e) => {
+            e.preventDefault();
+            func();
+        });
+        return this;
+    }
+
     AddDisplay(id) {
         const node = document.createElement("div");
         node.id = makeInputId(this.formId, id);
