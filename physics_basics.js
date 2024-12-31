@@ -109,6 +109,10 @@ class Vec2 {
     normalize() {
         return new Vec2(this.x / this.length, this.y / this.length);
     }
+
+    equal(other) {
+        return this.x == other.x && this.y == other.y;
+    }
 }
 
 class Vec3 {
