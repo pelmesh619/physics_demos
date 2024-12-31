@@ -244,7 +244,18 @@ class PolygonRigidbody {
             }
         }
         throw new Error('collision algorithm got wrong');
+
+function NthSidePolygonFactory(radius, n) {
+    let points = [];
+
+    let angle = 0;
+
+    for (let i = 0; i < n; i++) {
+        points.push(new Vec2(radius * Math.sin(angle), radius * Math.cos(angle)));
+        angle += 2 * Math.PI / n;
     }
+
+    return points;
 }
 
 class CircleBody {
@@ -253,16 +264,22 @@ class CircleBody {
         this.radius = radius;
         this.position = startPosition;
         this.velocity = new Vec2(0, 0);
-        this.rigidbody = new PolygonRigidbody(this, [new Vec2(1, -1), new Vec2(1, 1), new Vec2(-1, 1), new Vec2(-1, -1)]);
+        this.rigidbody = new PolygonRigidbody(
+            this, 
+            NthSidePolygonFactory(radius, 5)
+        );
         this.rigidbody.position = this.position;
     }
 
     render(renderer) {
-        
+        renderer.DrawCircle(this.position, this.radius);
+        this.rigidbody.edges.forEach((e) => {
+            renderer.DrawLine(e.vec1, e.vec2);
+        });
     }
 
     nextTick() {
-        this.position = this.position.add(this.velocity.multiply(frameRenderTime / ticksPerFrame));
+        this.position = this.nextPosition;
         this.rigidbody.position = this.position;
     }
 
