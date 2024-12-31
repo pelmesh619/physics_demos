@@ -113,35 +113,30 @@ class PolygonRigidbody {
     }
 
     recalculatePoints() {
-        this.oldPosition = this.parentObject.position;
+        if (this.oldPosition != null && this.oldPosition.equal(this.parentObject.nextPosition)) {
+            return;
+        }
+        this.oldPosition = this.parentObject.nextPosition;
 
         this.oldPoints = this._points.map((vec) => vec.add(this.oldPosition));
 
         this.oldEdges = [];
 
-        let a = this.points[this.points.length - 1];
+        let a = this.oldPoints[this.oldPoints.length - 1];
 
-        this.points.forEach((p) => {
+        this.oldPoints.forEach((p) => {
             this.oldEdges.push(new Edge(a, p));
             a = p;
         });
     }
 
     get points() {
-        if (this.oldPosition == this.parentObject.position) {
-            return this.oldPoints;
-        }
-
         this.recalculatePoints();
 
         return this.oldPoints;
     }
 
     get edges() {
-        if (this.oldPosition == this.parentObject.position) {
-            return this.oldEdges;
-        }
-
         this.recalculatePoints();
 
         return this.oldEdges;
