@@ -194,15 +194,19 @@ class PolygonRigidbody {
     }
 
     DoesIntersect(rigidbody) {
+        let minDistance = Infinity;
+        let noCollision = false;
+        let possibleEdges = []
+
         for (const e of this.edges) {
             let edgeVector = e.vec1.subtract(e.vec2);
-            let perp = edgeVector.rotateClockwise90();
+            let perp = edgeVector.rotateClockwise90().normalize();
 
             let poly1min = Infinity;
             let poly1max = -Infinity;
 
             this.points.forEach((p) => {
-                let v = perp.scalarProduct(p);
+                let v = perp.scalarProduct(p.subtract(e.vec1));
 
                 poly1max = Math.max(v, poly1max);
                 poly1min = Math.min(v, poly1min);
@@ -212,15 +216,18 @@ class PolygonRigidbody {
             let poly2max = -Infinity;
 
             rigidbody.points.forEach((p) => {
-                let v = perp.scalarProduct(p);
+                let v = perp.scalarProduct(p.subtract(e.vec1));
 
                 poly2max = Math.max(v, poly2max);
                 poly2min = Math.min(v, poly2min);
             });
 
-            if (poly1min < poly2max && poly1max > poly2min || poly2min < poly1max && poly2max > poly1min) {
-                poly1min = edgeVector.scalarProduct(e.vec1);
-                poly1max = edgeVector.scalarProduct(e.vec2);
+            if (Math.sign(poly2max) == Math.sign(poly2min) && (Math.sign(poly1min) != Math.sign(poly2max)) || noCollision) {
+                minDistance = Math.min(Math.abs(poly1max - poly2min), Math.abs(poly2max - poly1min), minDistance);
+                noCollision = true;
+            } else {
+                poly1min = 0;
+                poly1max = edgeVector.normalize().scalarProduct(e.vec2.subtract(e.vec1));
                 if (poly1max < poly1min) {
                     [poly1max, poly1min] = [poly1min, poly1max];
                 }
@@ -228,22 +235,23 @@ class PolygonRigidbody {
                 poly2max = -Infinity;
 
                 rigidbody.points.forEach((p) => {
-                    let v = edgeVector.scalarProduct(p);
+                    let v = edgeVector.normalize().scalarProduct(p.subtract(e.vec1));
 
                     poly2max = Math.max(v, poly2max);
                     poly2min = Math.min(v, poly2min);
                 });
 
                 if (poly2max < poly1max && poly2max > poly1min || poly2min > poly1min && poly2min < poly1max) {
-                    return new CollisionInfo(0, e);
+                    possibleEdges.push(e);
                 }
-
-                continue;
-            } else {
-                return new CollisionInfo(Math.min(Math.abs(poly1max - poly2min), Math.abs(poly2max - poly1min)), null);
             }
         }
-        throw new Error('collision algorithm got wrong');
+        if (!noCollision) {
+            return new CollisionInfo(0, possibleEdges[0]);
+        }
+        return new CollisionInfo(minDistance, null);
+    }
+}
 
 function NthSidePolygonFactory(radius, n) {
     let points = [];
@@ -333,23 +341,45 @@ class SimulationModel {
     handleCollision() {
         for (let i = 0; i < this.objects.length; i++) {
             for (let j = 0; j < i; j++) {
-                let r = this.objects[i].rigidbody.DoesIntersect(this.objects[j].rigidbody);
+                let r1 = this.objects[i].rigidbody.DoesIntersect(this.objects[j].rigidbody);
+                let r2 = this.objects[j].rigidbody.DoesIntersect(this.objects[i].rigidbody);
 
-                if (r.distance == 0) {
-                    console.log('yes collision', r);
+                if (r1.collidedEdge != null && r2.collidedEdge != null) {
+                    console.log('yes collision', i, j, r1, r2);
 
-                    let e = r.collidedEdge;
+                    let e = r1.collidedEdge;
+
+                    let perp = e.vec1.subtract(e.vec2).rotateClockwise90().normalize();
                     
-                }
-                if (r.distance > 0) {
-                    console.log('no collision', r);
+                    let newVelocity = this.objects[i].velocity;
+
+                    if (!this.objects[i].immoveable) {
+                        newVelocity = perp.multiply(perp.scalarProduct(newVelocity)).multiply(-2);
+
+                        this.objects[i].velocity = newVelocity.add(this.objects[i].velocity);
+                    }
+                    
+                    newVelocity = this.objects[j].velocity;
+
+                    if (!this.objects[j].immoveable) {
+                        newVelocity = perp.multiply(perp.scalarProduct(newVelocity)).multiply(-2);
+
+                        this.objects[j].velocity = newVelocity.add(this.objects[j].velocity);
+                    }
+                } else if (r1.distance > 0 || r2.distance > 0) {
+                    console.log('no collision', i, j, r1, r2);
+                } else {
+                    console.log('fuck', i, j, r1, r2);
                 }
             }
         }
     }
 
     renderFrame() {
+        this.renderer.PrepareFrame();
         console.log(this.objects);
+        this.objects.forEach((obj) => { obj.render(this.renderer); })
+        document.getElementById('fuck').innerText = this.objects[0].position.x + ' ' + this.objects[0].position.y + " " + this.objects[1].position.x + ' ' + this.objects[1].position.y;
     }
 }
 
