@@ -75,15 +75,19 @@ function reloadModel() {
 class Renderer {
     constructor(canvasId) {
         this.canvasId = canvasId;
+        this.offsetX = -10;
+        this.offsetY = -5;
+        this.sizeX = 20;
+        this.sizeY = this.sizeX / this.contextWidth * this.contextHeight;
+        this.context = this.DOMObject.getContext('2d');
+        
+        this.DOMObject.width = this.contextWidth;
+        this.DOMObject.height = this.contextHeight;
+        this.context.scale(1, 1);
     }
 
     get DOMObject() {
         return document.getElementById(this.canvasId);
-    }
-
-    get context() { 
-        const d = this.DOMObject; 
-        return d === null ? null : d.getContext('2d');
     }
 
     get contextHeight() {
@@ -94,13 +98,49 @@ class Renderer {
         return this.DOMObject === null ? null : this.DOMObject.clientWidth;
     }
 
+    PrepareFrame() {
+        this.context.clearRect(0, 0, this.DOMObject.width, this.DOMObject.height);
+    }
+
     translateCoordinatesToRenderSpace(vec2, y=undefined) {
-        if (y != undefined) {
-            vec2 = new Vec2(vec2, y);
+        let x;
+        if (y === undefined) {
+            x = vec2.x;
+            y = vec2.y;
+        } else {
+            x = vec2;
         }
 
+        return new Vec2(
+            (x - this.offsetX) / this.sizeX * this.contextWidth,
+            this.contextHeight - (y - this.offsetY) / this.sizeY * this.contextHeight
+        );
+    }
 
+    translateLengthToRenderSpace(a) {
+        return a / this.sizeX * this.contextWidth;
+    }
 
+    DrawCircle(point, radius) {
+        point = this.translateCoordinatesToRenderSpace(point);
+
+        this.context.fillStyle = 'red';
+        this.context.beginPath();
+        this.context.arc(point.x, point.y, this.translateLengthToRenderSpace(radius), 0, 2 * Math.PI);
+        this.context.fill();
+    }
+
+    DrawLine(point1, point2) {
+        const ctx = this.context;
+        ctx.strokeStyle = 'green';
+
+        point1 = this.translateCoordinatesToRenderSpace(point1);
+        point2 = this.translateCoordinatesToRenderSpace(point2);
+
+        ctx.beginPath();
+        ctx.moveTo(point1.x, point1.y);
+        ctx.lineTo(point2.x, point2.y);
+        ctx.stroke();
     }
 }
 
