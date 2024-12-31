@@ -289,18 +289,24 @@ class CircleBody {
 }
 
 class LineBody {
-    constructor(startPosition) {
+    constructor(startPosition, direction) {
         this.immoveable = true;
         this.position = startPosition;
-        this.rigidbody = new PolygonRigidbody(this, [new Vec2(-100, 0), new Vec2(100, 0), new Vec2(0, -1)]);
+        this.rigidbody = new PolygonRigidbody(this, [new Vec2(0, 0), direction, direction.normalize().rotateClockwise90().multiply(-1)]);
     }
 
-    render() { }
+    render(renderer) { 
+        this.rigidbody.edges.forEach((e) => {
+            renderer.DrawLine(e.vec1, e.vec2);
+        });
+    }
 
     nextTick() { }
 
-    changeVelocity() {
+    changeVelocity() { }
 
+    get nextPosition() {
+        return this.position;
     }
 }
 
