@@ -8,6 +8,10 @@ class ElectricConstants {
     static get epsilon0() { return 8.85 * Math.pow(10, -11); }
 }
 
+function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+}
+
 function round(number, a=0) {
     if (a > 0) {
         return (number).toFixed(a);
@@ -98,6 +102,15 @@ class Vec2 {
         return this.x * other.x + this.y * other.y;
     }
 
+    angleBetween(other) {
+        if (this.length == 0 || other.length == 0) {
+            return 0;
+        }
+        let s = this.scalarProduct(other) / this.length / other.length;
+
+        return Math.acos(clamp(s, -1, 1));
+    }
+
     determinant(other) {
         return this.x * other.y - this.y * other.x;
     }
@@ -107,11 +120,15 @@ class Vec2 {
     }
 
     normalize() {
-        return new Vec2(this.x / this.length, this.y / this.length);
+        return this.length == 0 ? new Vec2(0, 0) : new Vec2(this.x / this.length, this.y / this.length);
     }
 
     equal(other) {
         return this.x == other.x && this.y == other.y;
+    }
+
+    isValid() {
+        return !isNaN(this.x) && !isNaN(this.y);
     }
 }
 
@@ -146,9 +163,9 @@ function edgeIntersection(edge1, edge2){
     let b = edge1.vec2;
     let c = edge2.vec1;
     let d = edge2.vec2;
-    let det = determinant(b.subtract(a), c.subtract(d));
-    let t   = determinant(c.subtract(a), c.subtract(d)) / det;
-    let u   = determinant(b.subtract(a), c.subtract(a)) / det;
+    let det = b.subtract(a).determinant(c.subtract(d));
+    let t   = c.subtract(a).determinant(c.subtract(d)) / det;
+    let u   = b.subtract(a).determinant(c.subtract(a)) / det;
     if ((t < 0) || (u < 0) || (t > 1) || (u > 1)) {
         return null;
     } else {
