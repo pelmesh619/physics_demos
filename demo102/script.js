@@ -20,16 +20,16 @@ class Main {
 
         this.renderer = new Renderer('ballisticSimulation', borderWidth);
         this.simulationModel = new SimulationModel(this.form, this.renderer);
-        this.simulationModel.objects.push(new CircleBody(1.5, new Vec2(0, values['h'])));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(0, values['h'] + 1)));
         this.simulationModel.objects[0].velocity = new Vec2(values['v'] * Math.cos(values['alpha']), values['v'] * Math.sin(values['alpha']));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 1)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 3)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 5)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 7)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 1)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 3)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 5)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 7)));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 1)));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 3)));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 5)));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 7)));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 1)));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 3)));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 5)));
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 7)));
         // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 1)));
         // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 3)));
         // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 5)));
@@ -297,7 +297,7 @@ class CircleBody {
         this.velocity = new Vec2(0, 0);
         this.rigidbody = new PolygonRigidbody(
             this, 
-            NthSidePolygonFactory(radius * 0.9, 10)
+            NthSidePolygonFactory(radius * 0.94, 10)
         );
         this.rigidbody.position = this.position;
         this.isAffectedByGravity = true;
@@ -372,19 +372,12 @@ class SimulationModel {
     }
 
     nextTick() {
-        // this.objects.forEach(
-        //     (obj) => {
-        //         obj.applyForce(new Vec2(0, -Constants.g * obj.mass));
-        //         // if (!obj.immoveable && obj.isAffectedByGravity) {
-        //         // } else if (!obj.immoveable) {
-        //         //     obj.isAffectedByGravity = true;
-        //         // }
-        //     }
-        // )
         this.handleCollision();
         this.objects.forEach(
             (obj) => {
-                obj.applyForce(new Vec2(0, -Constants.g * obj.mass));
+                if (obj.isAffectedByGravity) {
+                    obj.applyForce(new Vec2(0, -Constants.g * obj.mass));
+                }
                 obj.nextTick();
             }
         )
@@ -430,13 +423,21 @@ class SimulationModel {
                     let v2 = this.objects[j].velocity;
                     let force1 = 0;
                     let force2 = 0;
+                    let m1 = this.objects[i].mass;
+                    let m2 = this.objects[j].mass;
                     if (this.objects[j].immoveable) {
                         force1 = 2 * v1.length * Math.cos(v1.multiply(-1).angleBetween(n2));
+                        if (this.objects[i].isAffectedByGravity) {
+                            // 250 is chosen as most optimal coeff for normal force
+                            // produced by static objects
+                            force1 += n2.cosineBetween(new Vec2(0, -Constants.g * m1)) * (-Constants.g * m1) / 250;
+                        }
                     } else if (this.objects[i].immoveable) {
                         force2 = 2 * v2.length * Math.cos(v2.multiply(-1).angleBetween(n1));
+                        if (this.objects[j].isAffectedByGravity) {
+                            force2 += n1.cosineBetween(new Vec2(0, -Constants.g * m2)) * (-Constants.g * m2) / 250;
+                        }
                     } else {
-                        let m1 = this.objects[i].mass;
-                        let m2 = this.objects[j].mass;
 
                         force1 = v1.length * Math.cos(v1.multiply(-1).angleBetween(n2));
                         force2 = v2.length * Math.cos(v2.multiply(-1).angleBetween(n1));
@@ -455,11 +456,9 @@ class SimulationModel {
 
                     if (!this.objects[i].immoveable) {
                         this.objects[i].applyForce(n2.multiply(force1 / dt()));
-                        this.objects[i].isAffectedByGravity = false;
                     }
                     if (!this.objects[j].immoveable) {
                         this.objects[j].applyForce(n1.multiply(force2 / dt()));
-                        this.objects[j].isAffectedByGravity = false;
                     }
                 } else {
                     // console.log('no collision', i, j);
