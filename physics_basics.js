@@ -103,12 +103,16 @@ class Vec2 {
     }
 
     angleBetween(other) {
+        return Math.acos(this.cosineBetween(other));
+    }
+
+    cosineBetween(other) {
         if (this.length == 0 || other.length == 0) {
             return 0;
         }
         let s = this.scalarProduct(other) / this.length / other.length;
 
-        return Math.acos(clamp(s, -1, 1));
+        return clamp(s, -1, 1);
     }
 
     determinant(other) {
