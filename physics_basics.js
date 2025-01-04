@@ -123,6 +123,13 @@ class Vec2 {
         return new Vec2(this.y, -this.x);
     }
 
+    rotate(angle) {
+        return new Vec2(
+            this.x * Math.cos(angle) + this.y * Math.sin(angle), 
+            -this.x * Math.sin(angle) + this.y * Math.cos(angle)
+        );
+    }
+
     normalize() {
         return this.length == 0 ? new Vec2(0, 0) : new Vec2(this.x / this.length, this.y / this.length);
     }
@@ -168,11 +175,16 @@ function edgeIntersection(edge1, edge2){
     let c = edge2.vec1;
     let d = edge2.vec2;
     let det = b.subtract(a).determinant(c.subtract(d));
+    if (det == 0) {
+        return null; // parallel lines
+    }
+
     let t   = c.subtract(a).determinant(c.subtract(d)) / det;
     let u   = b.subtract(a).determinant(c.subtract(a)) / det;
+
     if ((t < 0) || (u < 0) || (t > 1) || (u > 1)) {
         return null;
     } else {
-        return a * (1 - t) + t * b;
+        return a.multiply(1 - t).add(b.multiply(t));
     }
 }
