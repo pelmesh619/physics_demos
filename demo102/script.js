@@ -166,14 +166,6 @@ class Renderer {
     }
 }
 
-
-class CollisionInfo {
-    constructor(distance, collidedEdge) {
-        this.distance = distance;
-        this.collidedEdge = collidedEdge;
-    }
-}
-
 class PolygonRigidbody {
     constructor(parentObject, points) {
         this._points = points;
@@ -189,7 +181,6 @@ class PolygonRigidbody {
         this.recalculatePoints();
 
         this.radius = Math.max(this._points.map((vec) => vec.length));
-
     }
 
     calculateCenterPoint() {
@@ -299,7 +290,7 @@ class PolygonRigidbody {
     }
 }
 
-function NthSidePolygonFactory(radius, n) {
+function RegularPolygonFactory(radius, n) {
     let points = [];
 
     let angle = Math.PI / 4;
@@ -326,7 +317,7 @@ class CircleBody {
         this.angularVelocity = 0;
         this.rigidbody = new PolygonRigidbody(
             this, 
-            NthSidePolygonFactory(radius * 0.95, 7)
+            RegularPolygonFactory(radius * 0.95, 7)
         );
         this.isAffectedByGravity = true;
     }
@@ -360,11 +351,8 @@ class CircleBody {
     get nextPosition() {
         let k1_v = this.acceleration;
         let k1_x = this.velocity;
-
         let k2_x = this.velocity.add(k1_v.multiply(0.5 * dt()));
-
         let k3_x = this.velocity.add(k1_v.multiply(0.5 * dt()));
-
         let k4_x = this.velocity.add(k1_v.multiply(dt()));
 
         return this.position.add((k1_x.add(k2_x.multiply(2)).add(k3_x.multiply(2)).add(k4_x)).multiply(dt() / 6));
@@ -374,11 +362,19 @@ class CircleBody {
         return Math.pow(this.velocity.length, 2) * this.mass / 2;
     }
 
-    getPotentialEnergy(offsetY) {
+    get potentialEnergy() {
+        return this.getPotentialEnergy();
+    }
+
+    get fullMechanicEnergy() {
+        return this.getFullMechanicEnergy();
+    }
+
+    getPotentialEnergy(offsetY=0) {
         return this.mass * Constants.g * (this.position.y - offsetY);
     }
 
-    getFullMechanicEnergy(offsetY) {
+    getFullMechanicEnergy(offsetY=0) {
         return this.kineticEnergy + this.getPotentialEnergy(offsetY);
     }
 }
@@ -482,9 +478,6 @@ class SimulationModel {
                 if (!applyPoint.isValid() || applyPoint.x == Infinity || applyPoint.y == Infinity) {
                     throw new Error();
                 }
-
-                // console.log('yes collision', i, j, r);
-                // window.alert(JSON.stringify([i, j, r]));
 
                 if (obj2.immoveable) {
                     this.solveCollisionWithImmoveable(obj1, obj2, n2, applyPoint);
