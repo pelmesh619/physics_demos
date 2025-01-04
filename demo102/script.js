@@ -1,5 +1,5 @@
 const frameRenderTime = 1 / 50;
-const ticksPerFrame = 5
+const ticksPerFrame = 5;
 const timeScale = 1;
 
 function dt() {
@@ -174,13 +174,17 @@ class PolygonRigidbody {
         this._points = points;
         this.parentObject = parentObject;
 
+        this._center = new Vec2(0, 0);
+        this.calculateCenterPoint();
+
+        // this._points = this._points.map((p) => p.subtract(this._center));
+
         this.oldPosition = null;
+        this.oldAngle = null;
         this.recalculatePoints();
 
         this.radius = Math.max(this._points.map((vec) => vec.length));
 
-        this._center = new Vec2(0, 0);
-        this.calculateCenterPoint();
     }
 
     calculateCenterPoint() {
@@ -209,10 +213,12 @@ class PolygonRigidbody {
     }
 
     recalculatePoints() {
-        if (this.oldPosition != null && this.oldPosition.equal(this.parentObject.nextPosition)) {
+        if (this.oldPosition != null && this.oldPosition.equal(this.parentObject.nextPosition) &&
+        this.oldAngle != null && this.oldAngle == this.parentObject.angle) {
             return;
         }
         this.oldPosition = this.parentObject.nextPosition;
+        this.oldAngle = this.parentObject.angle;
 
         this.oldPoints = this._points.map((vec) => vec.add(this.oldPosition));
 
@@ -261,7 +267,7 @@ class PolygonRigidbody {
                 if (result === null) {
                     continue;
                 } else {
-                    possibleEdges.push([e1, e2]);
+                    possibleEdges.push([e1, e2, result]);
                 }
             }
         }
@@ -295,11 +301,13 @@ class CircleBody {
         this.mass = 1;
         this.position = startPosition;
         this.velocity = new Vec2(0, 0);
+        this.angle = 0;
+        this.acceleration = new Vec2(0, 0);
+        this.angularVelocity = 0;
         this.rigidbody = new PolygonRigidbody(
             this, 
             NthSidePolygonFactory(radius * 0.94, 10)
         );
-        this.rigidbody.position = this.position;
         this.isAffectedByGravity = true;
     }
 
@@ -308,16 +316,26 @@ class CircleBody {
     }
 
     applyForce(forceVec) {
-        this.velocity = this.velocity.add(forceVec.multiply(dt() / this.mass));
+        this.acceleration = this.acceleration.add(forceVec.multiply(1 / this.mass));
     }
 
     nextTick() {
         this.position = this.nextPosition;
-        this.rigidbody.position = this.position;
+        this.velocity = this.velocity.add(this.acceleration.multiply(dt()));
+        this.acceleration = new Vec2(0, 0);
     }
 
     get nextPosition() {
-        return this.position.add(this.velocity.multiply(dt()))
+        let k1_v = this.acceleration;
+        let k1_x = this.velocity;
+
+        let k2_x = this.velocity.add(k1_v.multiply(0.5 * dt()));
+
+        let k3_x = this.velocity.add(k1_v.multiply(0.5 * dt()));
+
+        let k4_x = this.velocity.add(k1_v.multiply(dt()));
+
+        return this.position.add((k1_x.add(k2_x.multiply(2)).add(k3_x.multiply(2)).add(k4_x)).multiply(dt() / 6));
     }
 
     get kineticEnergy() {
@@ -325,7 +343,7 @@ class CircleBody {
     }
 
     getPotentialEnergy(offsetY) {
-        return this.mass * Constants.g * this.position.y - offsetY;
+        return this.mass * Constants.g * (this.position.y - offsetY);
     }
 
     getFullMechanicEnergy(offsetY) {
@@ -338,6 +356,7 @@ class LineBody {
         this.immoveable = true;
         this.position = startPosition;
         this.mass = 0;
+        this.angle = 0;
         this.velocity = new Vec2(0, 0);
         this.rigidbody = new PolygonRigidbody(this, [new Vec2(0, 0), direction, direction.normalize().rotateClockwise90().add(direction), direction.normalize().rotateClockwise90()]);
     }
@@ -369,6 +388,7 @@ class SimulationModel {
         this.renderer = renderer;
 
         this.objects = [];
+        this.previousEnergyValue = null;
     }
 
     nextTick() {
@@ -400,10 +420,12 @@ class SimulationModel {
                 if (r.length != 0) {
                     let n1 = new Vec2(0, 0);
                     let n2 = new Vec2(0, 0);
+                    let applyPoint = new Vec2(0, 0);
 
                     r.forEach((tuple) => {
                         n1 = n1.add(tuple[0].vec1.subtract(tuple[0].vec2).normalize().rotateClockwise90());
                         n2 = n2.add(tuple[1].vec1.subtract(tuple[1].vec2).normalize().rotateClockwise90());
+                        applyPoint = applyPoint.add(tuple[2]);
                     });
                     if (n2.length == 0) {
                         n2 = this.objects[i].rigidbody.center.subtract(this.objects[j].rigidbody.center);
@@ -414,6 +436,11 @@ class SimulationModel {
 
                     n1 = n1.normalize();
                     n2 = n2.normalize();
+                    applyPoint = applyPoint.multiply(1 / r.length);
+
+                    if (!applyPoint.isValid() || applyPoint.x == Infinity || applyPoint.y == Infinity) {
+                        throw new Error();
+                    }
 
 
                     // console.log('yes collision', i, j, r);
@@ -428,37 +455,30 @@ class SimulationModel {
                     if (this.objects[j].immoveable) {
                         force1 = 2 * v1.length * Math.cos(v1.multiply(-1).angleBetween(n2));
                         if (this.objects[i].isAffectedByGravity) {
-                            // 250 is chosen as most optimal coeff for normal force
-                            // produced by static objects
-                            force1 += n2.cosineBetween(new Vec2(0, -Constants.g * m1)) * (-Constants.g * m1) / 250;
+                            force1 += n2.cosineBetween(new Vec2(0, -1)) * (-Constants.g * m1) * dt();
                         }
                     } else if (this.objects[i].immoveable) {
                         force2 = 2 * v2.length * Math.cos(v2.multiply(-1).angleBetween(n1));
                         if (this.objects[j].isAffectedByGravity) {
-                            force2 += n1.cosineBetween(new Vec2(0, -Constants.g * m2)) * (-Constants.g * m2) / 250;
+                            force2 += n1.cosineBetween(new Vec2(0, -1)) * (-Constants.g * m2) * dt();
                         }
                     } else {
-
                         force1 = v1.length * Math.cos(v1.multiply(-1).angleBetween(n2));
                         force2 = v2.length * Math.cos(v2.multiply(-1).angleBetween(n1));
 
-                        let u1primeX = ((m1 - m2) * v1.x + 2 * m2 * v2.x) / (m1 + m2);
-                        let u1primeY = ((m1 - m2) * v1.y + 2 * m2 * v2.y) / (m1 + m2);
-                        let u2primeX = ((m2 - m1) * v2.x + 2 * m1 * v1.x) / (m1 + m2);
-                        let u2primeY = ((m2 - m1) * v2.y + 2 * m1 * v1.y) / (m1 + m2);
+                        let u1 = v1.subtract(n2.multiply(v1.subtract(v2).scalarProduct(n2) * 2 * m2 / (m1 + m2)));
+                        let u2 = v2.subtract(n1.multiply(v2.subtract(v1).scalarProduct(n1) * 2 * m1 / (m1 + m2)));
 
-                        let u1prime = new Vec2(u1primeX, u1primeY);
-                        let u2prime = new Vec2(u2primeX, u2primeY);
-
-                        force1 += u1prime.length * Math.cos(u1prime.angleBetween(n2));
-                        force2 += u2prime.length * Math.cos(u2prime.angleBetween(n1));
+                        force1 += u1.length * Math.cos(u1.angleBetween(n2));
+                        force2 += u2.length * Math.cos(u2.angleBetween(n1));
                     }
+                    
 
                     if (!this.objects[i].immoveable) {
-                        this.objects[i].applyForce(n2.multiply(force1 / dt()));
+                        this.objects[i].applyForce(n2.multiply(force1 / dt()), applyPoint);
                     }
                     if (!this.objects[j].immoveable) {
-                        this.objects[j].applyForce(n1.multiply(force2 / dt()));
+                        this.objects[j].applyForce(n1.multiply(force2 / dt()), applyPoint);
                     }
                 } else {
                     // console.log('no collision', i, j);
@@ -467,15 +487,32 @@ class SimulationModel {
         }
     }
 
+    getFullEnergy() {
+        let s = 0; 
+        this.objects
+        .filter((v) => v.position.isValid())
+        .forEach((v) => { s += v.getFullMechanicEnergy(0); }); 
+        return s; 
+    }
+
     renderFrame() {
         this.renderer.PrepareFrame();
         this.objects.forEach((obj) => { obj.render(this.renderer); });
         this.objects.forEach((obj) => { obj.rigidbody.render(this.renderer); });
+
+        let fullEnergy = this.getFullEnergy();
+
+        if (this.previousEnergyValue != null && Math.abs(fullEnergy - this.previousEnergyValue) > 1) {
+            // window.alert(JSON.stringify([this.previousEnergyValue, fullEnergy]));
+        }
+
+        this.previousEnergyValue = fullEnergy;
+
         document.getElementById('ballDisplay').innerHTML = this.objects[0].kineticEnergy + '<br/>' + 
         this.objects[1].kineticEnergy + '<br/>' + 
         this.objects[0].velocity.length + '<br/>' + 
         this.objects[1].velocity.length + '<br/>' + 
-        (() => { let s = 0; this.objects.filter((v) => v.position.isValid()).forEach((v) => { s += v.getFullMechanicEnergy(0); }); return s; })();
+        fullEnergy;
     }
 }
 
