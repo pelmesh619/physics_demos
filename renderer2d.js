@@ -1,11 +1,11 @@
 
 class Renderer2D {
-    constructor(canvasId) {
+    constructor(canvasId, sizeX, offsetX=null, offsetY) {
         this.canvasId = canvasId;
-        this.offsetX = -11;
-        this.offsetY = -5;
-        this.sizeX = 22;
+        this.sizeX = sizeX;
         this.sizeY = this.sizeX / this.contextWidth * this.contextHeight;
+        this.offsetX = offsetX == null ? -sizeX / 2 : offsetX;
+        this.offsetY = offsetY == null ? -this.sizeY / 2 : offsetY;
         this.context = this.DOMObject.getContext('2d');
         
         this.DOMObject.width = this.contextWidth;
