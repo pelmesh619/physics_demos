@@ -29,8 +29,6 @@ class Main {
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
         this.simulationModel.objects.push(new LineBody(new Vec2(9, 0), new Vec2(0, 10)));
-
-        this.simulationModel.objects[0].angle = Math.PI / 3;
     }
 
     nextTick() {
@@ -49,13 +47,20 @@ class Main {
 }
 
 function main() {
+    document.getElementById('showColliders').addEventListener('change', (event) => {
+        mainObject.simulationModel.enableColliderRender = event.target.checked;
+    });
+    document.getElementById('showVelocities').addEventListener('change', (event) => {
+        mainObject.simulationModel.enableVelocityVectorRender = event.target.checked;
+    });
+
     var ballisticForm = new FormMaker("ballisticForm");
 
     var mainObject = new Main(ballisticForm);
 
     ballisticForm
     .AddNumber(new NumberInput("v", "|v| = ", new NumberDomain(10, "м/с", 0.001, 0)))
-    .AddNumber(new NumberInput("alpha", "α = ", new NumberDomain(1.57, "рад", 0.001, -1.570, 1.570)))
+    .AddNumber(new NumberInput("alpha", "α = ", new NumberDomain(1.57 / 2, "рад", 0.001, -1.570, 1.570)))
     .AddNumber(new NumberInput("h", "h = ", new NumberDomain(1, "м", 0.001, 0)))
     .AddSubmitButton('submitButton', "Перезапустить симуляцию", () => { mainObject.reloadModel(); })
     .AddButton('nextStepButton', "Следующий шаг симуляции", () => { 
