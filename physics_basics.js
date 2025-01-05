@@ -74,7 +74,7 @@ class Vec2 {
     }
 
     get xy() {
-        return [x, y];
+        return [this.x, this.y];
     }
 
     set xy(c) {
@@ -117,6 +117,15 @@ class Vec2 {
 
     determinant(other) {
         return this.x * other.y - this.y * other.x;
+    }
+
+    sineBetween(other) {
+        if (this.length == 0 || other.length == 0) {
+            return 0;
+        }
+        let s = this.determinant(other) / this.length / other.length;
+
+        return clamp(s, -1, 1);
     }
 
     rotateClockwise90() {
@@ -179,8 +188,8 @@ function edgeIntersection(edge1, edge2){
         return null; // parallel lines
     }
 
-    let t   = c.subtract(a).determinant(c.subtract(d)) / det;
-    let u   = b.subtract(a).determinant(c.subtract(a)) / det;
+    let t = c.subtract(a).determinant(c.subtract(d)) / det;
+    let u = b.subtract(a).determinant(c.subtract(a)) / det;
 
     if ((t < 0) || (u < 0) || (t > 1) || (u > 1)) {
         return null;
