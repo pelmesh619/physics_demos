@@ -135,6 +135,7 @@ class CollisionSimulationModel {
         this.time = 0;
 
         this.enableColliderRender = false;
+        this.enableVelocityVectorRender = false;
     }
 
     addObject(object) {
@@ -281,6 +282,9 @@ class CollisionSimulationModel {
         this.objects.forEach((obj) => { obj.render(this.renderer); });
         if (this.enableColliderRender) {
             this.objects.forEach((obj) => { if (obj.rigidbody != undefined) obj.rigidbody.render(this.renderer); });
+        }
+        if (this.enableVelocityVectorRender) {
+            this.objects.forEach((obj) => { if (obj.velocity != undefined) this.renderer.DrawVector(obj.position, obj.velocity); });
         }
 
         let fullEnergy = this.getFullEnergy();
