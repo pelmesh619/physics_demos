@@ -18,7 +18,7 @@ class StaticObject {
 
     render(renderer) { }
 
-    nextTick() { }
+    update() { }
 
     applyForce() { }
 
@@ -76,7 +76,7 @@ class DinamicObject {
         this.stopForce = this.stopForce.add(normalVec.multiply(magnitude / dt()));
     }
 
-    nextTick() {
+    update() {
         if (this.stopForce.length != 0) {
             this.applyForce(this.stopForce);
         }
