@@ -59,6 +59,23 @@ function main() {
     document.getElementById('showVelocities').addEventListener('change', (event) => {
         mainObject.simulationModel.enableVelocityVectorRender = event.target.checked;
     });
+    document.getElementById('stopSimulation').addEventListener('change', (event) => {
+        mainObject.stopped = event.target.checked;
+    });
+    document.getElementById('stopSimulation').addEventListener('change', (event) => {
+        mainObject.stopped = event.target.checked;
+    });
+    
+    document.getElementById('nextStepButton').addEventListener('click', () => { 
+        mainObject.simulationModel.update();
+        mainObject.simulationModel.renderFrame();
+    });
+    document.getElementById('nextFrameButton').addEventListener('click', () => { 
+        for (let i = 0; i < 1; i++) {
+            mainObject.simulationModel.update();
+        }
+        mainObject.simulationModel.renderFrame();
+    })
 
     setInterval(
         mainObject.nextTickFactory(),
