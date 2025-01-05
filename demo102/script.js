@@ -13,7 +13,7 @@ const borderWidth = 10;
 class Main {
     constructor(form) {
         this.form = form;
-        reloadModel();
+        this.reloadModel();
         this.stopped = false;
     }
 
@@ -324,46 +324,10 @@ class CircleBody {
     }
 }
 
-class LineBody {
+class LineBody extends StaticObject {
     constructor(startPosition, direction) {
-        this.immoveable = true;
-        this.position = startPosition;
-        this.mass = 0;
-        this.angle = 0;
-        this.velocity = new Vec2(0, 0);
+        super(startPosition);
         this.rigidbody = new PolygonRigidbody(this, [new Vec2(0, 0), direction, direction.normalize().rotateClockwise90().add(direction), direction.normalize().rotateClockwise90()]);
-    }
-
-    render(renderer) { }
-
-    nextTick() { }
-
-    applyForce() { }
-
-    get nextPosition() {
-        return this.position;
-    }
-
-    get futurePosition() {
-        return this.position;
-    }
-
-    get nextAngle() {
-        return this.angle;
-    }
-
-    get futureAngle() {
-        return this.angle;
-    }
-
-    get kineticEnergy() {
-        return Math.pow(this.velocity.length, 2) * this.mass / 2;
-    }
-
-    getPotentialEnergy() { return 0; }
-
-    getFullMechanicEnergy() {
-        return this.kineticEnergy;
     }
 }
 
