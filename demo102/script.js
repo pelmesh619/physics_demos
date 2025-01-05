@@ -165,23 +165,19 @@ class Renderer {
         ctx.stroke();
     }
     
-    drawVector(point, E_vector, arrowLength=30, lineWidth=2, color=null) {
+    DrawVector(point, vector, arrowLength=30, lineWidth=2, color=null) {
         const ctx = this.context;
         const arrowSize = 10;
-        let E_vector_length = Math.hypot(E_vector[0], E_vector[1]);
-
-        let [x, y] = point.xy;
     
-        let [fromX, fromY] = this.translateCoordinatesToRenderSpace(x, y).xy;
-        let [toX, toY] = this.translateCoordinatesToRenderSpace(E_vector.add(point)).xy;
+        let from = this.translateCoordinatesToRenderSpace(point);
+        let to = this.translateCoordinatesToRenderSpace(vector.add(point));
     
-        let vector = [toX - fromX, toY - fromY];
-        let vectorLength = Math.hypot(vector[0], vector[1]);
-        vector = [Math.round(vector[0] * arrowLength / vectorLength), Math.round(vector[1] * arrowLength / vectorLength)];
+        vector = to.subtract(from);
+        vector = vector.multiply(arrowLength / vector.length).do(round);
     
-        [toX, toY] = [fromX + vector[0], fromY + vector[1]]
+        to = from.add(vector);
     
-        const angle = Math.atan2(toY - fromY, toX - fromX);
+        const angle = (new Vec2(1, 0)).angleBetween(to.subtract(from));
 
         color = 'black';
 
@@ -189,22 +185,22 @@ class Renderer {
         ctx.strokeStyle = color;
     
         ctx.beginPath();
-        ctx.moveTo(fromX, fromY);
-        ctx.lineTo(toX, toY);
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
         ctx.lineWidth = lineWidth;
         ctx.stroke();
     
         ctx.beginPath();
-        ctx.moveTo(toX, toY);
+        ctx.moveTo(to.x, to.y);
         ctx.lineTo(
-            toX - arrowSize * Math.cos(angle - Math.PI / 6),
-            toY - arrowSize * Math.sin(angle - Math.PI / 6)
+            to.x - arrowSize * Math.cos(angle - Math.PI / 6),
+            to.y - arrowSize * Math.sin(angle - Math.PI / 6)
         );
         ctx.lineTo(
-            toX - arrowSize * Math.cos(angle + Math.PI / 6),
-            toY - arrowSize * Math.sin(angle + Math.PI / 6)
+            to.x - arrowSize * Math.cos(angle + Math.PI / 6),
+            to.y - arrowSize * Math.sin(angle + Math.PI / 6)
         );
-        ctx.lineTo(toX, toY);
+        ctx.lineTo(to.x, to.y);
         ctx.closePath();
         ctx.fill();
     }
@@ -366,7 +362,7 @@ class CircleBody {
 
     render(renderer) {
         renderer.DrawCircle(this.position, this.radius);
-        renderer.drawVector(this.position, this.velocity);
+        renderer.DrawVector(this.position, this.velocity);
     }
 
     applyForce(forceVec, applyPoint=null) {
