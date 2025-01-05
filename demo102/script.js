@@ -1,5 +1,5 @@
-const frameRenderTime = 1 / 50;
-const ticksPerFrame = 20;
+const frameRenderTime = 1 / 40;
+const ticksPerFrame = 5;
 const timeScale = 1;
 
 const showDebugInfo = false;
@@ -22,21 +22,21 @@ class Main {
 
         this.renderer = new Renderer('ballisticSimulation', borderWidth);
         this.simulationModel = new SimulationModel(this.form, this.renderer);
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(0, 2)));
-        this.simulationModel.objects[0].velocity = new Vec2(1, 0);
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(2, 3.5)));
-        this.simulationModel.objects[1].velocity = new Vec2(1, 0);
+        this.simulationModel.objects.push(new CircleBody(1, new Vec2(0, values['h'] + 1), 1));
+        this.simulationModel.objects[0].velocity = new Vec2(values['v'] * Math.cos(values['alpha']), values['v'] * Math.sin(values['alpha']));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(2, 3.5)));
+        // this.simulationModel.objects[1].velocity = new Vec2(1, 0);
         // this.simulationModel.objects.push(new CircleBody(2.23, new Vec2(0, 6), 5));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 5)));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 7)));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 1)));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 3)));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 5)));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 7)));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 1)));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 3)));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 5)));
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 7)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 5)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 7)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 1)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 3)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 5)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 7)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 1)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 3)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 5)));
+        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 7)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
@@ -164,6 +164,51 @@ class Renderer {
         ctx.lineTo(point2.x, point2.y);
         ctx.stroke();
     }
+    
+    drawVector(point, E_vector, arrowLength=30, lineWidth=2, color=null) {
+        const ctx = this.context;
+        const arrowSize = 10;
+        let E_vector_length = Math.hypot(E_vector[0], E_vector[1]);
+
+        let [x, y] = point.xy;
+    
+        let [fromX, fromY] = this.translateCoordinatesToRenderSpace(x, y).xy;
+        let [toX, toY] = this.translateCoordinatesToRenderSpace(E_vector.add(point)).xy;
+    
+        let vector = [toX - fromX, toY - fromY];
+        let vectorLength = Math.hypot(vector[0], vector[1]);
+        vector = [Math.round(vector[0] * arrowLength / vectorLength), Math.round(vector[1] * arrowLength / vectorLength)];
+    
+        [toX, toY] = [fromX + vector[0], fromY + vector[1]]
+    
+        const angle = Math.atan2(toY - fromY, toX - fromX);
+
+        color = 'black';
+
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+    
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.lineTo(toX, toY);
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+    
+        ctx.beginPath();
+        ctx.moveTo(toX, toY);
+        ctx.lineTo(
+            toX - arrowSize * Math.cos(angle - Math.PI / 6),
+            toY - arrowSize * Math.sin(angle - Math.PI / 6)
+        );
+        ctx.lineTo(
+            toX - arrowSize * Math.cos(angle + Math.PI / 6),
+            toY - arrowSize * Math.sin(angle + Math.PI / 6)
+        );
+        ctx.lineTo(toX, toY);
+        ctx.closePath();
+        ctx.fill();
+    }
+  
 }
 
 class PolygonRigidbody {
@@ -174,13 +219,11 @@ class PolygonRigidbody {
         this._center = new Vec2(0, 0);
         this.calculateCenterPoint();
 
-        // this._points = this._points.map((p) => p.subtract(this._center));
+        this._points = this._points.map((p) => p.subtract(this._center));
 
         this.oldPosition = null;
         this.oldAngle = null;
         this.recalculatePoints();
-
-        this.radius = Math.max(this._points.map((vec) => vec.length));
     }
 
     calculateCenterPoint() {
@@ -210,26 +253,17 @@ class PolygonRigidbody {
 
     recalculatePoints() {
         if (this.oldPosition != null && this.oldPosition.equal(this.parentObject.futurePosition) &&
-        this.oldAngle != null && this.oldAngle == this.parentObject.angle) {
+        this.oldAngle != null && this.oldAngle == this.parentObject.futureAngle) {
             return;
         }
         this.oldPosition = this.parentObject.futurePosition;
-        this.oldAngle = this.parentObject.angle;
+        this.oldAngle = this.parentObject.futureAngle;
 
         this.oldPoints = this._points.map(
             (vec) => {
-                // let a = vec.rotate(this.oldAngle).add(this.oldPosition);
-                let b = vec.add(this.oldPosition);
-
-                // if (Math.abs(a.x - b.x) > 0.00001 || Math.abs(a.y - b.y) > 0.00001) {
-                //     console.log(a, b);
-                //     throw new Error();
-                // }
-
-                return b;
-                
+                return vec.rotate(this.oldAngle).add(this._center).add(this.oldPosition);
             }
-        );
+        ); 
 
         this.oldEdges = [];
 
@@ -254,7 +288,7 @@ class PolygonRigidbody {
     }
 
     get center() {
-        return this._center.add(this.parentObject.futurePosition);
+        return this._center.add(this.parentObject.position);
     }
 
     DoesIntersect(rigidbody) {
@@ -273,7 +307,7 @@ class PolygonRigidbody {
 
                 let result = edgeIntersection(e1, e2);
 
-                if (result === null) {
+                if (result == null) {
                     continue;
                 } else {
                     possibleEdges.push([e1, e2, result]);
@@ -312,22 +346,41 @@ class CircleBody {
         this.futurePosition = this.position;
         this.velocity = new Vec2(0, 0);
         this.angle = 0;
+        this.futureAngle = this.angle;
         this.stopForce = new Vec2(0, 0);
         this.acceleration = new Vec2(0, 0);
         this.angularVelocity = 0;
+        this.angularAcceleration = 0;
+        this.canRotate = false;
         this.rigidbody = new PolygonRigidbody(
-            this, 
-            RegularPolygonFactory(radius * 0.95, 7)
+            this,
+            [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, 1), new Vec2(1, -1)] 
+            // RegularPolygonFactory(radius * 0.95, 8)
         );
         this.isAffectedByGravity = true;
     }
 
-    render(renderer) {
-        renderer.DrawCircle(this.position, this.radius);
+    get momentOfInertia() {
+        return this.mass * Math.pow(this.rigidbody.radius, 2) / 2;
     }
 
-    applyForce(forceVec) {
-        this.acceleration = this.acceleration.add(forceVec.multiply(1 / this.mass));
+    render(renderer) {
+        renderer.DrawCircle(this.position, this.radius);
+        renderer.drawVector(this.position, this.velocity);
+    }
+
+    applyForce(forceVec, applyPoint=null) {
+        if (this.canRotate && applyPoint != null) {
+            applyPoint = applyPoint.subtract(this.rigidbody.center);
+            let deltaAcceleration = forceVec.multiply(-applyPoint.cosineBetween(forceVec) / this.mass);
+
+            let deltaAngularAcceleration = forceVec.determinant(applyPoint);
+
+            this.acceleration = this.acceleration.add(deltaAcceleration);
+            this.angularAcceleration += deltaAngularAcceleration / this.momentOfInertia;
+        } else {
+            this.acceleration = this.acceleration.add(forceVec.multiply(1 / this.mass));
+        }
     }
 
     applyStopVelocityForce(normalVec) {
@@ -342,10 +395,15 @@ class CircleBody {
             this.applyForce(this.stopForce);
         }
         this.position = this.nextPosition;
+        this.angle = this.nextAngle;
+        this.angularVelocity += this.angularAcceleration * dt();
         this.velocity = this.velocity.add(this.acceleration.multiply(dt()));
         this.acceleration = new Vec2(0, 0);
+        this.angularAcceleration = 0;
         this.stopForce = new Vec2(0, 0);
         this.futurePosition = this.position.add(this.velocity.multiply(dt()));
+        this.futureAngle = this.angle + this.angularVelocity * dt();
+
     }
 
     get nextPosition() {
@@ -357,9 +415,17 @@ class CircleBody {
 
         return this.position.add((k1_x.add(k2_x.multiply(2)).add(k3_x.multiply(2)).add(k4_x)).multiply(dt() / 6));
     }
+    get nextAngle() {
+        let k1 = this.angularVelocity;
+        let k2 = this.angularVelocity + this.angularAcceleration * (0.5 * dt());
+        let k3 = this.angularVelocity + this.angularAcceleration * (0.5 * dt());
+        let k4 = this.angularVelocity + this.angularAcceleration * dt();
+
+        return this.angle + (k1 + 2 * k2 + 2 * k3 + k4) * (dt() / 6);
+    }
 
     get kineticEnergy() {
-        return Math.pow(this.velocity.length, 2) * this.mass / 2;
+        return Math.pow(this.velocity.length, 2) * this.mass / 2 + this.momentOfInertia * Math.pow(this.angularVelocity, 2) / 2;
     }
 
     get potentialEnergy() {
@@ -401,6 +467,14 @@ class LineBody {
 
     get futurePosition() {
         return this.position;
+    }
+
+    get nextAngle() {
+        return this.angle;
+    }
+
+    get futureAngle() {
+        return this.angle;
     }
 
     get kineticEnergy() {
@@ -463,6 +537,9 @@ class SimulationModel {
                     n1 = n1.add(tuple[0].vec1.subtract(tuple[0].vec2).normalize().rotateClockwise90());
                     n2 = n2.add(tuple[1].vec1.subtract(tuple[1].vec2).normalize().rotateClockwise90());
                     applyPoint = applyPoint.add(tuple[2]);
+                    if (isNaN(applyPoint.x)) {
+                        window.alert(JSON.stringify([applyPoint, r, obj1.position, obj2.position]));
+                    }
                 });
                 if (n2.length == 0) {
                     n2 = obj1.rigidbody.center.subtract(obj2.rigidbody.center);
@@ -495,12 +572,12 @@ class SimulationModel {
         let force = 0;
         let m1 = moveableObject.mass;
         moveableObject.applyStopVelocityForce(normalVec);
-        force = v1.length * Math.cos(v1.multiply(-1).angleBetween(normalVec)) * m1;
+        force = v1.length * Math.cos(v1.multiply(-1).angleBetween(normalVec));
         if (moveableObject.isAffectedByGravity && this.useGravity) {
-            force += normalVec.cosineBetween(new Vec2(0, -1)) * (-Constants.g * m1) * dt();
+            force += normalVec.cosineBetween(new Vec2(0, -1)) * (-Constants.g) * dt();
         }
 
-        moveableObject.applyForce(normalVec.multiply(force / dt()), applyPoint);
+        moveableObject.applyForce(normalVec.multiply(force * m1 / dt()), applyPoint);
     }
 
     solveCollisionWithMoveables(obj1, obj2, normalVec1, normalVec2, applyPoint) {
@@ -574,6 +651,7 @@ class SimulationModel {
 
                 ballDisplay.innerHTML += i + ':<br/>'; 
                 ballDisplay.innerHTML += '|v| = ' + obj.velocity.length + '<br/>';
+                ballDisplay.innerHTML += 'omega = ' + obj.angularVelocity + '<br/>';
                 ballDisplay.innerHTML += 'm = ' + obj.mass + '<br/>'; 
                 ballDisplay.innerHTML += 'E_k = ' + obj.kineticEnergy + '<br/>'; 
             });
