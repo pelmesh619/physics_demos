@@ -3,6 +3,7 @@
     font-family: Nunito, sans-serif;
     --primary-background-color: #fffff2;
     --secondary-background-color: #2A4480;
+    --secondary-darker-background-color: #0e1f46;
     --primary-text-color: #0d245b;
     --secondary-text-color: #85C6E1;
     --secondary-darker-text-color: #21769a;
@@ -92,4 +93,48 @@ input {
     border-top-left-radius: 10px;
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    margin-right: 15px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    background-color: #ccc;
+    border-radius: 24px;
+    width: 100%;
+    height: 100%;
+    transition: background-color 0.3s;
+}
+
+.toggle-switch-slider::before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.toggle-switch input:checked+.toggle-switch-slider {
+    background-color: var(--secondary-text-color);
+}
+
+.toggle-switch input:checked+.toggle-switch-slider::before {
+    transform: translateX(22px);
 }
