@@ -20,7 +20,7 @@ class Main {
     reloadModel() {
         const values = this.form.GetValues();
 
-        this.renderer = new Renderer('ballisticSimulation', borderWidth);
+        this.renderer = new Renderer2D('ballisticSimulation', borderWidth);
         this.simulationModel = new SimulationModel(this.form, this.renderer);
         this.simulationModel.objects.push(new CircleBody(1, new Vec2(0, values['h'] + 1), 1));
         this.simulationModel.objects[0].velocity = new Vec2(values['v'] * Math.cos(values['alpha']), values['v'] * Math.sin(values['alpha']));
@@ -88,123 +88,6 @@ function main() {
         mainObject.nextTickFactory(),
         frameRenderTime * 1000  // in ms
     )
-}
-
-function reloadModel() {
-    
-}
-
-class Renderer {
-    constructor(canvasId) {
-        this.canvasId = canvasId;
-        this.offsetX = -11;
-        this.offsetY = -5;
-        this.sizeX = 22;
-        this.sizeY = this.sizeX / this.contextWidth * this.contextHeight;
-        this.context = this.DOMObject.getContext('2d');
-        
-        this.DOMObject.width = this.contextWidth;
-        this.DOMObject.height = this.contextHeight;
-        this.context.scale(1, 1);
-    }
-
-    get DOMObject() {
-        return document.getElementById(this.canvasId);
-    }
-
-    get contextHeight() {
-        return this.DOMObject === null ? null : this.DOMObject.clientHeight;
-    }
-
-    get contextWidth() {
-        return this.DOMObject === null ? null : this.DOMObject.clientWidth;
-    }
-
-    PrepareFrame() {
-        this.context.clearRect(0, 0, this.DOMObject.width, this.DOMObject.height);
-    }
-
-    translateCoordinatesToRenderSpace(vec2, y=undefined) {
-        let x;
-        if (y === undefined) {
-            x = vec2.x;
-            y = vec2.y;
-        } else {
-            x = vec2;
-        }
-
-        return new Vec2(
-            (x - this.offsetX) / this.sizeX * this.contextWidth,
-            this.contextHeight - (y - this.offsetY) / this.sizeY * this.contextHeight
-        );
-    }
-
-    translateLengthToRenderSpace(a) {
-        return a / this.sizeX * this.contextWidth;
-    }
-
-    DrawCircle(point, radius) {
-        point = this.translateCoordinatesToRenderSpace(point);
-
-        this.context.fillStyle = 'red';
-        this.context.beginPath();
-        this.context.arc(point.x, point.y, this.translateLengthToRenderSpace(radius), 0, 2 * Math.PI);
-        this.context.fill();
-    }
-
-    DrawLine(point1, point2) {
-        const ctx = this.context;
-        ctx.strokeStyle = 'green';
-
-        point1 = this.translateCoordinatesToRenderSpace(point1);
-        point2 = this.translateCoordinatesToRenderSpace(point2);
-
-        ctx.beginPath();
-        ctx.moveTo(point1.x, point1.y);
-        ctx.lineTo(point2.x, point2.y);
-        ctx.stroke();
-    }
-    
-    DrawVector(point, vector, arrowLength=30, lineWidth=2, color=null) {
-        const ctx = this.context;
-        const arrowSize = 10;
-    
-        let from = this.translateCoordinatesToRenderSpace(point);
-        let to = this.translateCoordinatesToRenderSpace(vector.add(point));
-    
-        vector = to.subtract(from);
-        vector = vector.multiply(arrowLength / vector.length).do(round);
-    
-        to = from.add(vector);
-    
-        const angle = (new Vec2(1, 0)).angleBetween(to.subtract(from));
-
-        color = 'black';
-
-        ctx.fillStyle = color;
-        ctx.strokeStyle = color;
-    
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
-        ctx.lineWidth = lineWidth;
-        ctx.stroke();
-    
-        ctx.beginPath();
-        ctx.moveTo(to.x, to.y);
-        ctx.lineTo(
-            to.x - arrowSize * Math.cos(angle - Math.PI / 6),
-            to.y - arrowSize * Math.sin(angle - Math.PI / 6)
-        );
-        ctx.lineTo(
-            to.x - arrowSize * Math.cos(angle + Math.PI / 6),
-            to.y - arrowSize * Math.sin(angle + Math.PI / 6)
-        );
-        ctx.lineTo(to.x, to.y);
-        ctx.closePath();
-        ctx.fill();
-    }
-  
 }
 
 class PolygonRigidbody {
@@ -655,6 +538,7 @@ class SimulationModel {
             ballDisplay.innerHTML += fullEnergy + '<br/>';
             ballDisplay.innerHTML += this.time;
         }
+        this.renderer.DrawFrame();
     }
 }
 
