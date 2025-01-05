@@ -8,7 +8,7 @@ function dt() {
     return frameRenderTime / ticksPerFrame * timeScale;
 }
 
-const borderWidth = 10;
+const borderWidth = 22.5;
 
 class Main {
     constructor(form) {
@@ -20,28 +20,15 @@ class Main {
     reloadModel() {
         const values = this.form.GetValues();
 
-        this.renderer = new Renderer2D('ballisticSimulation', borderWidth);
+        this.renderer = new Renderer2D('ballisticSimulation', borderWidth, -borderWidth / 2, -4);
         this.simulationModel = new CollisionSimulationModel(this.form, this.renderer);
 
         this.simulationModel.objects.push(new CircleBody(1, new Vec2(0, values['h'] + 1), 1));
         this.simulationModel.objects[0].velocity = new Vec2(values['v'] * Math.cos(values['alpha']), values['v'] * Math.sin(values['alpha']));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(2, 3.5)));
-        // this.simulationModel.objects[1].velocity = new Vec2(1, 0);
-        // this.simulationModel.objects.push(new CircleBody(2.23, new Vec2(0, 6), 5));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 5)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(9, 7)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 1)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 3)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 5)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(7, 7)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 1)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 3)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 5)));
-        // this.simulationModel.objects.push(new CircleBody(1, new Vec2(5, 7)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
-        this.simulationModel.objects.push(new LineBody(new Vec2(10, 0), new Vec2(0, 10)));
+        this.simulationModel.objects.push(new LineBody(new Vec2(9, 0), new Vec2(0, 10)));
 
         this.simulationModel.objects[0].angle = Math.PI / 3;
     }
@@ -109,14 +96,18 @@ class CircleBody extends DinamicObject {
 
     render(renderer) {
         renderer.DrawCircle(this.position, this.radius);
-        renderer.DrawVector(this.position, this.velocity);
     }
 }
 
 class LineBody extends StaticObject {
     constructor(startPosition, direction) {
         super(startPosition);
-        this.rigidbody = new PolygonRigidbody(this, [new Vec2(0, 0), direction, direction.normalize().rotateClockwise90().add(direction), direction.normalize().rotateClockwise90()]);
+        this.points = [new Vec2(0, 0), direction, direction.normalize().rotateClockwise90().add(direction), direction.normalize().rotateClockwise90()]
+        this.rigidbody = new PolygonRigidbody(this, this.points);
+    }
+
+    render(renderer) {
+        renderer.DrawPolygon(this.points.map((vec) => vec.add(this.position)), 'purple');
     }
 }
 
