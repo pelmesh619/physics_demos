@@ -133,6 +133,8 @@ class CollisionSimulationModel {
         this.objects = [];
         this.previousEnergyValue = null;
         this.time = 0;
+
+        this.enableColliderRender = false;
     }
 
     addObject(object) {
@@ -277,7 +279,9 @@ class CollisionSimulationModel {
     renderFrame() {
         this.renderer.PrepareFrame();
         this.objects.forEach((obj) => { obj.render(this.renderer); });
-        this.objects.forEach((obj) => { obj.rigidbody.render(this.renderer); });
+        if (this.enableColliderRender) {
+            this.objects.forEach((obj) => { if (obj.rigidbody != undefined) obj.rigidbody.render(this.renderer); });
+        }
 
         let fullEnergy = this.getFullEnergy();
         this.previousEnergyValue = fullEnergy;
