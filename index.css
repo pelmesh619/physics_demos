@@ -1,7 +1,5 @@
 * {
     --modelCellWidth: 29vw;
-    --modelCellInRow: 3;
-    --modelCellMargin: calc((100vw - var(--modelCellWidth) * var(--modelCellInRow)) / var(--modelCellInRow));
 }
 
 .modelCell {
@@ -9,7 +7,7 @@
     height: 19vw;
     border-radius: 10px;
     border-width: 0px;
-    margin: var(--modelCellMargin);
+    margin: calc(var(--modelCellWidth) * 0.15);
     border-color: rgba(0, 0, 0, 0);
     border-style: solid;
     overflow: hidden;
@@ -20,6 +18,7 @@
 .modelRow {
     display: flex; 
     flex-direction: row;
+    justify-content: space-evenly;
 }
 
 .modelCellHeader {
@@ -40,6 +39,6 @@
     width: 100%;
 }
 
-.modelCell:hover {
+.modelCell:hover.zoomActive {
     transform: scale(1.3);
 }
