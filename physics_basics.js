@@ -103,7 +103,7 @@ class Vec2 {
     }
 
     angleBetween(other) {
-        return Math.acos(this.cosineBetween(other));
+        return Math.atan2(this.sineBetween(other), this.cosineBetween(other));
     }
 
     cosineBetween(other) {
@@ -149,6 +149,10 @@ class Vec2 {
 
     isValid() {
         return !isNaN(this.x) && !isNaN(this.y);
+    }
+
+    do(func) {
+        return new Vec2(func(this.x), func(this.y));
     }
 }
 
