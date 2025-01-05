@@ -69,6 +69,28 @@ class Renderer2D {
         ctx.lineTo(point2.x, point2.y);
         ctx.stroke();
     }
+
+    DrawPolygon(points, fillColor) {
+        const ctx = this.context;
+        ctx.fillStyle = fillColor;
+        ctx.strokeStyle = fillColor;
+
+        if (points.length == 0) {
+            return;
+        }
+        
+        ctx.beginPath();
+
+        let point1 = this.translateCoordinatesToRenderSpace(points[0]);
+        ctx.moveTo(...point1.xy);
+
+        for (let i = 1; i < points.length; i++) {
+            let p = this.translateCoordinatesToRenderSpace(points[i]);
+            ctx.lineTo(...p.xy);
+        }
+
+        ctx.fill();
+    }
     
     DrawVector(point, vector, arrowLength=30, lineWidth=2, color=null) {
         const ctx = this.context;
