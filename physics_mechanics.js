@@ -133,3 +133,60 @@ class DinamicObject {
         return this.kineticEnergy + this.getPotentialEnergy(offsetY);
     }
 }
+
+
+class MechanicsSimulationModel {
+    constructor(formMaker, renderer) {
+        this.formMaker = formMaker;
+        this.renderer = renderer;
+        this.useGravity = true;
+
+        this.objects = [];
+        this.time = 0;
+
+        this.enableVelocityVectorRender = false;
+    }
+
+    addObject(object) {
+        this.objects.push(object);
+
+        return this;
+    }
+
+    update() {
+        this.objects.forEach(
+            (obj) => {
+                if (obj.isAffectedByGravity && this.useGravity) {
+                    obj.applyForce(new Vec2(0, -Constants.g * obj.mass));
+                }
+                obj.update();
+            }
+        )
+        this.time += dt();
+    }
+
+    getFullEnergy() {
+        let s = 0; 
+        let this_ = this;
+        this.objects
+        .filter((v) => v.position.isValid() && !v.immoveable)
+        .forEach((v) => { 
+            s += v.kineticEnergy;
+            if (this_.useGravity) { 
+                s += v.getPotentialEnergy(0); 
+            }
+        }); 
+        return s; 
+    }
+
+    renderFrame() {
+        this.renderer.PrepareFrame();
+        this.objects.forEach((obj) => { obj.render(this.renderer); });
+        if (this.enableVelocityVectorRender) {
+            this.objects.forEach((obj) => { if (obj.velocity != undefined) this.renderer.DrawVector(obj.position, obj.velocity); });
+        }
+
+        this.renderer.DrawFrame();
+    }
+}
+

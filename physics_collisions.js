@@ -124,24 +124,11 @@ function RegularPolygonFactory(radius, n) {
     return points;
 }
 
-class CollisionSimulationModel {
+class CollisionSimulationModel extends MechanicsSimulationModel {
     constructor(formMaker, renderer) {
-        this.formMaker = formMaker;
-        this.renderer = renderer;
-        this.useGravity = true;
-
-        this.objects = [];
-        this.previousEnergyValue = null;
-        this.time = 0;
+        super(formMaker, renderer);
 
         this.enableColliderRender = false;
-        this.enableVelocityVectorRender = false;
-    }
-
-    addObject(object) {
-        this.objects.push(object);
-
-        return this;
     }
 
     update() {
@@ -290,25 +277,6 @@ class CollisionSimulationModel {
         let fullEnergy = this.getFullEnergy();
         this.previousEnergyValue = fullEnergy;
 
-        if (showDebugInfo) {
-            let ballDisplay = document.getElementById('ballDisplay');
-            ballDisplay.innerHTML = '';
-
-            this.objects.forEach((obj, i) => {
-                if (obj.immoveable) {
-                    return;
-                }
-
-                ballDisplay.innerHTML += i + ':<br/>'; 
-                ballDisplay.innerHTML += '|v| = ' + obj.velocity.length + '<br/>';
-                ballDisplay.innerHTML += 'omega = ' + obj.angularVelocity + '<br/>';
-                ballDisplay.innerHTML += 'm = ' + obj.mass + '<br/>'; 
-                ballDisplay.innerHTML += 'E_k = ' + obj.kineticEnergy + '<br/>'; 
-            });
-
-            ballDisplay.innerHTML += fullEnergy + '<br/>';
-            ballDisplay.innerHTML += this.time;
-        }
         this.renderer.DrawFrame();
     }
 }
