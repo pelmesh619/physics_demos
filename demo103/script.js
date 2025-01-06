@@ -167,14 +167,14 @@ class Grid extends StaticObject {
 
     render(renderer) {
         for (let i = 0; i < this.size.x; i += this.step.x) {
-            let x = i - this.size.x / 2;
+            let x = i - this.size.x / 2 + this.position.x;
             let startY = this.position.y - this.size.y / 2;
             let endY = this.position.y + this.size.y / 2;
 
             renderer.DrawLine(new Vec2(x, startY), new Vec2(x, endY));
         }
         for (let j = 0; j < this.size.y; j += this.step.y) {
-            let y = j - this.size.y / 2;
+            let y = j - this.size.y / 2 + this.position.y;
             let startX = this.position.x - this.size.x / 2;
             let endX = this.position.x + this.size.x / 2;
 
