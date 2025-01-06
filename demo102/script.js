@@ -1,5 +1,5 @@
 const frameRenderTime = 1 / 40;
-const ticksPerFrame = 5;
+const ticksPerFrame = 10;
 const timeScale = 1;
 
 const showDebugInfo = false;
@@ -23,8 +23,12 @@ class Main {
         this.renderer = new Renderer2D('ballisticSimulation', borderWidth, -borderWidth / 2, -4);
         this.simulationModel = new CollisionSimulationModel(this.form, this.renderer);
 
-        this.simulationModel.objects.push(new CircleBody(1, new Vec2(0, values['h'] + 1), 1));
-        this.simulationModel.objects[0].velocity = new Vec2(values['v'] * Math.cos(values['alpha']), values['v'] * Math.sin(values['alpha']));
+        let circle = new CircleBody(1, new Vec2(0, values['h'] + 1), 1);
+
+        circle.velocity = new Vec2(values['v'] * Math.cos(values['alpha']), values['v'] * Math.sin(values['alpha']));
+
+        this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
+        this.simulationModel.addObject(circle);
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
@@ -113,6 +117,52 @@ class LineBody extends StaticObject {
 
     render(renderer) {
         renderer.DrawPolygon(this.points.map((vec) => vec.add(this.position)), 'purple');
+    }
+}
+
+class TrailPath {
+    constructor(simulationModel, stickToObject, relativePosition=null) {
+        if (relativePosition == null) {
+            relativePosition = new Vec2(0, 0);
+        }
+        this.parentObject = stickToObject;
+        this.simulationModel = simulationModel;
+        this.ticksPerRecord = 10;
+
+
+        this.position = new Vec2(NaN, NaN);
+        this.relativePosition = relativePosition;
+
+        this.dataAmountLimit = 100;
+
+        this.data = [];
+
+        this.counter = 0;
+    }
+
+    update() {
+        if (this.counter % this.ticksPerRecord == 0) {
+            this.data.push(
+                {
+                    "time": this.simulationModel.time,
+                    "position": this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle)),
+                    "velocity": this.parentObject.velocity.add(this.relativePosition.multiply(this.parentObject.angle)),
+                    "kineticEnergy": this.parentObject.kineticEnergy,
+                    "potentialEnergy": this.parentObject.potentialEnergy,
+                    "fullEnergy": this.parentObject.fullEnergy,
+                }
+            );
+        }
+        this.counter++;
+        if (this.data.length > this.dataAmountLimit && this.dataAmountLimit > 0) {
+            this.data.splice(0, this.data.length - this.dataAmountLimit);
+        }
+    }
+
+    render(renderer) {
+        for (let i = 1; i < this.data.length; i++) {
+            renderer.DrawLine(this.data[i - 1].position, this.data[i].position);
+        }
     }
 }
 
