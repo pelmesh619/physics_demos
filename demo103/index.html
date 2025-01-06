@@ -28,7 +28,21 @@
                         <input type="checkbox" id="showVelocities" name="showVelocities" />
                         <span class="toggle-switch-slider"> </span>
                     </label>
-                    <label for="showVelocities"> Отображать направление </label> <br/>
+                    <label for="showVelocities"> Отображать направление </label> <br/><br/>
+
+                    <strong>Как это работает?</strong> </br>
+
+                    Круг движется по прямой со скоростью \( v \) и угловой скоростью \( \frac{v}{r} \). 
+                    Вращаясь, в момент времени \( t \) круг принимает угол \( \alpha \), а нижняя его точка теперь находится по координатам 
+                    $$ \vec{v} t + \langle 0, -r \rangle \begin{pmatrix} \cos \alpha & \sin \alpha \\ -\sin \alpha & \cos \alpha \end{pmatrix} $$ <br/>
+
+                    Тогда брахистохрону можно описать данными уравнениями: 
+                    $$ \begin{cases} x = v t - r \sin \alpha \\ y = -r \cos \alpha\end{cases} = \begin{cases} x = v t - r \sin (\frac{v}{r} t) \\ y = -r \cos (\frac{v}{r} t)\end{cases} $$
+
+                    При замене \(t = \frac{v}{r} t\) получаем классическое уравнение:  
+                    $$ \begin{cases} x = r (t - \sin t) \\ y = -r \cos t \end{cases}$$
+
+                    Однако эта демка использует векторное уравнение, из которого рисуется след точки на окружности (это более заметно при великих значениях скорости: вместо гладкой кривой появляется ломаная)
 
                 </div>
             </div>
