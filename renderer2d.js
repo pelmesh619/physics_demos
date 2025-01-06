@@ -48,27 +48,31 @@ class Renderer2D {
         return a / this.sizeX * this.contextWidth;
     }
 
-    DrawCircle(point, radius) {
+    DrawCircle(point, radius, color='red') {
         point = this.translateCoordinatesToRenderSpace(point);
 
-        this.context.fillStyle = 'red';
+        this.context.fillStyle = color;
+
         this.context.beginPath();
         this.context.arc(point.x, point.y, this.translateLengthToRenderSpace(radius), 0, 2 * Math.PI);
         this.context.fill();
     }
 
-    DrawCircumference(point, radius) {
+    DrawCircumference(point, radius, color='red', width=2) {
         point = this.translateCoordinatesToRenderSpace(point);
 
-        this.context.strokeStyle = 'red';
+        this.context.strokeStyle = color;
+        this.context.lineWidth = width;
+
         this.context.beginPath();
         this.context.arc(point.x, point.y, this.translateLengthToRenderSpace(radius), 0, 2 * Math.PI);
         this.context.stroke();
     }
 
-    DrawLine(point1, point2) {
+    DrawLine(point1, point2, color='green', width=1) {
         const ctx = this.context;
-        ctx.strokeStyle = 'green';
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
 
         point1 = this.translateCoordinatesToRenderSpace(point1);
         point2 = this.translateCoordinatesToRenderSpace(point2);
