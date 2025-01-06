@@ -17,6 +17,12 @@ class Main {
     }
 
     reloadModel() {
+        if (this.simulationModel != undefined) {
+            this.simulationModel.xChart.destroy();
+            this.simulationModel.yChart.destroy();
+            this.simulationModel.energyChart.destroy();
+        } 
+
         const values = this.form.GetValues();
 
         this.renderer = new Renderer2D('ballisticSimulation', borderWidth, -borderWidth / 2, -4);
@@ -35,15 +41,7 @@ class Main {
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
         this.simulationModel.objects.push(new LineBody(new Vec2(9, 0), new Vec2(0, 10)));
 
-        if (this.simulationModel.xChart != undefined) {
-            this.simulationModel.xChart.destroy();
-        } 
-        if (this.simulationModel.yChart != undefined) {
-            this.simulationModel.yChart.destroy();
-        }
-        if (this.simulationModel.energyChart != undefined) {
-            this.simulationModel.energyChart.destroy();
-        } 
+
 
         this.simulationModel.xChart = new Chart('xChart',
             {
