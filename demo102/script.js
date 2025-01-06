@@ -21,6 +21,8 @@ class Main {
 
         this.renderer = new Renderer2D('ballisticSimulation', borderWidth, -borderWidth / 2, -4);
         this.simulationModel = new CollisionSimulationModel(this.form, this.renderer);
+        this.simulationModel.enableColliderRender = document.getElementById('showColliders').checked;
+        this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
 
         let circle = new CircleBody(1, new Vec2(0, values['h'] + 1), 1);
 
