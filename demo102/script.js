@@ -13,7 +13,6 @@ const borderWidth = 22.5;
 class Main {
     constructor(form) {
         this.form = form;
-        this.reloadModel();
         this.stopped = false;
     }
 
@@ -33,6 +32,62 @@ class Main {
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
         this.simulationModel.objects.push(new LineBody(new Vec2(9, 0), new Vec2(0, 10)));
+
+        if (this.simulationModel.xChart != undefined) {
+            this.simulationModel.xChart.destroy();
+        } 
+        if (this.simulationModel.yChart != undefined) {
+            this.simulationModel.yChart.destroy();
+        } 
+
+        this.simulationModel.xChart = new Chart('xChart',
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Положение x, м",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(255,0,0,0.5)",
+                        data: []
+                    }, {
+                        label: "Скорость v_x, м/с",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,0,255,0.5)",
+                        data: []
+                    }]
+                },
+                options: {
+                    animation: false
+                }
+            }
+        );
+        this.simulationModel.yChart = new Chart('yChart',
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Высота y, м",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(255,0,0,0.5)",
+                        data: []
+                    }, {
+                        label: "Скорость v_y, м/с",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,0,255,0.5)",
+                        data: []
+                    }]
+                },
+                options: {
+                    animation: false
+                }
+            }
+        );
     }
 
     nextTick() {
@@ -82,6 +137,15 @@ function main() {
             mainObject.stopped = e.target.checked;
         }
     ));
+
+    const xChart = document.createElement('canvas');
+    xChart.id = 'xChart';
+
+    const yChart = document.createElement('canvas');
+    yChart.id = 'yChart';
+
+    ballisticForm.DOMObject.appendChild(xChart);
+    ballisticForm.DOMObject.appendChild(yChart);
 
     mainObject.reloadModel();
 
@@ -144,7 +208,7 @@ class TrailPath {
         if (this.counter % this.ticksPerRecord == 0) {
             this.data.push(
                 {
-                    "time": this.simulationModel.time,
+                    "time": round(this.simulationModel.time, 2),
                     "position": this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle)),
                     "velocity": this.parentObject.velocity.add(this.relativePosition.multiply(this.parentObject.angle)),
                     "kineticEnergy": this.parentObject.kineticEnergy,
@@ -163,6 +227,23 @@ class TrailPath {
         for (let i = 1; i < this.data.length; i++) {
             renderer.DrawLine(this.data[i - 1].position, this.data[i].position);
         }
+        
+        let data = this.simulationModel.xChart.data;
+        data.labels = this.data.map((v) => v.time);
+
+        data.datasets[0].data = this.data.map((v) => v.position.x);
+        data.datasets[1].data = this.data.map((v) => v.velocity.x);
+
+        this.simulationModel.xChart.update();
+
+
+        data = this.simulationModel.yChart.data;
+        data.labels = this.data.map((v) => v.time);
+
+        data.datasets[0].data = this.data.map((v) => v.position.y);
+        data.datasets[1].data = this.data.map((v) => v.velocity.y);
+
+        this.simulationModel.yChart.update();
     }
 }
 
