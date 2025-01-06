@@ -57,6 +57,15 @@ class Renderer2D {
         this.context.fill();
     }
 
+    DrawCircumference(point, radius) {
+        point = this.translateCoordinatesToRenderSpace(point);
+
+        this.context.strokeStyle = 'red';
+        this.context.beginPath();
+        this.context.arc(point.x, point.y, this.translateLengthToRenderSpace(radius), 0, 2 * Math.PI);
+        this.context.stroke();
+    }
+
     DrawLine(point1, point2) {
         const ctx = this.context;
         ctx.strokeStyle = 'green';
