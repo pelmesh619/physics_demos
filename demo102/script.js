@@ -38,6 +38,9 @@ class Main {
         } 
         if (this.simulationModel.yChart != undefined) {
             this.simulationModel.yChart.destroy();
+        }
+        if (this.simulationModel.energyChart != undefined) {
+            this.simulationModel.energyChart.destroy();
         } 
 
         this.simulationModel.xChart = new Chart('xChart',
@@ -80,6 +83,36 @@ class Main {
                         fill: false,
                         pointRadius: 1,
                         borderColor: "rgba(0,0,255,0.5)",
+                        data: []
+                    }]
+                },
+                options: {
+                    animation: false
+                }
+            }
+        );
+        this.simulationModel.energyChart = new Chart('energyChart',
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Кинетическая, Дж",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(255,0,0,0.5)",
+                        data: []
+                    }, {
+                        label: "Потенциальная, Дж",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,0,255,0.5)",
+                        data: []
+                    }, {
+                        label: "Полная, Дж",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,255,0,0.5)",
                         data: []
                     }]
                 },
@@ -144,8 +177,12 @@ function main() {
     const yChart = document.createElement('canvas');
     yChart.id = 'yChart';
 
+    const energyChart = document.createElement('canvas');
+    energyChart.id = 'energyChart';
+
     ballisticForm.DOMObject.appendChild(xChart);
     ballisticForm.DOMObject.appendChild(yChart);
+    ballisticForm.DOMObject.appendChild(energyChart);
 
     mainObject.reloadModel();
 
@@ -212,8 +249,8 @@ class TrailPath {
                     "position": this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle)),
                     "velocity": this.parentObject.velocity.add(this.relativePosition.multiply(this.parentObject.angle)),
                     "kineticEnergy": this.parentObject.kineticEnergy,
-                    "potentialEnergy": this.parentObject.potentialEnergy,
-                    "fullEnergy": this.parentObject.fullEnergy,
+                    "potentialEnergy": this.parentObject.getPotentialEnergy(1),
+                    "fullEnergy": this.parentObject.getFullMechanicEnergy(1),
                 }
             );
         }
@@ -244,6 +281,15 @@ class TrailPath {
         data.datasets[1].data = this.data.map((v) => v.velocity.y);
 
         this.simulationModel.yChart.update();
+
+        data = this.simulationModel.energyChart.data;
+        data.labels = this.data.map((v) => v.time);
+
+        data.datasets[0].data = this.data.map((v) => v.kineticEnergy);
+        data.datasets[1].data = this.data.map((v) => v.potentialEnergy);
+        data.datasets[2].data = this.data.map((v) => v.fullEnergy);
+
+        this.simulationModel.energyChart.update();
     }
 }
 
