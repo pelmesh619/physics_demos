@@ -19,9 +19,9 @@ class Main {
     reloadModel() {
         const values = this.form.GetValues();
 
-        this.renderer = new Renderer2D('brachistochrone', borderWidth, 0);
+        this.renderer = new Renderer2D('brachistochrone', borderWidth, -1);
         this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
-        this.simulationModel.enableColliderRender = document.getElementById('showColliders').checked;
+        this.simulationModel.addObject(new Grid(new Vec2(10, 0), new Vec2(20, 20)));
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
 
         this.simulationModel.useGravity = false;
@@ -32,9 +32,8 @@ class Main {
         circle.canRotate = true;
         circle.angularVelocity = values.v / values.r;
 
-        this.simulationModel.addObject(new TrailPath(this.simulationModel, circle, new Vec2(0, 1)));
+        this.simulationModel.addObject(new TrailPath(this.simulationModel, circle, new Vec2(0, -values.r)));
         this.simulationModel.addObject(circle);
-        this.simulationModel.addObject(new Grid(new Vec2(10, 0), new Vec2(20, 20)));
     }
 
     nextTick() {
@@ -53,9 +52,6 @@ class Main {
 }
 
 function main() {
-    document.getElementById('showColliders').addEventListener('change', (event) => {
-        mainObject.simulationModel.enableColliderRender = event.target.checked;
-    });
     document.getElementById('showVelocities').addEventListener('change', (event) => {
         mainObject.simulationModel.enableVelocityVectorRender = event.target.checked;
     });
@@ -126,21 +122,32 @@ class TrailPath {
         this.ticksPerRecord = 10;
 
 
-        this.position = new Vec2(NaN, NaN);
         this.relativePosition = relativePosition;
 
         this.dataAmountLimit = 1000;
+        this.velocity = new Vec2(0, 0);
 
         this.data = [];
 
         this.counter = 0;
     }
 
+    get position() {
+        return this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle));
+    }
+
     update() {
+        if (this.data.length > 0) {
+            this.velocity = this.position.subtract(this.data[this.data.length - 1].position)
+            .multiply(this.simulationModel.time - this.data[this.data.length - 1].time);
+        } else {
+            this.velocity = new Vec2(0, 0);
+        }
         if (this.counter % this.ticksPerRecord == 0) {
             this.data.push(
                 {
-                    "position": this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle)),
+                    time: this.simulationModel.time,
+                    position: this.position,
                 }
             );
         }
