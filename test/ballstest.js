@@ -62,9 +62,6 @@ function main() {
     document.getElementById('stopSimulation').addEventListener('change', (event) => {
         mainObject.stopped = event.target.checked;
     });
-    document.getElementById('stopSimulation').addEventListener('change', (event) => {
-        mainObject.stopped = event.target.checked;
-    });
     
     document.getElementById('nextStepButton').addEventListener('click', () => { 
         mainObject.simulationModel.update();
