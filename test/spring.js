@@ -1,5 +1,5 @@
 const frameRenderTime = 1 / 40;
-const ticksPerFrame = 10;
+const ticksPerFrame = 40;
 const timeScale = 1;
 
 const showDebugInfo = false;
@@ -8,7 +8,7 @@ function dt() {
     return frameRenderTime / ticksPerFrame * timeScale;
 }
 
-const borderWidth = 30;
+const borderWidth = 50;
 
 class Main {
     constructor(form) {
@@ -17,32 +17,36 @@ class Main {
     }
 
     reloadModel() {
-        this.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2, -10);
+        this.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2);
         this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
         this.simulationModel.addObject(new Grid(new Vec2(0, 0), new Vec2(20, 20)));
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
+        // this.simulationModel.useGravity = false;
 
-        let circle = new CircleBody(1, new Vec2(3, 0), 1);
-
-
-        // this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
-        this.simulationModel.addObject(circle);
-
-        let circle2 = new CircleBody(1, new Vec2(3, 3), 1);
-        let circle3 = new CircleBody(1, new Vec2(6, 3), 1);
-
-
-        this.simulationModel.addObject(new TrailPath(this.simulationModel, circle3));
-        this.simulationModel.addObject(circle2);
-        this.simulationModel.addObject(circle3);
 
         let point1 = new StaticObject(new Vec2(0, 0));
 
         this.simulationModel.addObject(point1);
+        
+        let circle = new CircleBody(1, new Vec2(3, 0), 2);
+        let circle2 = new CircleBody(1, new Vec2(6, 0), 1);
+        let circle3 = new CircleBody(1, new Vec2(9, 0), 0.5);
+        // circle3.velocity = new Vec2(0, 100);
+        // circle2.velocity = new Vec2(0, -10);
+        this.circle = circle;
 
-        this.simulationModel.addObject(new Spring(point1, circle, 3, 10000));
-        this.simulationModel.addObject(new Spring(circle, circle2, 3, 10000));
-        this.simulationModel.addObject(new Spring(circle2, circle3, 3, 10000));
+
+        let k = 100000;
+        this.simulationModel.addObject(new TrailPath(this.simulationModel, circle3));
+        this.simulationModel.addObject(new Spring(point1, circle, 3, k));
+        this.simulationModel.addObject(new Spring(circle, circle2, 3, k));
+        this.simulationModel.addObject(new Spring(circle2, circle3, 3, k));
+        this.simulationModel.addObject(circle);
+        this.simulationModel.addObject(circle2);
+        this.simulationModel.addObject(circle3);
+
+
+        // this.simulationModel.addObject(new Spring(circle, circle3, 3, k));
 
 
     }
@@ -54,6 +58,8 @@ class Main {
             }
             this.simulationModel.renderFrame();
         }
+
+        document.getElementById('energyDisplay').innerText = this.simulationModel.getFullEnergy();
     }
 
     nextTickFactory() {
@@ -63,6 +69,8 @@ class Main {
 }
 
 function main() {
+    var mainObject = new Main(undefined);
+
     document.getElementById('showVelocities').addEventListener('change', (event) => {
         mainObject.simulationModel.enableVelocityVectorRender = event.target.checked;
     });
@@ -81,8 +89,6 @@ function main() {
         mainObject.simulationModel.renderFrame();
     })
 
-    var mainObject = new Main(undefined);
-
     mainObject.reloadModel();
 
     setInterval(
@@ -97,6 +103,8 @@ class Spring {
         this.obj2 = obj2;
         this.distance = distance;
         this.k = k;
+        this.mass = 1;
+        this.immoveable = false;
         
     }
 
@@ -104,23 +112,37 @@ class Spring {
         return this.obj1.position.add(this.obj2.position).multiply(0.5);
     }
 
+    get futurePosition() {
+        return this.obj1.futurePosition.add(this.obj2.futurePosition).multiply(0.5);
+    }
+
     get velocity() {
         return this.obj1.velocity.add(this.obj2.velocity);
     }
 
-    update() {
-        let obj1ToObj2 = this.obj2.futurePosition.subtract(this.obj1.position);
+    get kineticEnergy() {
+        let obj1ToObj2 = this.obj2.position.subtract(this.obj1.position);
         let newDistance = obj1ToObj2.length;
 
-        let force1 = obj1ToObj2.normalize().multiply((newDistance - this.distance) * this.k / 2);
-        let force2 = force1.multiply(-1);
+        return Math.pow(newDistance - this.distance, 2) * this.k / 2;
+    }
+
+    getPotentialEnergy() { return 0; }
+
+    update() {
+        let obj1ToObj2 = this.obj2.futurePosition.subtract(this.obj1.futurePosition);
+        let newDistance = obj1ToObj2.length;
+
+        let forceMagnitude = (newDistance - this.distance) * this.k;
+        let force1 = obj1ToObj2.normalize().multiply(forceMagnitude);
+        let force2 = obj1ToObj2.normalize().multiply(-forceMagnitude);
 
         if (this.obj1.immoveable && this.obj2.immoveable) {
             return;
         } else if (this.obj1.immoveable) {
-            force2 = force2.multiply(2);
+            // force2 = force2.normalize().multiply(forceMagnitude);
         } else if (this.obj2.immoveable) {
-            force1 = force1.multiply(2);
+            // force1 = force1.normalize().multiply(forceMagnitude);
         }
 
         this.obj1.applyForce(force1);
@@ -131,7 +153,6 @@ class Spring {
         renderer.DrawLine(this.obj1.position, this.obj2.position, 'purple', 5);
     }
 }
-
 
 class CircleBody extends DinamicObject {
     constructor(radius, startPosition, mass=1) {
