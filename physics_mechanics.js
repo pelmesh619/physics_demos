@@ -50,7 +50,7 @@ class DinamicObject {
     }
 
     get momentOfInertia() {
-        return this.mass * Math.pow(this.rigidbody.radius, 2) / 2;
+        return this.rigidbody != undefined ? this.mass * Math.pow(this.rigidbody.radius, 2) / 2 : 0;
     }
 
     render() { }
@@ -170,10 +170,12 @@ class MechanicsSimulationModel {
         let this_ = this;
         this.objects
         .filter((v) => v.position.isValid() && !v.immoveable)
-        .forEach((v) => { 
-            s += v.kineticEnergy;
-            if (this_.useGravity) { 
-                s += v.getPotentialEnergy(0); 
+        .forEach((v) => {
+            if (v.kineticEnergy != undefined) {
+                s += v.kineticEnergy;
+                if (this_.useGravity) { 
+                    s += v.getPotentialEnergy(0); 
+                }
             }
         }); 
         return s; 
