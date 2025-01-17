@@ -154,8 +154,8 @@ class Spring {
     }
 }
 
-class CircleBody extends DinamicObject {
     constructor(radius, startPosition, mass=1) {
+class CircleBody extends DynamicObject {
         super(startPosition);
         
         this.radius = radius;

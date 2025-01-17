@@ -30,7 +30,7 @@ class StaticObject {
 }
 
 
-class DinamicObject {
+class DynamicObject {
     constructor(startPosition, mass=1) {
         this.immoveable = false;
         this.isAffectedByGravity = true;

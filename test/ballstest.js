@@ -80,7 +80,7 @@ function main() {
     )
 }
 
-class CircleBody extends DinamicObject {
+class CircleBody extends DynamicObject {
     constructor(radius, startPosition, mass=1) {
         super(startPosition);
         
