@@ -52,13 +52,13 @@ function digitnumber(number) {
     return a;
 }
   
-function toScientificNotation(number) {
+function toScientificNotation(number, roundDigits=3) {
     exponent = digitnumber(number);
     if (exponent > 2 || exponent < -2) {
         number = number * Math.pow(10, -exponent);
     }
   
-    let string = round(number, 3);
+    let string = round(number, roundDigits);
     if (exponent > 2 || exponent < -2) {
         string += ' x 10^(' + exponent + ')';
     }
