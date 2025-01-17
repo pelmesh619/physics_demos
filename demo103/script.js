@@ -56,11 +56,11 @@ function main() {
         mainObject.simulationModel.enableVelocityVectorRender = event.target.checked;
     });
 
-    var ballisticForm = new FormMaker("brachistochroneForm");
+    var brachistochroneForm = new FormMaker("brachistochroneForm");
 
-    var mainObject = new Main(ballisticForm);
+    var mainObject = new Main(brachistochroneForm);
 
-    ballisticForm
+    brachistochroneForm
     .AddNumber(new NumberInput("r", "r = ", new NumberDomain(1, "м", 0.001, 0)))
     .AddNumber(new NumberInput("v", "v<sub>x</sub> = ", new NumberDomain(1, "м/с", 0.001)))
     .AddSubmitButton('submitButton', "Перезапустить симуляцию", () => { mainObject.reloadModel(); })
@@ -153,31 +153,5 @@ class TrailPath {
     }
 }
 
-class Grid extends StaticObject {
-    constructor(position, size, step=new Vec2(1, 1)) {
-        super(new Vec2(0, 0));
-        this.position = position;
-        this.size = size;
-        this.step = step;
-    }
-
-    render(renderer) {
-        for (let i = 0; i < this.size.x + this.step.x; i += this.step.x) {
-            let x = i - this.size.x / 2 + this.position.x;
-            let startY = this.position.y - this.size.y / 2;
-            let endY = this.position.y + this.size.y / 2;
-
-            renderer.DrawLine(new Vec2(x, startY), new Vec2(x, endY), 'rgb(60, 100, 220)');
-        }
-        for (let j = 0; j < this.size.y + this.step.y; j += this.step.y) {
-            let y = j - this.size.y / 2 + this.position.y;
-            let startX = this.position.x - this.size.x / 2;
-            let endX = this.position.x + this.size.x / 2;
-
-            renderer.DrawLine(new Vec2(startX, y), new Vec2(endX, y), 'rgb(60, 100, 220)');
-            
-        }
-    }
-}
 
 window.onload = main;
