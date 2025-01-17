@@ -5,6 +5,8 @@ class StaticObject {
         this.mass = 0;
         this.angle = 0;
         this.velocity = new Vec2(0, 0);
+        this.acceleration = new Vec2(0, 0);
+        this.futureVelocity = this.velocity;
 
         this.nextPosition = this.position;
         this.futurePosition = this.position;
@@ -36,7 +38,6 @@ class DinamicObject {
         this.mass = mass;
 
         this.position = startPosition;
-        this.futurePosition = this.position;
         this.velocity = new Vec2(0, 0);
         this.acceleration = new Vec2(0, 0);
 
@@ -90,9 +91,16 @@ class DinamicObject {
         this.angularVelocity += this.angularAcceleration * dt();
         this.angularAcceleration = 0;
 
-        this.futurePosition = this.position.add(this.velocity.multiply(dt()));
         this.futureAngle = this.angle + this.angularVelocity * dt();
 
+    }
+
+    get futurePosition() {
+        return this.position.add(this.futureVelocity.multiply(dt()))
+    }
+
+    get futureVelocity() {
+        return this.velocity.add(this.acceleration.multiply(dt()));
     }
 
     get nextPosition() {
@@ -104,6 +112,7 @@ class DinamicObject {
 
         return this.position.add((k1_x.add(k2_x.multiply(2)).add(k3_x.multiply(2)).add(k4_x)).multiply(dt() / 6));
     }
+
     get nextAngle() {
         let k1 = this.angularVelocity;
         let k2 = this.angularVelocity + this.angularAcceleration * (0.5 * dt());
@@ -154,11 +163,17 @@ class MechanicsSimulationModel {
     }
 
     update() {
+        if (this.useGravity) {        
+            this.objects.forEach(
+                (obj) => {
+                    if (obj.isAffectedByGravity) {
+                        obj.applyForce(new Vec2(0, -Constants.g * obj.mass));
+                    }
+                }
+            )
+        }
         this.objects.forEach(
             (obj) => {
-                if (obj.isAffectedByGravity && this.useGravity) {
-                    obj.applyForce(new Vec2(0, -Constants.g * obj.mass));
-                }
                 obj.update();
             }
         )
