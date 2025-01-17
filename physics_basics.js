@@ -201,3 +201,75 @@ function edgeIntersection(edge1, edge2){
         return a.multiply(1 - t).add(b.multiply(t));
     }
 }
+
+
+var integrators = {
+    euler: (obj) => {
+        return {
+            position: obj.position.add(obj.velocity.add(obj.acceleration.multiply(dt())).multiply(dt())),
+            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
+        };
+    },
+    rk4: (obj) => {
+        let k1_v = obj.acceleration;
+        let k1_x = obj.velocity;
+        let k2_x = obj.velocity.add(k1_v.multiply(0.5 * dt()));
+        let k3_x = obj.velocity.add(k1_v.multiply(0.5 * dt()));
+        let k4_x = obj.velocity.add(k1_v.multiply(dt()));
+
+        return {
+            position: obj.position.add((k1_x.add(k2_x.multiply(2)).add(k3_x.multiply(2)).add(k4_x)).multiply(dt() / 6)),
+            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
+        };
+    },
+    rk3over8: (obj) => {
+        let k1_v = obj.acceleration;
+        let k1_x = obj.velocity;
+        let k2_x = obj.velocity.add(k1_v.multiply(dt() / 3));
+        let k3_x = obj.velocity.add(k1_v.multiply(-dt() * 2 / 3));
+        let k4_x = obj.velocity.add(k1_v.multiply(dt()));
+
+        return {
+            position: obj.position.add((k1_x.add(k2_x.multiply(3)).add(k3_x.multiply(3)).add(k4_x)).multiply(dt() / 8)),
+            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
+        };
+    },
+    rkRalston: (obj) => {
+        let a21 = 2 / 5;
+        let a31 = (-2889 + 1428 * Math.sqrt(5)) / 1024;
+        let a32 = (3785 - 1620 * Math.sqrt(5)) / 1024;
+        let a41 = (-3365 + 2094 * Math.sqrt(5)) / 6040;
+        let a42 = (-975 - 3046 * Math.sqrt(5)) / 2552;
+        let a43 = (467040 + 203968 * Math.sqrt(5)) / 240845;
+
+        let b1 = (263 + 24 * Math.sqrt(5)) / 1812;
+        let b2 = (125 - 1000 * Math.sqrt(5)) / 3828;
+        let b3 = (3426304 + 1661952 * Math.sqrt(5)) / 5924787;
+        let b4 = (30 - 4 * Math.sqrt(5)) / 123;
+
+        let k1_v = obj.acceleration;
+        let k1_x = obj.velocity;
+        let k2_x = obj.velocity.add(k1_v.multiply(dt() * a21));
+        let k3_x = obj.velocity.add(k1_v.multiply(dt() * (a31 + a32)));
+        let k4_x = obj.velocity.add(k1_v.multiply(dt() * (a41 + a42 + a43)));
+
+        return {
+            position: obj.position.add(
+                (k1_x.multiply(b1).add(k2_x.multiply(b2)).add(k3_x.multiply(b3)).add(k4_x.multiply(b4))).multiply(dt())),
+            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
+        };
+    },
+    ssprk3: (obj) => {
+        let k1_v = obj.acceleration;
+        let k1_x = obj.velocity;
+        let k2_x = obj.velocity.add(k1_v.multiply(dt() * 8 / 15));
+        let k3_x = obj.velocity.add(k1_v.multiply(dt() * 2 / 3));
+
+        return {
+            position: obj.position.add(
+                (k1_x.multiply(1 / 4).add(k3_x.multiply(3 / 4))).multiply(dt())),
+            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
+        };
+    },
+}
+
