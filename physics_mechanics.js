@@ -31,6 +31,8 @@ class StaticObject {
 
 
 class DynamicObject {
+    static integrator = integrators.rk3over8;
+
     constructor(startPosition, mass=1) {
         this.immoveable = false;
         this.isAffectedByGravity = true;
@@ -104,13 +106,9 @@ class DynamicObject {
     }
 
     get nextPosition() {
-        let k1_v = this.acceleration;
-        let k1_x = this.velocity;
-        let k2_x = this.velocity.add(k1_v.multiply(0.5 * dt()));
-        let k3_x = this.velocity.add(k1_v.multiply(0.5 * dt()));
-        let k4_x = this.velocity.add(k1_v.multiply(dt()));
+        let r = DynamicObject.integrator(this);
 
-        return this.position.add((k1_x.add(k2_x.multiply(2)).add(k3_x.multiply(2)).add(k4_x)).multiply(dt() / 6));
+        return r.position;
     }
 
     get nextAngle() {
