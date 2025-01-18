@@ -68,6 +68,12 @@ function toScientificNotation(number, roundDigits=3) {
 
 
 class Vec2 {
+    static Zero = new Vec2(0, 0);
+    static Up = new Vec2(0, 1);
+    static Left = new Vec2(-1, 0);
+    static Right = new Vec2(1, 0);
+    static Down = new Vec2(0, -1);
+
     constructor(x, y) {
         this.x = x;
         this.y = y;
