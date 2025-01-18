@@ -17,6 +17,11 @@ class Main {
     }
 
     reloadModel() {
+        if (this.simulationModel != undefined) {
+            this.simulationModel.xChart.destroy();
+            this.simulationModel.energyChart.destroy();
+        } 
+
         const values = this.form.GetValues();
 
         this.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2);
@@ -34,13 +39,69 @@ class Main {
         this.circle = circle;
 
         this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
-        this.simulationModel.addObject(new Spring(point1, circle, values.d, values.k));
+
+        this.simulationModel.spring = new Spring(point1, circle, values.d, values.k);
+
+        this.simulationModel.addObject(this.simulationModel.spring);
         this.simulationModel.addObject(circle);
 
 
         // this.simulationModel.addObject(new Spring(circle, circle3, 3, k));
 
-
+        this.simulationModel.xChart = new Chart('xChart',
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Положение x, м",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(255,0,0,0.5)",
+                        data: []
+                    }, {
+                        label: "Скорость v_x, м/с",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,0,255,0.5)",
+                        data: []
+                    }]
+                },
+                options: {
+                    animation: false
+                }
+            }
+        );
+        this.simulationModel.energyChart = new Chart('energyChart',
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Кинетическая, Дж",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(255,0,0,0.5)",
+                        data: []
+                    }, {
+                        label: "Потенциальная, Дж",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,0,255,0.5)",
+                        data: []
+                    }, {
+                        label: "Полная, Дж",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,255,0,0.5)",
+                        data: []
+                    }]
+                },
+                options: {
+                    animation: false
+                }
+            }
+        );
     }
 
     nextTick() {
@@ -91,6 +152,15 @@ function main() {
     document.getElementById('showVelocities').addEventListener('change', (event) => {
         mainObject.simulationModel.enableVelocityVectorRender = event.target.checked;
     });
+
+    const xChart = document.createElement('canvas');
+    xChart.id = 'xChart';
+
+    const energyChart = document.createElement('canvas');
+    energyChart.id = 'energyChart';
+
+    form.DOMObject.appendChild(xChart);
+    form.DOMObject.appendChild(energyChart);
     
 
     mainObject.reloadModel();
@@ -240,10 +310,12 @@ class TrailPath {
         if (this.counter % this.ticksPerRecord == 0) {
             this.data.push(
                 {
-                    time: this.simulationModel.time,
+                    time: round(this.simulationModel.time, 3),
                     position: this.position,
                     velocity: this.parentObject.velocity.x,
-                    energy: this.parentObject.kineticEnergy,
+                    kineticEnergy: this.parentObject.kineticEnergy,
+                    potentialEnergy: this.simulationModel.spring.kineticEnergy,
+                    fullEnergy: this.simulationModel.spring.kineticEnergy + this.parentObject.kineticEnergy,
                 }
             );
         }
@@ -257,6 +329,24 @@ class TrailPath {
         for (let i = 1; i < this.data.length; i++) {
             renderer.DrawLine(this.data[i - 1].position, this.data[i].position, 'green', 3);
         }
+
+        let data = this.simulationModel.xChart.data;
+        data.labels = this.data.map((v) => v.time);
+
+        data.datasets[0].data = this.data.map((v) => v.position.x);
+        data.datasets[1].data = this.data.map((v) => v.velocity);
+
+        this.simulationModel.xChart.update();
+
+
+        data = this.simulationModel.energyChart.data;
+        data.labels = this.data.map((v) => v.time);
+
+        data.datasets[0].data = this.data.map((v) => v.kineticEnergy);
+        data.datasets[1].data = this.data.map((v) => v.potentialEnergy);
+        data.datasets[2].data = this.data.map((v) => v.fullEnergy);
+
+        this.simulationModel.energyChart.update();
     }
 }
 
