@@ -29,14 +29,12 @@ class Main {
 
         this.simulationModel.addObject(point1);
         
-        let circle = new CircleBody(1, new Vec2(values.d + values.deltax, 0), 2, integrators.rk3over8);
+        let circle = new CircleBody(1, new Vec2(values.d + values.deltax, 0), 2, values.envres, integrators.rk3over8);
         circle.velocity = new Vec2(values.v, 0);
         this.circle = circle;
 
-
-        let k = 40;
         this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
-        this.simulationModel.addObject(new Spring(point1, circle, values.d, k));
+        this.simulationModel.addObject(new Spring(point1, circle, values.d, values.k));
         this.simulationModel.addObject(circle);
 
 
@@ -69,6 +67,8 @@ function main() {
     .AddNumber(new NumberInput("d", "d = ", new NumberDomain(3, "м", 0.001, 0)))
     .AddNumber(new NumberInput("deltax", "\\(\\Delta x\\) = ", new NumberDomain(1, "м", 0.001)))
     .AddNumber(new NumberInput("v", "<span>\\(\\ v_x \\) = </span>", new NumberDomain(1, "м/с", 0.001)))
+    .AddNumber(new NumberInput("k", "<span>\\(\\ k \\) = </span>", new NumberDomain(1, "Н·м", 0.001)))
+    .AddNumber(new NumberInput("envres", "<span>\\(\\ k \\) = </span>", new NumberDomain(1, "Н·с/м", 0.001)))
     .AddSubmitButton('submitButton', "Перезапустить симуляцию", () => { mainObject.reloadModel(); })
     .AddButton('nextStepButton', "Следующий шаг симуляции", () => { 
         mainObject.simulationModel.update();
@@ -163,12 +163,13 @@ class Spring {
 }
 
 class CircleBody extends DynamicObject {
-    constructor(radius, startPosition, mass=1, integrator) {
+    constructor(radius, startPosition, mass=1, k, integrator) {
         super(startPosition);
         
         this.radius = radius;
         this.mass = mass;
         this.integrator = integrator;
+        this.k = k; // rename
     }
 
     render(renderer) {
@@ -180,6 +181,9 @@ class CircleBody extends DynamicObject {
         if (this.stopForce.length != 0) {
             this.applyForce(this.stopForce);
         }
+
+        this.applyForce(this.velocity.multiply(-this.k));
+
         this.position = this.nextPosition;
         this.angle = this.nextAngle;
 
