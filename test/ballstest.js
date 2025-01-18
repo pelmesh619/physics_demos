@@ -1,6 +1,6 @@
-const frameRenderTime = 1 / 100;
-const ticksPerFrame = 3;
-const timeScale = 0.9;
+const frameRenderTime = 0.016;
+const ticksPerFrame = 100;
+const timeScale = 1;
 
 const showDebugInfo = false;
 
@@ -9,6 +9,8 @@ const borderWidth = 25;
 function dt() {
     return frameRenderTime / ticksPerFrame * timeScale;
 }
+
+DynamicObject.integrator = integrators.rk4;
 
 class Main {
     constructor(form) {
@@ -20,6 +22,8 @@ class Main {
     reloadModel() {
         this.renderer = new Renderer2D('balls', borderWidth, -borderWidth / 2, -1.5);
         this.simulationModel = new CollisionSimulationModel(this.form, this.renderer);
+        this.simulationModel.enableColliderRender = document.getElementById('showColliders').checked;
+        // this.simulationModel.useGravity = false;
 
         this.simulationModel.addObject(new CircleBody(1, new Vec2(6, 1)))
         .addObject(new CircleBody(1, new Vec2(6, 3)))
@@ -38,6 +42,7 @@ class Main {
             for (let i = 0; i < ticksPerFrame; i++) {
                 this.simulationModel.update();
             }
+            document.getElementById('energyDisplay').innerHTML = this.simulationModel.getFullEnergy();
             this.simulationModel.renderFrame();
         }
     }
@@ -88,7 +93,7 @@ class CircleBody extends DynamicObject {
         this.mass = mass;
         this.rigidbody = new PolygonRigidbody(
             this,
-            RegularPolygonFactory(radius * 1, 7)
+            RegularPolygonFactory(radius * 1, 9)
         );
     }
 
