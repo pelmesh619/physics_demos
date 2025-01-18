@@ -203,6 +203,20 @@ function edgeIntersection(edge1, edge2){
 }
 
 
+const RungeKuttaConstants = { 
+    rkRalston: {
+        c: [0, 0.4, (14 - 3 * Math.sqrt(5)) / 16, 1],
+        a: [
+            [0, 0, 0, 0],
+            [0.4, 0, 0, 0],
+            [(-2889 + 1428 * Math.sqrt(5)) / 1024, (3785 - 1620 * Math.sqrt(5)) / 1024, 0, 0],
+            [(-3365 + 2094 * Math.sqrt(5)) / 6040, (-975 - 3046 * Math.sqrt(5)) / 2552, (467040 + 203968 * Math.sqrt(5)) / 240845, 0]
+        ],
+        b: [(263 + 24 * Math.sqrt(5)) / 1812, (125 - 1000 * Math.sqrt(5)) / 3828, (3426304 + 1661952 * Math.sqrt(5)) / 5924787, (30 - 4 * Math.sqrt(5)) / 123]
+    }
+}
+
+
 var integrators = {
     euler: (obj) => {
         return {
@@ -235,27 +249,18 @@ var integrators = {
         };
     },
     rkRalston: (obj) => {
-        let a21 = 2 / 5;
-        let a31 = (-2889 + 1428 * Math.sqrt(5)) / 1024;
-        let a32 = (3785 - 1620 * Math.sqrt(5)) / 1024;
-        let a41 = (-3365 + 2094 * Math.sqrt(5)) / 6040;
-        let a42 = (-975 - 3046 * Math.sqrt(5)) / 2552;
-        let a43 = (467040 + 203968 * Math.sqrt(5)) / 240845;
-
-        let b1 = (263 + 24 * Math.sqrt(5)) / 1812;
-        let b2 = (125 - 1000 * Math.sqrt(5)) / 3828;
-        let b3 = (3426304 + 1661952 * Math.sqrt(5)) / 5924787;
-        let b4 = (30 - 4 * Math.sqrt(5)) / 123;
+        let a = RungeKuttaConstants.rkRalston.a;
+        let b = RungeKuttaConstants.rkRalston.b;
 
         let k1_v = obj.acceleration;
         let k1_x = obj.velocity;
-        let k2_x = obj.velocity.add(k1_v.multiply(dt() * a21));
-        let k3_x = obj.velocity.add(k1_v.multiply(dt() * (a31 + a32)));
-        let k4_x = obj.velocity.add(k1_v.multiply(dt() * (a41 + a42 + a43)));
+        let k2_x = obj.velocity.add(k1_v.multiply(dt() * a[1][0]));
+        let k3_x = obj.velocity.add(k1_v.multiply(dt() * (a[2][0] + a[2][1])));
+        let k4_x = obj.velocity.add(k1_v.multiply(dt() * (a[3][0] + a[3][1] + a[3][2])));
 
         return {
             position: obj.position.add(
-                (k1_x.multiply(b1).add(k2_x.multiply(b2)).add(k3_x.multiply(b3)).add(k4_x.multiply(b4))).multiply(dt())),
+                (k1_x.multiply(b[0]).add(k2_x.multiply(b[1])).add(k3_x.multiply(b[2])).add(k4_x.multiply(b[3]))).multiply(dt())),
             velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
         };
     },
