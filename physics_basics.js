@@ -73,6 +73,10 @@ class Vec2 {
     static Left = new Vec2(-1, 0);
     static Right = new Vec2(1, 0);
     static Down = new Vec2(0, -1);
+    static UpLeft = new Vec2(-1, 1).normalize();
+    static DownLeft = new Vec2(-1, -1).normalize();
+    static UpRight = new Vec2(1, 1).normalize();
+    static DownRight = new Vec2(1, -1).normalize();
 
     constructor(x, y) {
         this.x = x;
@@ -222,6 +226,7 @@ const RungeKuttaConstants = {
     }
 }
 
+// TODO properly integrate acceleration
 
 var integrators = {
     euler: (obj) => {
