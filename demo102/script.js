@@ -1,5 +1,5 @@
-const frameRenderTime = 1 / 40;
-const ticksPerFrame = 10;
+const frameRenderTime = 0.016;
+const ticksPerFrame = 100;
 const timeScale = 1;
 
 const showDebugInfo = false;
@@ -7,6 +7,8 @@ const showDebugInfo = false;
 function dt() {
     return frameRenderTime / ticksPerFrame * timeScale;
 }
+
+DynamicObject.integrator = integrators.rk4;
 
 const borderWidth = 22.5;
 
@@ -30,7 +32,7 @@ class Main {
         this.simulationModel.enableColliderRender = document.getElementById('showColliders').checked;
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
 
-        let circle = new CircleBody(1, new Vec2(0, values['h'] + 1), 1);
+        let circle = new CircleBody(1, Vec2.Up.multiply(values.h + 1), 1);
 
         circle.velocity = new Vec2(values['v'] * Math.cos(values['alpha']), values['v'] * Math.sin(values['alpha']));
 
@@ -228,13 +230,13 @@ class TrailPath {
         }
         this.parentObject = stickToObject;
         this.simulationModel = simulationModel;
-        this.ticksPerRecord = 10;
+        this.ticksPerRecord = ticksPerFrame;
 
 
         this.position = new Vec2(NaN, NaN);
         this.relativePosition = relativePosition;
 
-        this.dataAmountLimit = 100;
+        this.dataAmountLimit = 3 / frameRenderTime;
 
         this.data = [];
 
