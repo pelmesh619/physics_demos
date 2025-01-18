@@ -132,12 +132,18 @@ class CollisionSimulationModel extends MechanicsSimulationModel {
     }
 
     update() {
+        if (this.useGravity) {        
+            this.objects.forEach(
+                (obj) => {
+                    if (obj.isAffectedByGravity) {
+                        obj.applyForce(new Vec2(0, -Constants.g * obj.mass));
+                    }
+                }
+            )
+        }
         this.handleCollision();
         this.objects.forEach(
             (obj) => {
-                if (obj.isAffectedByGravity && this.useGravity) {
-                    obj.applyForce(new Vec2(0, -Constants.g * obj.mass));
-                }
                 obj.update();
             }
         )
