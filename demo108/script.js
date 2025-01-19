@@ -125,12 +125,12 @@ function main() {
     var form = new FormMaker("springForm");
 
     form
-    .AddNumber(new NumberInput("m", "m = ", new NumberDomain(1, "кг", 0.001, 0)))
-    .AddNumber(new NumberInput("d", "d = ", new NumberDomain(3, "м", 0.001, 0)))
-    .AddNumber(new NumberInput("deltax", "\\(\\Delta x\\) = ", new NumberDomain(1, "м", 0.001)))
-    .AddNumber(new NumberInput("v", "<span>\\(\\ v_x \\) = </span>", new NumberDomain(1, "м/с", 0.001)))
-    .AddNumber(new NumberInput("k", "<span>\\(\\ k \\) = </span>", new NumberDomain(1, "Н·м", 0.001)))
-    .AddNumber(new NumberInput("envres", "<span>\\(\\ k \\) = </span>", new NumberDomain(1, "Н·с/м", 0.001)))
+    .AddNumber(new NumberInput("m", "Масса тела </br>\\( m \\) = ", new NumberDomain(1, "кг", 0.001, 0)))
+    .AddNumber(new NumberInput("d", "Изначальная длина пружины </br>\\( d \\) = ", new NumberDomain(3, "м", 0.001, 0)))
+    .AddNumber(new NumberInput("deltax", "Отклонение тела </br>\\(\\Delta x\\) = ", new NumberDomain(1, "м", 0.001)))
+    .AddNumber(new NumberInput("v", "Первоначальная скорость </br><span>\\( v_x \\) = </span>", new NumberDomain(1, "м/с", 0.001)))
+    .AddNumber(new NumberInput("k", "Коэффициент упругости </br><span>\\( k \\) = </span>", new NumberDomain(1, "Н·м", 0.001)))
+    .AddNumber(new NumberInput("envres", "Сопротивление среды </br><span>\\( \\lambda \\) = </span>", new NumberDomain(0, "Н·с/м", 0.001)))
     .AddSubmitButton('submitButton', "Перезапустить симуляцию", () => { mainObject.reloadModel(); })
     .AddButton('nextStepButton', "Следующий шаг симуляции", () => { 
         mainObject.simulationModel.update();
@@ -165,6 +165,8 @@ function main() {
     
 
     mainObject.reloadModel();
+
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
     setInterval(
         mainObject.nextTickFactory(),
