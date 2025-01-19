@@ -34,7 +34,7 @@ class Main {
 
         this.simulationModel.addObject(point1);
         
-        let circle = new CircleBody(1, new Vec2(values.d + values.deltax, 0), 2, values.envres, integrators.rk3over8);
+        let circle = new CircleBody(1, new Vec2(values.d + values.deltax, 0), values.m, values.envres, integrators.rk3over8);
         circle.velocity = new Vec2(values.v, 0);
         this.circle = circle;
 
@@ -125,6 +125,7 @@ function main() {
     var form = new FormMaker("springForm");
 
     form
+    .AddNumber(new NumberInput("m", "m = ", new NumberDomain(1, "кг", 0.001, 0)))
     .AddNumber(new NumberInput("d", "d = ", new NumberDomain(3, "м", 0.001, 0)))
     .AddNumber(new NumberInput("deltax", "\\(\\Delta x\\) = ", new NumberDomain(1, "м", 0.001)))
     .AddNumber(new NumberInput("v", "<span>\\(\\ v_x \\) = </span>", new NumberDomain(1, "м/с", 0.001)))
