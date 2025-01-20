@@ -23,8 +23,58 @@ class Main {
     }
 
     static scenarios = {
-        pendulum: () => {
+        pendulum: (mainObject) => {
+            borderWidth = 20;
+            mainObject.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2);
 
+            let point1 = new StaticObject(new Vec2(0, 0));
+
+            mainObject.simulationModel.addObject(point1);
+            
+            let circle = new CircleBody(1, new Vec2(3, 0), 1, 0, integrators[document.getElementById('integrator-select').value]);
+            mainObject.circle = circle;
+    
+            mainObject.counter = 0;
+            mainObject.isGrowing = false;
+            mainObject.oldCirclePositionX = circle.position.x;
+    
+            let k = 10000;
+            mainObject.simulationModel.addObject(new TrailPath(mainObject.simulationModel, circle));
+    
+            mainObject.simulationModel.addObject(circle);
+            mainObject.simulationModel.addObject(new Spring(point1, circle, 3, k));
+        },
+        string_paradox: (mainObject) => {
+            borderWidth = 30;
+            mainObject.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2, -15);
+
+            let point1 = new StaticObject(new Vec2(0, 0));
+
+            mainObject.simulationModel.addObject(point1);
+            
+            let circle = new CircleBody(0.1, new Vec2(0, -2), 0.1, 10, integrators[document.getElementById('integrator-select').value]);
+            let circle2 = new CircleBody(0.1, new Vec2(0, -3), 0.1, 10, integrators[document.getElementById('integrator-select').value]);
+            let circle3 = new CircleBody(1, new Vec2(0, -5), 10, 10, integrators[document.getElementById('integrator-select').value]);
+
+            mainObject.circle = circle;
+
+            let k = 65;
+            let k2 = 100000;
+            mainObject.simulationModel.addObject(new TrailPath(mainObject.simulationModel, circle3));
+
+            let spring1 = new Spring(point1, circle, 1, k);
+            let spring2 = new NonStretchableString(circle, circle2, 1, k2);
+            let spring3 = new Spring(circle2, circle3, 1, k);
+            let spring4 = new NonStretchableString(point1, circle2, 4, k2, Vec2.Left.multiply(0.2));
+            let spring5 = new NonStretchableString(circle, circle3, 4, k2, Vec2.Right.multiply(0.2));
+            mainObject.simulationModel.addObject(circle)
+            .addObject(circle2)
+            .addObject(circle3)
+            .addObject(spring1)
+            .addObject(spring2)
+            .addObject(spring3)
+            .addObject(spring4)
+            .addObject(spring5);
         }
     }
 
@@ -32,8 +82,11 @@ class Main {
         this.allTimeMaximum = -Infinity;
         this.allTimeMinimum = Infinity;
 
-        this.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2);
-        this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
+        this.counter = Infinity;
+        this.isGrowing = false;
+        this.oldCirclePositionX = 0;
+
+        this.simulationModel = new MechanicsSimulationModel(this.form, undefined);
         this.simulationModel.addObject(new Grid(new Vec2(0, 0), new Vec2(20, 20)));
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
     }
@@ -41,26 +94,8 @@ class Main {
     reloadModel() {
         this.reset();
 
-        let point1 = new StaticObject(new Vec2(0, 0));
-
-        this.simulationModel.addObject(point1);
-        
-        let circle = new CircleBody(1, new Vec2(3, 0), 1, integrators[document.getElementById('integrator-select').value]);
-        this.circle = circle;
-
-        this.counter = 0;
-        this.isGrowing = false;
-        this.oldCirclePositionX = circle.position.x;
-
-
-        let k = 10000;
-        this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
-
-        let spring1 = new Spring(point1, circle, 3, k);
-        this.simulationModel.addObject(circle);
-        this.simulationModel.addObject(spring1);
-
-
+        Main.scenarios[document.getElementById('scenario-select').value](this);
+        this.simulationModel.renderer = this.renderer;
     }
 
     nextTick() {
@@ -107,7 +142,7 @@ class Main {
 
 function main() {
     var mainObject = new Main(undefined);
-    
+
     document.getElementById('restartButton').addEventListener("click", () => { mainObject.reloadModel(); });
 
     document.getElementById('showVelocities').addEventListener('change', (event) => {
