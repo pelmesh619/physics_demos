@@ -8,7 +8,7 @@ function dt() {
     return frameRenderTime / ticksPerFrame * timeScale;
 }
 
-const borderWidth = 20;
+var borderWidth = 20;
 
 class Main {
     constructor(form) {
@@ -219,6 +219,56 @@ class Spring {
         renderer.DrawLine(this.obj1.position, this.obj2.position, 'purple', 5);
     }
 }
+
+class NonStretchableString {
+    constructor(obj1, obj2, distance=3, k=1, offset=Vec2.Zero) {
+        this.obj1 = obj1;
+        this.obj2 = obj2;
+        this.distance = distance;
+        this.k = k;
+        this.mass = 1;
+        this.immoveable = false;
+        this.offset = offset;
+        
+    }
+
+    get position() {
+        return this.obj1.position.add(this.obj2.position).multiply(0.5);
+    }
+
+    get futurePosition() {
+        return this.obj1.futurePosition.add(this.obj2.futurePosition).multiply(0.5);
+    }
+
+    get velocity() {
+        return this.obj1.velocity.add(this.obj2.velocity);
+    }
+
+    get kineticEnergy() { return 0; }
+
+    getPotentialEnergy() { return 0; }
+
+    update() {
+        let obj1ToObj2 = this.obj2.futurePosition.subtract(this.obj1.futurePosition);
+        let newDistance = obj1ToObj2.length;
+
+        if (newDistance < this.distance) {
+            return;
+        }
+
+        let forceMagnitude = (newDistance - this.distance) * this.k;
+        let force1 = obj1ToObj2.normalize().multiply(forceMagnitude);
+        let force2 = obj1ToObj2.normalize().multiply(-forceMagnitude);
+
+        this.obj1.applyForce(force1);
+        this.obj2.applyForce(force2);
+    }
+
+    render(renderer) {
+        renderer.DrawLine(this.obj1.position.add(this.offset), this.obj2.position.add(this.offset), 'hsl(280 100 40 / 40%)', 10);
+    }
+}
+
 
 class CircleBody extends DynamicObject {
     constructor(radius, startPosition, mass=1, envres, integrator) {
