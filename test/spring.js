@@ -1,5 +1,5 @@
-const frameRenderTime = 1 / 40;
-const ticksPerFrame = 40;
+const frameRenderTime = 0.016;
+const ticksPerFrame = 1000;
 const timeScale = 1;
 
 const showDebugInfo = false;
@@ -8,7 +8,7 @@ function dt() {
     return frameRenderTime / ticksPerFrame * timeScale;
 }
 
-const borderWidth = 50;
+const borderWidth = 20;
 
 class Main {
     constructor(form) {
@@ -179,7 +179,7 @@ class TrailPath {
 
         this.relativePosition = relativePosition;
 
-        this.dataAmountLimit = 200;
+        this.dataAmountLimit = 1500;
         this.velocity = new Vec2(0, 0);
 
         this.data = [];
