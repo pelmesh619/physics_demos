@@ -174,7 +174,7 @@ function main() {
         mainObject.simulationModel.renderFrame();
     });
     document.getElementById('nextFrameButton').addEventListener('click', () => { 
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < ticksPerFrame; i++) {
             mainObject.simulationModel.update();
         }
         mainObject.simulationModel.renderFrame();
@@ -395,12 +395,12 @@ class TrailPath {
         }
         this.parentObject = stickToObject;
         this.simulationModel = simulationModel;
-        this.ticksPerRecord = 10;
+        this.ticksPerRecord = ticksPerFrame;
 
 
         this.relativePosition = relativePosition;
 
-        this.dataAmountLimit = 1500;
+        this.dataAmountLimit = 3 / frameRenderTime;
         this.velocity = new Vec2(0, 0);
 
         this.data = [];
