@@ -71,7 +71,14 @@ input, button {
     height: 5vh;
 }
 
-#hintDiv:hover {
+#hintIcon {
+    margin: 0;
+    padding: 0;
+    width: 10vh;
+    height: 10vh;
+}
+
+#hintIcon:hover, #hintIcon.activeHintIcon {
     color: var(--secondary-darker-text-color);
 }
 
