@@ -26,3 +26,8 @@ canvas {
 #scenario-commentary {
     width: 100%;
 }
+
+#hintText {
+    max-width: 30vw;
+    max-height: 70vh;
+}
