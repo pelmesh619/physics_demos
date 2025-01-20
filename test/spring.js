@@ -14,9 +14,6 @@ class Main {
     constructor(form) {
         this.form = form;
         this.stopped = false;
-        this.counter = 0;
-        this.isGrowing = false;
-        this.oldCirclePositionX = 0;
 
         this.allTimeMaximum = -Infinity;
         this.allTimeMinimum = Infinity;
@@ -34,10 +31,6 @@ class Main {
             let circle = new CircleBody(1, new Vec2(3, 0), 1, 0, integrators[document.getElementById('integrator-select').value]);
             mainObject.circle = circle;
     
-            mainObject.counter = 0;
-            mainObject.isGrowing = false;
-            mainObject.oldCirclePositionX = circle.position.x;
-    
             let k = 10000;
             mainObject.simulationModel.addObject(new TrailPath(mainObject.simulationModel, circle));
     
@@ -45,6 +38,8 @@ class Main {
             mainObject.simulationModel.addObject(new Spring(point1, circle, 3, k));
         },
         string_paradox: (mainObject) => {
+            document.getElementById('removeMiddleString').removeAttribute("disabled");
+
             borderWidth = 30;
             mainObject.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2, -15);
 
@@ -70,8 +65,11 @@ class Main {
             mainObject.simulationModel.addObject(circle)
             .addObject(circle2)
             .addObject(circle3)
-            .addObject(spring1)
-            .addObject(spring2)
+            .addObject(spring1);
+
+            mainObject.middleStringIndex = mainObject.simulationModel.objects.length;
+
+            mainObject.simulationModel.addObject(spring2)
             .addObject(spring3)
             .addObject(spring4)
             .addObject(spring5);
@@ -116,49 +114,42 @@ class Main {
         },
     }
 
+    removeMiddleString() {
+        this.simulationModel.objects.splice(this.middleStringIndex, 1);
+    }
+
     reset() {
         this.allTimeMaximum = -Infinity;
         this.allTimeMinimum = Infinity;
 
-        this.counter = Infinity;
-        this.isGrowing = false;
-        this.oldCirclePositionX = 0;
-
         this.simulationModel = new MechanicsSimulationModel(this.form, undefined);
         this.simulationModel.addObject(new Grid(new Vec2(0, 0), new Vec2(20, 20)));
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
+
+        const node = document.getElementById("scenario-commentary");
+        for (let i = 0; i < node.children.length; i++) {
+            node.children[i].style.display = 'none';
+        }
     }
 
     reloadModel() {
         this.reset();
 
-        Main.scenarios[document.getElementById('scenario-select').value](this);
+        let scenario = document.getElementById('scenario-select').value;
+
+        Main.scenarios[scenario](this);
         this.simulationModel.renderer = this.renderer;
+
+        let commentaryNode = document.getElementById(scenario + '-commentary');
+        if (commentaryNode) {
+            commentaryNode.style.display = 'block';
+        }
     }
 
     nextTick() {
         if (!this.stopped) {
             for (let i = 0; i < ticksPerFrame; i++) {
                 this.simulationModel.update();
-
-                if (this.circle.position.x < this.oldCirclePositionX && this.isGrowing) {
-                    this.isGrowing = false;
-                    this.counter++;
-                } else if (this.circle.position.x > this.oldCirclePositionX && !this.isGrowing) {
-                    this.isGrowing = true;
-                    this.counter++;
-                }
-                this.oldCirclePositionX = this.circle.position.x;
-
-                if (this.counter == 4) {
-                    window.alert(
-                        "Энергии потеряно: " + this.simulationModel.getFullEnergy() + "\n" + 
-                        "Метод: " + document.getElementById('integrator-select').value + "\n" + 
-                        "Минимум: " + this.allTimeMinimum + "\n" + 
-                        "Максимум: " + this.allTimeMaximum
-                    );
-                    this.counter++;
-                }
 
                 this.allTimeMaximum = Math.max(this.simulationModel.getFullEnergy(), this.allTimeMaximum);
                 this.allTimeMinimum = Math.min(this.simulationModel.getFullEnergy(), this.allTimeMinimum);
@@ -199,7 +190,12 @@ function main() {
             mainObject.simulationModel.update();
         }
         mainObject.simulationModel.renderFrame();
-    })
+    });
+
+    document.getElementById('removeMiddleString').addEventListener('click', (event) => { 
+        mainObject.removeMiddleString();
+        event.target.setAttribute("disabled", true);
+    });
 
     mainObject.reloadModel();
 
