@@ -45,9 +45,6 @@ class Main {
         this.simulationModel.addObject(this.simulationModel.spring);
         this.simulationModel.addObject(circle);
 
-
-        // this.simulationModel.addObject(new Spring(circle, circle3, 3, k));
-
         this.simulationModel.xChart = new Chart('xChart',
             {
                 type: "line",
@@ -267,7 +264,6 @@ class CircleBody extends DynamicObject {
         this.angularVelocity += this.angularAcceleration * dt();
         this.angularAcceleration = 0;
 
-        // this.futurePosition = this.position.add(this.velocity.multiply(dt()));
         this.futureAngle = this.angle + this.angularVelocity * dt();
 
     }
