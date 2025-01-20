@@ -75,6 +75,23 @@ class Main {
             .addObject(spring3)
             .addObject(spring4)
             .addObject(spring5);
+        },
+        ellipse: (mainObject) => {
+            borderWidth = 30;
+            mainObject.renderer = new Renderer2D('spring', borderWidth);
+            mainObject.simulationModel.useGravity = false;
+            
+            let circle = new CircleBody(1, new Vec2(4, 0), 1, 0, integrators[document.getElementById('integrator-select').value]);
+
+            mainObject.circle = circle;
+            circle.velocity = new Vec2(0, 10);
+
+            let k = 100000;
+            mainObject.simulationModel.addObject(new TrailPath(mainObject.simulationModel, circle))
+            .addObject(new EllipticalSpring(new StaticObject(new Vec2(-3, 0)), circle, new StaticObject(new Vec2(3, 0)), 8, k))
+            .addObject(circle);
+
+
         }
     }
 
@@ -266,6 +283,63 @@ class NonStretchableString {
 
     render(renderer) {
         renderer.DrawLine(this.obj1.position.add(this.offset), this.obj2.position.add(this.offset), 'hsl(280 100 40 / 40%)', 10);
+    }
+}
+
+
+class EllipticalSpring {
+    constructor(obj1, obj2, obj3, distance=3, k=1) {
+        this.obj1 = obj1;
+        this.obj2 = obj2;
+        this.obj3 = obj3;
+        this.distance = distance;
+        this.k = k;
+        this.mass = 1;
+        this.immoveable = false;
+        
+    }
+
+    get position() {
+        return this.obj1.position.add(this.obj2.position).add(this.obj3.position).multiply(1 / 3);
+    }
+
+    get futurePosition() {
+        return this.obj1.futurePosition.add(this.obj2.futurePosition).multiply(0.5);
+    }
+
+    get velocity() {
+        return this.obj1.velocity.add(this.obj2.velocity).add(this.obj3.velocity);
+    }
+
+    get kineticEnergy() {
+        let obj1ToObj2 = this.obj2.futurePosition.subtract(this.obj1.futurePosition);
+        let obj2ToObj3 = this.obj3.futurePosition.subtract(this.obj2.futurePosition);
+        let newDistance = obj1ToObj2.length + obj2ToObj3.length;
+
+        return Math.pow(newDistance - this.distance, 2) * this.k / 2;
+    }
+
+    getPotentialEnergy() { return 0; }
+
+    update() {
+        let obj1ToObj2 = this.obj2.futurePosition.subtract(this.obj1.futurePosition);
+        let obj2ToObj3 = this.obj3.futurePosition.subtract(this.obj2.futurePosition);
+        let newDistance = obj1ToObj2.length + obj2ToObj3.length;
+
+        let forceMagnitude = (newDistance - this.distance) * this.k;
+        let force1 = obj1ToObj2.normalize().multiply(forceMagnitude);
+        let force2 = obj1ToObj2.normalize().multiply(-forceMagnitude);
+        let force3 = obj2ToObj3.normalize().multiply(-forceMagnitude);
+        force2 = force2.add(obj2ToObj3.normalize().multiply(forceMagnitude));
+
+        this.obj1.applyForce(force1);
+        this.obj2.applyForce(force2);
+        this.obj3.applyForce(force3);
+    }
+
+    render(renderer) {
+        renderer.DrawLine(this.obj1.position, this.obj2.position, 'purple', 5);
+        renderer.DrawLine(this.obj2.position, this.obj3.position, 'purple', 5);
     }
 }
 
