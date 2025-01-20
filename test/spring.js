@@ -14,39 +14,51 @@ class Main {
     constructor(form) {
         this.form = form;
         this.stopped = false;
+        this.counter = 0;
+        this.isGrowing = false;
+        this.oldCirclePositionX = 0;
+
+        this.allTimeMaximum = -Infinity;
+        this.allTimeMinimum = Infinity;
     }
 
-    reloadModel() {
+    static scenarios = {
+        pendulum: () => {
+
+        }
+    }
+
+    reset() {
+        this.allTimeMaximum = -Infinity;
+        this.allTimeMinimum = Infinity;
+
         this.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2);
         this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
         this.simulationModel.addObject(new Grid(new Vec2(0, 0), new Vec2(20, 20)));
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
-        // this.simulationModel.useGravity = false;
+    }
 
+    reloadModel() {
+        this.reset();
 
         let point1 = new StaticObject(new Vec2(0, 0));
 
         this.simulationModel.addObject(point1);
         
-        let circle = new CircleBody(1, new Vec2(3, 0), 2);
-        let circle2 = new CircleBody(1, new Vec2(6, 0), 1);
-        let circle3 = new CircleBody(1, new Vec2(9, 0), 0.5);
-        // circle3.velocity = new Vec2(0, 100);
-        // circle2.velocity = new Vec2(0, -10);
+        let circle = new CircleBody(1, new Vec2(3, 0), 1, integrators[document.getElementById('integrator-select').value]);
         this.circle = circle;
 
+        this.counter = 0;
+        this.isGrowing = false;
+        this.oldCirclePositionX = circle.position.x;
 
-        let k = 100000;
-        this.simulationModel.addObject(new TrailPath(this.simulationModel, circle3));
-        this.simulationModel.addObject(new Spring(point1, circle, 3, k));
-        this.simulationModel.addObject(new Spring(circle, circle2, 3, k));
-        this.simulationModel.addObject(new Spring(circle2, circle3, 3, k));
+
+        let k = 10000;
+        this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
+
+        let spring1 = new Spring(point1, circle, 3, k);
         this.simulationModel.addObject(circle);
-        this.simulationModel.addObject(circle2);
-        this.simulationModel.addObject(circle3);
-
-
-        // this.simulationModel.addObject(new Spring(circle, circle3, 3, k));
+        this.simulationModel.addObject(spring1);
 
 
     }
@@ -55,11 +67,36 @@ class Main {
         if (!this.stopped) {
             for (let i = 0; i < ticksPerFrame; i++) {
                 this.simulationModel.update();
+
+                if (this.circle.position.x < this.oldCirclePositionX && this.isGrowing) {
+                    this.isGrowing = false;
+                    this.counter++;
+                } else if (this.circle.position.x > this.oldCirclePositionX && !this.isGrowing) {
+                    this.isGrowing = true;
+                    this.counter++;
+                }
+                this.oldCirclePositionX = this.circle.position.x;
+
+                if (this.counter == 4) {
+                    window.alert(
+                        "Энергии потеряно: " + this.simulationModel.getFullEnergy() + "\n" + 
+                        "Метод: " + document.getElementById('integrator-select').value + "\n" + 
+                        "Минимум: " + this.allTimeMinimum + "\n" + 
+                        "Максимум: " + this.allTimeMaximum
+                    );
+                    this.counter++;
+                }
+
+                this.allTimeMaximum = Math.max(this.simulationModel.getFullEnergy(), this.allTimeMaximum);
+                this.allTimeMinimum = Math.min(this.simulationModel.getFullEnergy(), this.allTimeMinimum);
             }
             this.simulationModel.renderFrame();
         }
 
-        document.getElementById('energyDisplay').innerText = this.simulationModel.getFullEnergy();
+        document.getElementById('energyDisplay').innerText = 
+            'Энергия системы: \n' + toScientificNotation(this.simulationModel.getFullEnergy(), 6) + "\n" +  
+            "Минимум: \n" + toScientificNotation(this.allTimeMinimum, 6) + "\n" + 
+            "Максимум: \n" + toScientificNotation(this.allTimeMaximum, 6);
     }
 
     nextTickFactory() {
@@ -70,6 +107,8 @@ class Main {
 
 function main() {
     var mainObject = new Main(undefined);
+    
+    document.getElementById('restartButton').addEventListener("click", () => { mainObject.reloadModel(); });
 
     document.getElementById('showVelocities').addEventListener('change', (event) => {
         mainObject.simulationModel.enableVelocityVectorRender = event.target.checked;
@@ -137,14 +176,6 @@ class Spring {
         let force1 = obj1ToObj2.normalize().multiply(forceMagnitude);
         let force2 = obj1ToObj2.normalize().multiply(-forceMagnitude);
 
-        if (this.obj1.immoveable && this.obj2.immoveable) {
-            return;
-        } else if (this.obj1.immoveable) {
-            // force2 = force2.normalize().multiply(forceMagnitude);
-        } else if (this.obj2.immoveable) {
-            // force1 = force1.normalize().multiply(forceMagnitude);
-        }
-
         this.obj1.applyForce(force1);
         this.obj2.applyForce(force2);
     }
@@ -154,16 +185,43 @@ class Spring {
     }
 }
 
-    constructor(radius, startPosition, mass=1) {
 class CircleBody extends DynamicObject {
+    constructor(radius, startPosition, mass=1, integrator) {
         super(startPosition);
         
         this.radius = radius;
         this.mass = mass;
+        this.integrator = integrator;
     }
 
     render(renderer) {
         renderer.DrawCircumference(this.position, this.radius, 'red', 5);
+    }
+
+    
+    update() {
+        if (this.stopForce.length != 0) {
+            this.applyForce(this.stopForce);
+        }
+        this.position = this.nextPosition;
+        this.angle = this.nextAngle;
+
+        this.velocity = this.velocity.add(this.acceleration.multiply(dt()));
+        this.acceleration = new Vec2(0, 0);
+        this.stopForce = new Vec2(0, 0);
+
+        this.angularVelocity += this.angularAcceleration * dt();
+        this.angularAcceleration = 0;
+
+        // this.futurePosition = this.position.add(this.velocity.multiply(dt()));
+        this.futureAngle = this.angle + this.angularVelocity * dt();
+
+    }
+
+    get nextPosition() {
+        let r = this.integrator(this);
+
+        return r.position;
     }
 }
 
