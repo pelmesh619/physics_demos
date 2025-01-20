@@ -53,15 +53,15 @@ class Main {
 
             mainObject.circle = circle;
 
-            let k = 65;
+            let k = 60;
             let k2 = 100000;
             mainObject.simulationModel.addObject(new TrailPath(mainObject.simulationModel, circle3));
 
             let spring1 = new Spring(point1, circle, 1, k);
-            let spring2 = new NonStretchableString(circle, circle2, 1, k2);
+            let spring2 = new NonStretchableString(circle, circle2, 1, k2, Vec2.Zero, 'rgba(20, 20, 190, 60%)');
             let spring3 = new Spring(circle2, circle3, 1, k);
-            let spring4 = new NonStretchableString(point1, circle2, 4, k2, Vec2.Left.multiply(0.2));
-            let spring5 = new NonStretchableString(circle, circle3, 4, k2, Vec2.Right.multiply(0.2));
+            let spring4 = new NonStretchableString(point1, circle2, 4, k2, Vec2.Left.multiply(0.2), 'rgba(20, 190, 20, 60%)');
+            let spring5 = new NonStretchableString(circle, circle3, 4, k2, Vec2.Right.multiply(0.2), 'rgba(190, 20, 20, 60%)');
             mainObject.simulationModel.addObject(circle)
             .addObject(circle2)
             .addObject(circle3)
@@ -255,7 +255,7 @@ class Spring {
 }
 
 class NonStretchableString {
-    constructor(obj1, obj2, distance=3, k=1, offset=Vec2.Zero) {
+    constructor(obj1, obj2, distance=3, k=1, offset=Vec2.Zero, color='blue') {
         this.obj1 = obj1;
         this.obj2 = obj2;
         this.distance = distance;
@@ -263,6 +263,7 @@ class NonStretchableString {
         this.mass = 1;
         this.immoveable = false;
         this.offset = offset;
+        this.color = color;
         
     }
 
@@ -299,7 +300,15 @@ class NonStretchableString {
     }
 
     render(renderer) {
-        renderer.DrawLine(this.obj1.position.add(this.offset), this.obj2.position.add(this.offset), 'hsl(280 100 40 / 40%)', 10);
+        let obj1ToObj2 = this.obj2.futurePosition.subtract(this.obj1.futurePosition);
+        let newDistance = obj1ToObj2.length;
+        let width = (this.distance - newDistance) / this.distance < 0.01 ? 5 : 10;
+
+        renderer.DrawLine(
+            this.obj1.position.add(this.offset), 
+            this.obj2.position.add(this.offset), 
+            this.color, 
+            width);
     }
 }
 
