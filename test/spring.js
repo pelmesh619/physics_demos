@@ -250,7 +250,11 @@ class Spring {
     }
 
     render(renderer) {
-        renderer.DrawLine(this.obj1.position, this.obj2.position, 'purple', 5);
+        let obj1ToObj2 = this.obj2.futurePosition.subtract(this.obj1.futurePosition);
+        let newDistance = obj1ToObj2.length;
+        let opacity = round(clamp((this.distance - newDistance) / this.distance * 20 + 70, 40, 100));
+
+        renderer.DrawLine(this.obj1.position, this.obj2.position, `rgba(190, 30, 190, ${opacity}%)`, 5);
     }
 }
 
