@@ -221,12 +221,13 @@ class Spring {
 }
 
 class CircleBody extends DynamicObject {
-    constructor(radius, startPosition, mass=1, integrator) {
+    constructor(radius, startPosition, mass=1, envres, integrator) {
         super(startPosition);
         
         this.radius = radius;
         this.mass = mass;
         this.integrator = integrator;
+        this.envres = envres;
     }
 
     render(renderer) {
@@ -238,6 +239,9 @@ class CircleBody extends DynamicObject {
         if (this.stopForce.length != 0) {
             this.applyForce(this.stopForce);
         }
+
+        this.applyForce(this.velocity.multiply(-this.envres));
+
         this.position = this.nextPosition;
         this.angle = this.nextAngle;
 
