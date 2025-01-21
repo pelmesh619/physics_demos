@@ -164,17 +164,23 @@ class Main {
         if (!this.stopped) {
             for (let i = 0; i < ticksPerFrame; i++) {
                 this.simulationModel.update();
+                this.updateEnergyValues();
 
-                this.allTimeMaximum = Math.max(this.simulationModel.getFullEnergy(), this.allTimeMaximum);
-                this.allTimeMinimum = Math.min(this.simulationModel.getFullEnergy(), this.allTimeMinimum);
             }
             this.simulationModel.renderFrame();
+            this.updateEnergyDisplay();
         }
+    }
 
+    updateEnergyDisplay() {
         document.getElementById('energyDisplay').innerText = 
             'Энергия системы: \n' + toScientificNotation(this.simulationModel.getFullEnergy(), 6) + "\n" +  
             "Минимум: \n" + toScientificNotation(this.allTimeMinimum, 6) + "\n" + 
             "Максимум: \n" + toScientificNotation(this.allTimeMaximum, 6);
+    }
+    updateEnergyValues() {
+        this.allTimeMaximum = Math.max(this.simulationModel.getFullEnergy(), this.allTimeMaximum);
+        this.allTimeMinimum = Math.min(this.simulationModel.getFullEnergy(), this.allTimeMinimum);
     }
 
     nextTickFactory() {
@@ -197,13 +203,18 @@ function main() {
     
     document.getElementById('nextStepButton').addEventListener('click', () => { 
         mainObject.simulationModel.update();
+        mainObject.updateEnergyValues();
         mainObject.simulationModel.renderFrame();
+        mainObject.updateEnergyDisplay();
     });
     document.getElementById('nextFrameButton').addEventListener('click', () => { 
         for (let i = 0; i < ticksPerFrame; i++) {
             mainObject.simulationModel.update();
+            mainObject.updateEnergyValues();
         }
         mainObject.simulationModel.renderFrame();
+
+        mainObject.updateEnergyDisplay();
     });
 
     document.getElementById('removeMiddleString').addEventListener('click', (event) => { 
