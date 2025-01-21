@@ -25,18 +25,67 @@
                     </svg>
                 </div>
                 <div id="hintText">
+                    Здесь я тестировал всякие упругости и поведение пружин относительно разных численных методов интегрирования. <br/>
+
+                    <hr/>
+
+                    Тут есть разные приколы с пружинками и нитями - выберите понравившийся снизу и тыкните "Перезапустить"  <br/>
+
                     <select name="scenario" id="scenario-select">
                         <option value="pendulum" selected>Маятник</option>
                         <option value="string_paradox">Парадокс</option>
                         <option value="ellipse">Эллипс</option>
                         <option value="triple_pendulum">Тройной маятник</option>
+                        <option value="spring_pendulum">Груз на пружине</option>
                     </select> <br/>
+
+                    <button id="restartButton"> Перезапустить </button> <br/>
+
 
                     <div id="scenario-commentary">
                         <div id="string_paradox-commentary">
-                            <button id="removeMiddleString"> Удалить нить посередине </button>
+                            Здесь симуляция "<i>пружинного парадокса</i>" из видео Steve Mould (<a href="https://www.youtube.com/watch?v=Cg73j3QYRJc">*тык*</a>) <br/>
+
+                            Есть грузик, он подвешен к неподвижной точке с помощью пружины, нерастяжимой нити и еще такой же пружины. 
+                            По бокам присоединены другие нити, которые не находятся в напряжении. Куда сместиться груз, если разрезать синюю нить?
+
+                            <button id="removeMiddleString"> Удалить синюю нить </button> <br/>
+
+                            Интуитивным ответом будет вниз, однако груз сдвинется вверх: когда мы разрезаем синюю нить, мы превращаем две последовательные пружины в две паралелльные, 
+                            которые делят напряжение между собой (однако я заметил, что при правильных параметрах можно добиться другого ответа)
                         </div>
+                        <div id="pendulum-commentary">
+                            Здесь я проверял "<i>утечки</i>" энергии при разных методах интегрирования. Если вы ниже изменить его на "3/8", то заметите
+                            как энергия системы меняется, то менее значительно, чем при других методах
+                        </div>
+                        <div id="ellipse-commentary">
+                            Здесь у пружинки я задал особое свойство - сумма длин этих отрезков должна быть постоянной,
+                            благодаря чему шарик движется по траектории эллипса
+                        </div>
+                        <div id="triple_pendulum-commentary">
+                            Используя тот факт, что нерастяжимый стержень можно смоделировать как пружину с коэффициентом упругости \( k \to \infty \), 
+                            можно смоделировать такой залипательный тройной маятник
+                        </div>
+                        <div id="spring_pendulum-commentary">
+
+                        </div>
+                        
                     </div>
+                    
+                    <hr/>
+
+                    Я заметил, что методы Эйлера и Рунге-Кутты дают утечки энергии из системы, поэтому, перепробовав некоторые другие, пришел 
+                    к выводу, что "3/8" сохраняет энергию в "<i>упругих</i>" системах лучше всего (однако можно добиться большей точности, если как следует дифференцировать ускорение) <br/>
+
+                    <select name="integrator" id="integrator-select">
+                        <option value="euler" selected>Эйлер</option>
+                        <option value="rk4">Рунге-Кутта 4-ого (classic)</option>
+                        <option value="rk3over8">3/8</option>
+                        <option value="rkRalston">Ральстон</option>
+                        <option value="ssprk3">SSPRK3</option>
+                    </select> <br/>
+
+                    <hr/>
 
                     <label class="toggle-switch" for="showVelocities">
                         <input type="checkbox" id="showVelocities" name="showVelocities" />
@@ -52,19 +101,11 @@
                     </label>
                     <label for="stopSimulation"> Остановить симуляцию? </label> <br/>
 
-                    <button id="restartButton"> Перезапустить </button> <br/>
 
                     <button id="nextStepButton"> Следующий шаг симуляции </button> <br/>
 
                     <button id="nextFrameButton"> Следующий кадр симуляции </button> <br/>
 
-                    <select name="integrator" id="integrator-select">
-                        <option value="euler" selected>Эйлер</option>
-                        <option value="rk4">Рунге-Кутта 4-ого (classic)</option>
-                        <option value="rk3over8">3/8</option>
-                        <option value="rkRalston">Ральстон</option>
-                        <option value="ssprk3">SSPRK3</option>
-                    </select>
                 </div>
             </div>
         </div>
