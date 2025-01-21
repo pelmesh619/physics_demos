@@ -112,6 +112,20 @@ class Main {
             mainObject.simulationModel.addObject(new Spring(circle1, circle2, 3, k));
             mainObject.simulationModel.addObject(new Spring(circle2, circle3, 3, k));
         },
+        spring_pendulum: (mainObject) => {
+            borderWidth = 35;
+            mainObject.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2, -10);
+
+            let point1 = new StaticObject(new Vec2(0, 0));
+
+            let circle1 = new CircleBody(0.7, new Vec2(2, -5), 0.5, 0, integrators[document.getElementById('integrator-select').value]);
+    
+            let k = 10;
+            mainObject.simulationModel.addObject(new TrailPath(mainObject.simulationModel, circle1))
+            .addObject(point1)
+            .addObject(circle1)
+            .addObject(new Spring(point1, circle1, 3, k));
+        },
     }
 
     removeMiddleString() {
