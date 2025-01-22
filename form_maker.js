@@ -102,8 +102,8 @@ class Vec2Input {
         this.numberDomain2 = numberDomain2;
         this.func = changeFunc;
 
-        this.numberObject1 = new NumberInput(id + '-x', '', numberDomain1);
-        this.numberObject2 = new NumberInput(id + '-y', '', numberDomain2);
+        this.numberObject1 = new NumberInput(id + '-x', '', numberDomain1, changeFunc);
+        this.numberObject2 = new NumberInput(id + '-y', '', numberDomain2, changeFunc);
     }
 
     get type() { return "vec2"; }
