@@ -8,8 +8,34 @@ function spanFactory(text) {
     return t;
 }
 
-class RadioInput {
+class InputBase {
+    MakeLabel(text, forId, purpose='label') {
+        const label = document.createElement("label");
+        label.htmlFor = forId;
+        label.innerHTML = text;
+        label.setAttribute('purpose', purpose);
+
+        return label;
+    }
+
+    MakeBasicInputNode(form) {
+        const node = document.createElement("input");
+
+        node.type = this.type;
+        node.id = makeInputId(form.formId, this.id);
+        node.name = this.groupId;
+        if (this.type != 'checkbox') {
+            node.required = true;
+        }
+        node.value = this.value;
+
+        return node;
+    }
+}
+
+class RadioInput extends InputBase {
     constructor(id, groupId, label, defaultValue=false, func=(e) => { }) {
+        super();
         this.id = id;
         this.label = label;
         this.groupId = groupId;
@@ -34,8 +60,9 @@ class RadioInput {
     }
 }
 
-class CheckboxInput {
+class CheckboxInput extends InputBase {
     constructor(id, groupId, label, defaultValue=false, func=(e) => { }) {
+        super();
         this.id = id;
         this.label = label;
         this.groupId = groupId;
@@ -56,8 +83,9 @@ class CheckboxInput {
     }
 }
 
-class NumberInput {
+class NumberInput extends InputBase {
     constructor(id, label, domain, changeFunc) {
+        super();
         this.id = id;
         this.label = label;
         this.func = changeFunc;
