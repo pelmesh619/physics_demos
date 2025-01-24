@@ -96,21 +96,24 @@ class Main {
             let point1 = new StaticObject(new Vec2(0, 0));
 
             mainObject.simulationModel.addObject(point1);
-            
-            let circle1 = new CircleBody(0.5, new Vec2(3, 0), 1, 0, integrators[document.getElementById('integrator-select').value]);
-            let circle2 = new CircleBody(0.5, new Vec2(3, 3), 1, 0, integrators[document.getElementById('integrator-select').value]);
-            let circle3 = new CircleBody(0.5, new Vec2(3, 6), 1, 0, integrators[document.getElementById('integrator-select').value]);
-            mainObject.circle = circle1;
-    
+
+            let n = 3;
+            let length = 9;
             let k = 100000;
-            mainObject.simulationModel.addObject(new TrailPath(mainObject.simulationModel, circle3));
-    
-            mainObject.simulationModel.addObject(circle1);
-            mainObject.simulationModel.addObject(circle2);
-            mainObject.simulationModel.addObject(circle3);
-            mainObject.simulationModel.addObject(new Spring(point1, circle1, 3, k));
-            mainObject.simulationModel.addObject(new Spring(circle1, circle2, 3, k));
-            mainObject.simulationModel.addObject(new Spring(circle2, circle3, 3, k));
+
+            let lastCircle = point1;
+            for (let i = 1; i <= n; i++) {
+                let circle = new CircleBody(0.3, new Vec2(0, i * length / n), 1, 0, integrators[document.getElementById('integrator-select').value]);
+                
+                mainObject.simulationModel.addObject(circle)
+                .addObject(new Spring(lastCircle, circle, length / n, k));
+
+                lastCircle = circle;
+            }
+
+            lastCircle.velocity = Vec2.Right.multiply(5);
+            mainObject.simulationModel.addObject(new TrailPath(mainObject.simulationModel, lastCircle));
+
         },
         spring_pendulum: (mainObject) => {
             borderWidth = 35;
