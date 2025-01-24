@@ -110,6 +110,50 @@ class NumberInput extends InputBase {
         
         return elem === null ? null : parseFloat(elem.value);
     }
+
+    BuildNode(form) {
+        const divNode = document.createElement('div');
+        const inputId = makeInputId(form.formId, this.id);
+        const node = this.MakeBasicInputNode(form);
+        node.setAttribute('purpose', 'solo');
+
+
+        divNode.appendChild(this.MakeLabel(this.label, inputId));
+        divNode.appendChild(node);
+        divNode.appendChild(this.MakeLabel(this.domain.units, inputId, 'units'));
+        divNode.appendChild(document.createElement("br"));
+
+        form.DOMObject.appendChild(divNode);
+
+        document.getElementById(inputId).addEventListener("change", this.func);
+    }
+
+    MakeInputNode(form) {
+        const node = document.createElement("input");
+
+        node.type = "number";
+        node.id = makeInputId(form.formId, this.id);
+        node.name = this.groupId;
+        node.value = this.value;
+
+        node.step = this.domain.step;
+        if (this.domain.min != null) {
+            node.min = this.domain.min;
+        }
+        if (this.domain.max != null) {
+            node.max = this.domain.max;
+        }
+
+        return node;
+    }
+
+    AddChangeHandler(form, func) {
+        document.getElementById(
+            makeInputId(form.formId, this.id)
+        ).addEventListener("change", func);
+
+        return this;
+    }
 }
 
 class NumberDomain {
@@ -122,16 +166,41 @@ class NumberDomain {
     }
 }
 
-class Vec2Input {
-    constructor(id, label, numberDomain1, numberDomain2, changeFunc) {
+class NumberInputScheme {
+    constructor(value=0, units='', step=1, min=null, max=null) {
+        this.value = value;
+        this.units = units;
+        this.step = step;
+        this.min = min;
+        this.max = max;
+    }
+
+    Build(id, label, changeFunc) {
+        return new NumberInput(id, label, this, changeFunc);
+    }
+}
+
+class Vec2InputScheme {
+    constructor(numberInputScheme1, numberInputScheme2) {
+        this.numberInputScheme1 = numberInputScheme1;
+        this.numberInputScheme2 = numberInputScheme2;
+    }
+
+    Build(id, label, changeFunc) {
+        return new Vec2Input(id, label, this, changeFunc);
+    }
+}
+
+class Vec2Input extends InputBase {
+    constructor(id, label, vec2InputScheme) {
+        super();
         this.id = id;
         this.label = label;
-        this.numberDomain1 = numberDomain1;
-        this.numberDomain2 = numberDomain2;
-        this.func = changeFunc;
+        this.numberInputScheme1 = vec2InputScheme.numberInputScheme1;
+        this.numberInputScheme2 = vec2InputScheme.numberInputScheme2;
 
-        this.numberObject1 = new NumberInput(id + '-x', '', numberDomain1, changeFunc);
-        this.numberObject2 = new NumberInput(id + '-y', '', numberDomain2, changeFunc);
+        this.numberObject1 = vec2InputScheme.numberInputScheme1.Build(id + '-x', '');
+        this.numberObject2 = vec2InputScheme.numberInputScheme2.Build(id + '-y', '');
     }
 
     get type() { return "vec2"; }
@@ -145,6 +214,45 @@ class Vec2Input {
         const y = this.numberObject2.GetValue(formId);
         
         return x === null || y === null ? null : new Vec2(x, y);
+    }
+
+    BuildNode(form) {
+        const divNode = document.createElement('div');
+
+        const inputId = makeInputId(form.formId, this.id);
+        const node1 = this.numberObject1.MakeInputNode(form);
+        const node2 = this.numberObject2.MakeInputNode(form);
+
+        divNode.appendChild(this.MakeLabel(this.label, inputId));
+        divNode.appendChild(spanFactory(' ('));
+        divNode.appendChild(node1);
+        divNode.appendChild(
+            this.MakeLabel(
+                this.numberInputScheme1.units, 
+                makeInputId(form.formId, this.numberObject1.id), 
+                'units'
+            )
+        );
+        divNode.appendChild(spanFactory(', '));
+        divNode.appendChild(node2);
+        divNode.appendChild(
+            this.MakeLabel(
+                this.numberInputScheme2.units, 
+                makeInputId(form.formId, this.numberObject2.id), 
+                'units'
+            )
+        );
+        divNode.appendChild(spanFactory(')'));
+        divNode.appendChild(document.createElement("br"));
+
+        return divNode;
+    }
+
+    AddChangeHandler(form, func) {
+        this.numberObject1.AddChangeHandler(form, func);
+        this.numberObject2.AddChangeHandler(form, func);
+
+        return this;
     }
 }
 
@@ -258,26 +366,16 @@ class FormMaker {
     }
 
     AddNumber(number) {
-        const inputId = makeInputId(this.formId, number.id);
-        const node = this.MakeBasicInputNode(number);
-        node.setAttribute('purpose', 'solo');
-
-        node.step = number.domain.step;
-        if (number.domain.min != null) {
-            node.min = number.domain.min;
-        }
-        if (number.domain.max != null) {
-            node.max = number.domain.max;
-        }
-
-        this.DOMObject.appendChild(this.MakeLabel(number.label, inputId));
-        this.DOMObject.appendChild(node);
-        this.DOMObject.appendChild(this.MakeLabel(number.domain.units, inputId, 'units'));
-        this.DOMObject.appendChild(document.createElement("br"));
-
-        document.getElementById(inputId).addEventListener("change", number.func);
+        number.BuildNode(this);
 
         this.inputObjects.push(number);
+        return this;
+    }
+
+    AddInputObject(input) {
+        this.DOMObject.appendChild(input.BuildNode(this));
+
+        this.inputObjects.push(input);
         return this;
     }
 
