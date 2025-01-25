@@ -17,7 +17,9 @@ function main() {
     .AddChildForm("coordinatesOutputForm")
     .AddSubmitButton("submit", "Подтвердить", (v) => { window.alert(JSON.stringify(v)); })
     .AddCheckbox(new CheckboxInput("otherParams", "stop", "Остановить симуляцию?"))
-    .AddVec2(new Vec2Input('someVector', 'Мой вектор', new NumberDomain(0, 'м'), new NumberDomain(0, 'м')));
+    .AddInputObject(new Vec2InputScheme(new NumberInputScheme(0, 'м'), new NumberInputScheme(0, 'м')).Build('someVector', 'Мой вектор'))
+    .AddInputObject(new NumberInputScheme(0, 'м').Build('someVectorLength', 'Длина'))
+    .ConnectInputs('someVector', 'someVectorLength', (vec) => vec.length, (x) => Vec2.Right.multiply(x));
 
     updateCoordinatesValuesForm();
 }
@@ -29,25 +31,25 @@ function updateCoordinatesValuesForm(e) {
 
     if (valuesType == "cartesian") {
         coordinatesValuesFrom
-        .AddNumber(new NumberInput("x", "x = ", new NumberDomain(0, "м", 0.001)))
-        .AddNumber(new NumberInput("y", "y = ", new NumberDomain(0, "м", 0.001)))
-        .AddNumber(new NumberInput("z", "z = ", new NumberDomain(0, "м", 0.001)))
+        .AddInputObject(new NumberInputScheme(0, "м", 0.001).Build("x", "x = "))
+        .AddInputObject(new NumberInputScheme(0, "м", 0.001).Build("y", "y = "))
+        .AddInputObject(new NumberInputScheme(0, "м", 0.001).Build("z", "z = "))
     } else if (valuesType == "cylindical") {
         coordinatesValuesFrom
-        .AddNumber(new NumberInput("r", "r = ", new NumberDomain(0, "м", 0.001)))
-        .AddNumber(new NumberInput("phi", "phi = ", new NumberDomain(0, "rad", 0.001)))
-        .AddNumber(new NumberInput("phi_deg", "", new NumberDomain(0, "deg", 0.001)))
-        .AddNumber(new NumberInput("z", "z = ", new NumberDomain(0, "м", 0.001)))
-        .ConnectNumbers('phi', 'phi_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; })
+        .AddInputObject(new NumberInputScheme(0, "м", 0.001).Build("r", "r = "))
+        .AddInputObject(new NumberInputScheme(0, "rad", 0.001).Build("phi", "phi = "))
+        .AddInputObject(new NumberInputScheme(0, "deg", 0.001).Build("phi_deg", ""))
+        .AddInputObject(new NumberInputScheme(0, "м", 0.001).Build("z", "z = "))
+        .ConnectInputs('phi', 'phi_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; })
     } else if (valuesType == "spherical") {
         coordinatesValuesFrom
-        .AddNumber(new NumberInput("r", "r = ", new NumberDomain(0, "м", 0.001)))
-        .AddNumber(new NumberInput("phi", "phi = ", new NumberDomain(0, "rad", 0.001)))
-        .AddNumber(new NumberInput("phi_deg", "", new NumberDomain(0, "deg", 0.001)))
-        .AddNumber(new NumberInput("theta", "theta = ", new NumberDomain(0, "rad", 0.001)))
-        .AddNumber(new NumberInput("theta_deg", "", new NumberDomain(0, "deg", 0.001)))
-        .ConnectNumbers('phi', 'phi_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; })
-        .ConnectNumbers('theta', 'theta_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; });
+        .AddInputObject(new NumberInputScheme(0, "м", 0.001).Build("r", "r = "))
+        .AddInputObject(new NumberInputScheme(0, "rad", 0.001).Build("phi", "phi = "))
+        .AddInputObject(new NumberInputScheme(0, "deg", 0.001).Build("phi_deg", ""))
+        .AddInputObject(new NumberInputScheme(0, "rad", 0.001).Build("theta", "theta = "))
+        .AddInputObject(new NumberInputScheme(0, "deg", 0.001).Build("theta_deg", ""))
+        .ConnectInputs('phi', 'phi_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; })
+        .ConnectInputs('theta', 'theta_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; });
     }
 }
 
