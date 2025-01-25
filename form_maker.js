@@ -111,10 +111,22 @@ class NumberInput extends InputBase {
         return elem === null ? null : parseFloat(elem.value);
     }
 
+    SetValue(formId, value) {
+        const elem = document.getElementById(makeInputId(formId, this.id));
+        
+        if (elem != null) {
+            elem.value = roundByStep(
+                parseFloat(value), 
+                this.domain.step ? this.domain.step : 1, 
+                this.domain.min ? this.domain.min : 0
+            );;
+        }
+    }
+
     BuildNode(form) {
         const divNode = document.createElement('div');
         const inputId = makeInputId(form.formId, this.id);
-        const node = this.MakeBasicInputNode(form);
+        const node = this.MakeInputNode(form);
         node.setAttribute('purpose', 'solo');
 
 
@@ -123,9 +135,7 @@ class NumberInput extends InputBase {
         divNode.appendChild(this.MakeLabel(this.domain.units, inputId, 'units'));
         divNode.appendChild(document.createElement("br"));
 
-        form.DOMObject.appendChild(divNode);
-
-        document.getElementById(inputId).addEventListener("change", this.func);
+        return divNode;
     }
 
     MakeInputNode(form) {
@@ -214,6 +224,11 @@ class Vec2Input extends InputBase {
         const y = this.numberObject2.GetValue(formId);
         
         return x === null || y === null ? null : new Vec2(x, y);
+    }
+
+    SetValue(formId, value) {
+        this.numberObject1.SetValue(formId, value.x);
+        this.numberObject2.SetValue(formId, value.y);
     }
 
     BuildNode(form) {
@@ -543,6 +558,25 @@ class FormMaker {
                 elem1.step ? parseFloat(elem1.step) : 1, 
                 elem1.min ? parseFloat(elem1.min) : 0
             );
+        });
+
+        return this;
+    }
+
+    ConnectInputs(id1, id2, func1To2, func2To1) {
+        const input1 = this.inputObjects.find((v) => v.id == id1);
+        const input2 = this.inputObjects.find((v) => v.id == id2);
+        if (input1 === null || input2 === null) {
+            return this;
+        }
+
+        const formId = this.formId;
+
+        input1.AddChangeHandler(this, (e) => {
+            input2.SetValue(formId, func1To2(input1.GetValue(formId)));
+        });
+        input2.AddChangeHandler(this, (e) => {
+            input1.SetValue(formId, func2To1(input2.GetValue(formId)));
         });
 
         return this;
