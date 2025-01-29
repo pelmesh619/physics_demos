@@ -58,6 +58,28 @@ class RadioInput extends InputBase {
         let radio = document.querySelector(`#${formId} input[name="${elem.name}"]:checked`);
         return radio == null ? null : radio.value;
     }
+
+    BuildNode(form) {
+        const divNode = document.createElement('div');
+        const inputId = makeInputId(form.formId, this.id);
+        const node = this.MakeBasicInputNode(form);
+
+        node.checked = this.defaultValue;
+
+        divNode.appendChild(node);
+        divNode.appendChild(this.MakeLabel(this.label, inputId));
+        divNode.appendChild(document.createElement("br"));
+        
+        return divNode;
+    }
+
+    AddChangeHandler(form, func) {
+        document.getElementById(
+            makeInputId(form.formId, this.id)
+        ).addEventListener("change", func);
+
+        return this;
+    }
 }
 
 class CheckboxInput extends InputBase {
@@ -80,6 +102,28 @@ class CheckboxInput extends InputBase {
         const elem = document.getElementById(makeInputId(formId, this.value));
         
         return elem === null ? null : elem.checked;
+    }
+
+    BuildNode(form) {
+        const divNode = document.createElement('div');
+        const inputId = makeInputId(form.formId, this.id);
+        const node = this.MakeBasicInputNode(form);
+
+        node.checked = this.defaultValue;
+
+        divNode.appendChild(node);
+        divNode.appendChild(this.MakeLabel(this.label, inputId));
+        divNode.appendChild(document.createElement("br"));
+
+        return divNode;
+    }
+
+    AddChangeHandler(form, func) {
+        document.getElementById(
+            makeInputId(form.formId, this.id)
+        ).addEventListener("change", func);
+
+        return this;
     }
 }
 
@@ -400,44 +444,15 @@ class FormMaker {
     }
     
     AddRadio(radioObject) {
-        const inputId = makeInputId(this.formId, radioObject.id);
-        const node = this.MakeBasicInputNode(radioObject);
-
-        node.checked = radioObject.defaultValue;
-
-        this.DOMObject.appendChild(node);
-        this.DOMObject.appendChild(this.MakeLabel(radioObject.label, inputId));
-        this.DOMObject.appendChild(document.createElement("br"));
-        
-        document.getElementById(inputId).addEventListener("change", radioObject.func);
-        
-        this.inputObjects.push(radioObject);
-        return this;
+        return this.AddInputObject(radioObject);
     }
     
     AddCheckbox(checkboxObject) {
-        const inputId = makeInputId(this.formId, checkboxObject.id);
-        const node = this.MakeBasicInputNode(checkboxObject);
-
-        node.checked = checkboxObject.defaultValue;
-
-        this.DOMObject.appendChild(node);
-        this.DOMObject.appendChild(this.MakeLabel(checkboxObject.label, inputId));
-        this.DOMObject.appendChild(document.createElement("br"));
-
-        document.getElementById(inputId).addEventListener("change", checkboxObject.func);
-
-        this.inputObjects.push(checkboxObject);
-        return this;
+        return this.AddInputObject(checkboxObject);
     }
 
     AddNumber(number) {
-        this.DOMObject.appendChild(number.BuildNode(this));
-
-        number.AddChangeHandler(this, number.func);
-
-        this.inputObjects.push(number);
-        return this;
+        return this.AddInputObject(number);
     }
 
     AddInputObject(input) {
@@ -450,59 +465,7 @@ class FormMaker {
     }
 
     AddVec2(vec2Object) {
-        const inputId = makeInputId(this.formId, vec2Object.id);
-        const node1 = this.MakeBasicInputNode(vec2Object.numberObject1);
-
-        node1.step = vec2Object.numberDomain1.step;
-        if (vec2Object.numberDomain1.min != null) {
-            node1.min = vec2Object.numberDomain1.min;
-        }
-        if (vec2Object.numberDomain1.max != null) {
-            node1.max = vec2Object.numberDomain1.max;
-        }
-
-        const node2 = this.MakeBasicInputNode(vec2Object.numberObject2);
-
-        node2.step = vec2Object.numberDomain2.step;
-        if (vec2Object.numberDomain2.min != null) {
-            node2.min = vec2Object.numberDomain2.min;
-        }
-        if (vec2Object.numberDomain2.max != null) {
-            node2.max = vec2Object.numberDomain2.max;
-        }
-
-        this.DOMObject.appendChild(this.MakeLabel(vec2Object.label, inputId));
-        this.DOMObject.appendChild(spanFactory(' ('));
-        this.DOMObject.appendChild(node1);
-        this.DOMObject.appendChild(
-            this.MakeLabel(
-                vec2Object.numberDomain1.units, 
-                makeInputId(this.formId, vec2Object.numberObject1.id), 
-                'units'
-            )
-        );
-        this.DOMObject.appendChild(spanFactory(', '));
-        this.DOMObject.appendChild(node2);
-        this.DOMObject.appendChild(
-            this.MakeLabel(
-                vec2Object.numberDomain2.units, 
-                makeInputId(this.formId, vec2Object.numberObject2.id), 
-                'units'
-            )
-        );
-        this.DOMObject.appendChild(spanFactory(')'));
-        this.DOMObject.appendChild(document.createElement("br"));
-
-        document.getElementById(
-            makeInputId(this.formId, vec2Object.numberObject2.id)
-        ).addEventListener("change", vec2Object.func);
-        document.getElementById(
-            makeInputId(this.formId, vec2Object.numberObject1.id)
-        ).addEventListener("change", vec2Object.func);
-
-        this.inputObjects.push(vec2Object)
-        return this;
-        
+        return this.AddInputObject(vec2Object);
     }
 
     AddParagraph(text) {
