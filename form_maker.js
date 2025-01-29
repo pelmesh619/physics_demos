@@ -333,6 +333,8 @@ class ListInput extends InputBase {
         this.inputScheme = listInputScheme.inputScheme;
 
         this.inputObjects = [];
+        this.changeHandlers = [];
+        this.values = [];
     }
 
     get type() { return "list"; }
@@ -351,17 +353,29 @@ class ListInput extends InputBase {
 
     SetValue(formId, value) {
         this.inputObjects.forEach((v, i) => {
-            v.SetValue(formId, value[i]);
+            if (i < this.values.length) {
+                v.SetValue(formId, value[i]);
+            }
         });
     }
 
     Reload(form) {
+        this.values = this.GetValue(form.formId);
+
         const divId = makeInputId(form.formId, this.id) + '-div';
 
         const divNode = document.getElementById(divId);
         divNode.innerHTML = '';
 
         this._buildNode(form, divNode);
+
+        this.inputObjects.forEach((inputObject, i) => {
+            this.changeHandlers.forEach((func) => {
+                inputObject.AddChangeHandler(form, func);
+            });
+        });
+
+        this.SetValue(form.formId, this.values);
     }
 
     _buildNode(form, divNode) {
@@ -397,6 +411,7 @@ class ListInput extends InputBase {
         this.inputObjects.forEach((inputObject) => {
             inputObject.AddChangeHandler(form, func);
         });
+        this.changeHandlers.push(func);
 
         return this;
     }
@@ -584,7 +599,7 @@ class FormMaker {
         return this;
     }
 
-    ConnectInputs(id1, id2, func1To2, func2To1) {
+    ConnectInputs(id1, id2, func1To2, func2To1=null) {
         const input1 = this.inputObjects.find((v) => v.id == id1);
         const input2 = this.inputObjects.find((v) => v.id == id2);
         if (input1 === null || input2 === null) {
@@ -596,9 +611,11 @@ class FormMaker {
         input1.AddChangeHandler(this, (e) => {
             input2.SetValue(formId, func1To2(input1.GetValue(formId)));
         });
-        input2.AddChangeHandler(this, (e) => {
-            input1.SetValue(formId, func2To1(input2.GetValue(formId)));
-        });
+        if (func2To1) {
+            input2.AddChangeHandler(this, (e) => {
+                input1.SetValue(formId, func2To1(input2.GetValue(formId)));
+            });
+        }
 
         return this;
     }
