@@ -230,13 +230,13 @@ class TrailPath {
         }
         this.parentObject = stickToObject;
         this.simulationModel = simulationModel;
-        this.ticksPerRecord = ticksPerFrame;
+        this.ticksPerRecord = ticksPerFrame * 3;
 
 
         this.position = new Vec2(NaN, NaN);
         this.relativePosition = relativePosition;
 
-        this.dataAmountLimit = 3 / frameRenderTime;
+        this.dataAmountLimit = round(3 / frameRenderTime / 3);
 
         this.data = [];
 
@@ -266,9 +266,11 @@ class TrailPath {
         for (let i = 1; i < this.data.length; i++) {
             renderer.DrawLine(this.data[i - 1].position, this.data[i].position);
         }
+
+        let timeArray = this.data.map((v) => v.time);
         
         let data = this.simulationModel.xChart.data;
-        data.labels = this.data.map((v) => v.time);
+        data.labels = timeArray;
 
         data.datasets[0].data = this.data.map((v) => v.position.x);
         data.datasets[1].data = this.data.map((v) => v.velocity.x);
@@ -277,7 +279,7 @@ class TrailPath {
 
 
         data = this.simulationModel.yChart.data;
-        data.labels = this.data.map((v) => v.time);
+        data.labels = timeArray;
 
         data.datasets[0].data = this.data.map((v) => v.position.y);
         data.datasets[1].data = this.data.map((v) => v.velocity.y);
@@ -285,7 +287,7 @@ class TrailPath {
         this.simulationModel.yChart.update();
 
         data = this.simulationModel.energyChart.data;
-        data.labels = this.data.map((v) => v.time);
+        data.labels = timeArray;
 
         data.datasets[0].data = this.data.map((v) => v.kineticEnergy);
         data.datasets[1].data = this.data.map((v) => v.potentialEnergy);
