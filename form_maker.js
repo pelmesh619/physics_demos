@@ -365,43 +365,6 @@ class FormMaker {
         this.inputIds = [];
         this.childForms = [];
         this.inputObjects = [];
-        
-        for (const el of document.querySelectorAll(`#${formId} input`)) {
-            const label = document.querySelector(`#${formId} label[for="${el.id}"][purpose="label"]`);
-            if (el.type == 'number' && el.getAttribute('purpose') == 'solo') {
-                const unitsLabel = document.querySelector(`#${formId} label[for="${el.id}"][purpose="units"]`);
-
-                this.inputObjects.push(new NumberInput(
-                    el.id.replace(formId + '-', ''),
-                    label.innerHTML,
-                    new NumberDomain(
-                        el.value,
-                        unitsLabel.innerHTML,
-                        el.step,
-                        el.min,
-                        el.max
-                    )
-                ));
-            } else if (el.type == 'checkbox') {
-                this.inputObjects.push(new CheckboxInput(
-                    el.value,
-                    el.name,
-                    label.innerHTML,
-                    el.checked
-                ));
-            } else if (el.type == 'radio') {
-                this.inputObjects.push(new RadioInput(
-                    el.value,
-                    el.name,
-                    label.innerHTML,
-                    el.checked
-                ));
-            }
-        }
-        for (const el of document.querySelectorAll(`#${formId} .childForm`)) {
-            this.childForms.push(el.id);
-        }
-
     }
 
     get DOMObject() { 
