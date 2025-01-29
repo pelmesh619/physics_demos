@@ -271,6 +271,94 @@ class Vec2Input extends InputBase {
     }
 }
 
+class ListInputScheme {
+    constructor(inputScheme) {
+        this.inputScheme = inputScheme;
+    }
+
+    Build(id, label) {
+        return new ListInput(id, label, this);
+    }
+}
+
+class ListInput extends InputBase {
+    constructor(id, label, listInputScheme) {
+        super();
+        this.id = id;
+        this.label = label;
+        this.inputScheme = listInputScheme.inputScheme;
+
+        this.inputObjects = [];
+    }
+
+    get type() { return "list"; }
+
+    get key() { return this.id; }
+
+    get groupId() { return this.id; }
+
+    CreateNewInputObject() {
+        this.inputObjects.push(this.inputScheme.Build(this.id + '-' + this.inputObjects.length, 'TEST CHANGE IT'));
+    }
+
+    GetValue(formId) {
+        return this.inputObjects.map((v) => v.GetValue(formId));
+    }
+
+    SetValue(formId, value) {
+        this.inputObjects.forEach((v, i) => {
+            v.SetValue(formId, value[i]);
+        });
+    }
+
+    Reload(form) {
+        const divId = makeInputId(form.formId, this.id) + '-div';
+
+        const divNode = document.getElementById(divId);
+        divNode.innerHTML = '';
+
+        this._buildNode(form, divNode);
+    }
+
+    _buildNode(form, divNode) {
+        const inputId = makeInputId(form.formId, this.id);
+
+        divNode.appendChild(this.MakeLabel(this.label, inputId));
+
+        const addButton = document.createElement('button');
+        addButton.innerText = 'SAMPLE TEXT';
+        addButton.id = inputId + '-addButton';
+
+        let t = this;
+        addButton.onclick = (e) => { t.CreateNewInputObject(); t.Reload(form); };
+
+        divNode.appendChild(addButton);
+
+        this.inputObjects.forEach((inputObject) => {
+            divNode.appendChild(inputObject.BuildNode(form));
+        });
+    }
+
+    BuildNode(form) {
+        const inputId = makeInputId(form.formId, this.id);
+        const divNode = document.createElement('div');
+        divNode.id = inputId + '-div';
+
+        this._buildNode(form, divNode);
+
+        return divNode;
+    }
+
+    AddChangeHandler(form, func) {
+        this.inputObjects.forEach((inputObject) => {
+            inputObject.AddChangeHandler(form, func);
+        });
+
+        return this;
+    }
+
+}
+
 class FormMaker {
     constructor(formId) {
         this.formId = formId;
