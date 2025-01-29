@@ -381,7 +381,9 @@ class FormMaker {
     }
 
     AddNumber(number) {
-        number.BuildNode(this);
+        this.DOMObject.appendChild(number.BuildNode(this));
+
+        number.AddChangeHandler(this, number.func);
 
         this.inputObjects.push(number);
         return this;
@@ -389,6 +391,8 @@ class FormMaker {
 
     AddInputObject(input) {
         this.DOMObject.appendChild(input.BuildNode(this));
+
+        input.AddChangeHandler(this, input.func);
 
         this.inputObjects.push(input);
         return this;
@@ -481,10 +485,13 @@ class FormMaker {
         this.DOMObject.appendChild(node);
         this.DOMObject.appendChild(document.createElement("br"));
         
-        this.DOMObject.addEventListener("submit", (e) => {
-            e.preventDefault();
-            func(this.GetValues());
-        });
+        if (!this.DOMObject.onsubmit) {
+            this.DOMObject.onsubmit = (e) => {
+                e.preventDefault();
+                func(this.GetValues());
+            };
+        }
+
         return this;
     }
 
