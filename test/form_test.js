@@ -2,24 +2,26 @@ function main() {
     var coordinatesSystemForm = new FormMaker("myForm");
 
     coordinatesSystemForm
-    .AddRadio(
+    .AddInputObject(
         new RadioInput("isometric", "outputProjection", "Изометрическая", true)
-    )
-    .AddRadio(
+    ).AddInputObject(
         new RadioInput("dimetric", "outputProjection", "Диметрическая")
-    ).AddRadio(
+    ).AddInputObject(
         new RadioInput("cartesian", "coordinatesType", "Прямоугольная система", true, updateCoordinatesValuesForm)
-    ).AddRadio(
+    ).AddInputObject(
         new RadioInput("cylindical", "coordinatesType", "Цилиндрическая система", false, updateCoordinatesValuesForm)
-    ).AddRadio(
+    ).AddInputObject(
         new RadioInput("spherical", "coordinatesType", "Сферическая система", false, updateCoordinatesValuesForm)
     ).AddChildForm("coordinatesValuesForm")
     .AddChildForm("coordinatesOutputForm")
     .AddSubmitButton("submit", "Подтвердить", (v) => { window.alert(JSON.stringify(v)); })
-    .AddCheckbox(new CheckboxInput("otherParams", "stop", "Остановить симуляцию?"))
+    .AddInputObject(new CheckboxInput("otherParams", "stop", "Остановить симуляцию?"))
     .AddInputObject(new Vec2InputScheme(new NumberInputScheme(0, 'м'), new NumberInputScheme(0, 'м')).Build('someVector', 'Мой вектор'))
     .AddInputObject(new NumberInputScheme(0, 'м').Build('someVectorLength', 'Длина'))
-    .ConnectInputs('someVector', 'someVectorLength', (vec) => vec.length, (x) => Vec2.Right.multiply(x));
+    .ConnectInputs('someVector', 'someVectorLength', (vec) => vec.length, (x) => Vec2.Right.multiply(x))
+    .AddInputObject(new ListInputScheme(new Vec2InputScheme(new NumberInputScheme(0, 'м'), new NumberInputScheme(0, 'м'))).Build('someVectorList', 'Мой вектор'))
+    .AddInputObject(new NumberInputScheme(0, 'м').Build('someVectorListLength', 'Длина векторов'))
+    .ConnectInputs('someVectorList', 'someVectorListLength', (vecList) => { let s = 0; vecList.forEach((v) => { s += v.length; }); return s; }, );
 
     updateCoordinatesValuesForm();
 }
