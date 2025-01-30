@@ -1,5 +1,7 @@
 class Constants {
     static get g() { return 9.8; }
+
+    static get G() { return 6.6743 * 10e-11; }
 }
 
 class ElectricConstants {
