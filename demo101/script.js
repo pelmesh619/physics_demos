@@ -62,9 +62,9 @@ function updateCoordinatesValuesForm(e) {
 
     if (valuesType == "cartesian") {
         coordinatesValuesFrom
-        .AddNumber(new NumberInput("x", "x = ", new NumberDomain(0, "м", 0.001), updateDisplays))
-        .AddNumber(new NumberInput("y", "y = ", new NumberDomain(0, "м", 0.001), updateDisplays))
-        .AddNumber(new NumberInput("z", "z = ", new NumberDomain(0, "м", 0.001), updateDisplays));
+        .AddInputObject(new NumberInput("x", "x = ", new NumberInputScheme(0, "м", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("y", "y = ", new NumberInputScheme(0, "м", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("z", "z = ", new NumberInputScheme(0, "м", 0.001), updateDisplays));
 
         coordinatesOutputFrom.AddParagraph("В цилиндрической системе:")
         .AddDisplay("r_display")
@@ -76,10 +76,10 @@ function updateCoordinatesValuesForm(e) {
         .AddDisplay("theta_display");
     } else if (valuesType == "cylindrical") {
         coordinatesValuesFrom
-        .AddNumber(new NumberInput("r", "r = ", new NumberDomain(0, "м", 0.001), updateDisplays))
-        .AddNumber(new NumberInput("phi", "phi = ", new NumberDomain(0, "rad", 0.001), updateDisplays))
-        .AddNumber(new NumberInput("phi_deg", "", new NumberDomain(0, "deg", 0.001), updateDisplays))
-        .AddNumber(new NumberInput("z", "z = ", new NumberDomain(0, "м", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("r", "r = ", new NumberInputScheme(0, "м", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("phi", "phi = ", new NumberInputScheme(0, "rad", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("phi_deg", "", new NumberInputScheme(0, "deg", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("z", "z = ", new NumberInputScheme(0, "м", 0.001)))
         .ConnectNumbers('phi', 'phi_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; });
 
         coordinatesOutputFrom.AddParagraph("В прямоугольной системе:")
@@ -92,11 +92,11 @@ function updateCoordinatesValuesForm(e) {
         .AddDisplay("theta_display");
     } else if (valuesType == "spherical") {
         coordinatesValuesFrom
-        .AddNumber(new NumberInput("r", "r = ", new NumberDomain(0, "м", 0.001), updateDisplays))
-        .AddNumber(new NumberInput("phi", "phi = ", new NumberDomain(0, "rad", 0.001), updateDisplays))
-        .AddNumber(new NumberInput("phi_deg", "", new NumberDomain(0, "deg", 0.001), updateDisplays))
-        .AddNumber(new NumberInput("theta", "theta = ", new NumberDomain(0, "rad", 0.001), updateDisplays))
-        .AddNumber(new NumberInput("theta_deg", "", new NumberDomain(0, "deg", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("r", "r = ", new NumberInputScheme(0, "м", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("phi", "phi = ", new NumberInputScheme(0, "rad", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("phi_deg", "", new NumberInputScheme(0, "deg", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("theta", "theta = ", new NumberInputScheme(0, "rad", 0.001), updateDisplays))
+        .AddInputObject(new NumberInput("theta_deg", "", new NumberInputScheme(0, "deg", 0.001)))
         .ConnectNumbers('phi', 'phi_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; })
         .ConnectNumbers('theta', 'theta_deg', (x) => { return x / Math.PI * 180; }, (x) => { return x * Math.PI / 180; });
 
