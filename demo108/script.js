@@ -10,6 +10,8 @@ function dt() {
 
 const borderWidth = 20;
 
+DynamicObject.integrator = integrators.rk3over8
+
 class Main {
     constructor(form) {
         this.form = form;
@@ -17,7 +19,7 @@ class Main {
     }
 
     reloadModel() {
-        if (this.simulationModel != undefined) {
+        if (this.simulationModel != undefined && this.simulationModel.xChart != undefined) {
             this.simulationModel.xChart.destroy();
             this.simulationModel.energyChart.destroy();
         } 
@@ -34,11 +36,12 @@ class Main {
 
         this.simulationModel.addObject(point1);
         
-        let circle = new CircleBody(1, new Vec2(values.d + values.deltax, 0), values.m, values.envres, integrators.rk3over8);
+        let circle = new CircleBody(1, new Vec2(values.d + values.deltax, 0), values.m, values.envres);
         circle.velocity = new Vec2(values.v, 0);
         this.circle = circle;
 
         this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
+        this.simulationModel.addObject(new ChartObserver(this.simulationModel, circle));
 
         this.simulationModel.spring = new Spring(point1, circle, values.d, values.k);
 
@@ -105,11 +108,15 @@ class Main {
         if (!this.stopped) {
             for (let i = 0; i < ticksPerFrame; i++) {
                 this.simulationModel.update();
+                this.updateEnergyValues();
             }
             this.simulationModel.renderFrame();
         }
+    }
 
-        document.getElementById('energyDisplay').innerText = this.simulationModel.getFullEnergy();
+    updateEnergyValues() {
+        this.allTimeMaximum = Math.max(this.simulationModel.getFullEnergy(), this.allTimeMaximum);
+        this.allTimeMinimum = Math.min(this.simulationModel.getFullEnergy(), this.allTimeMinimum);
     }
 
     nextTickFactory() {
@@ -160,10 +167,9 @@ function main() {
     form.DOMObject.appendChild(xChart);
     form.DOMObject.appendChild(energyChart);
     
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
     mainObject.reloadModel();
-
-    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
     setInterval(
         mainObject.nextTickFactory(),
@@ -233,12 +239,11 @@ class Spring {
 }
 
 class CircleBody extends DynamicObject {
-    constructor(radius, startPosition, mass=1, k, integrator) {
+    constructor(radius, startPosition, mass=1, k) {
         super(startPosition);
         
         this.radius = radius;
         this.mass = mass;
-        this.integrator = integrator;
         this.k = k; // rename
     }
 
@@ -267,79 +272,55 @@ class CircleBody extends DynamicObject {
         this.futureAngle = this.angle + this.angularVelocity * dt();
 
     }
-
-    get nextPosition() {
-        let r = this.integrator(this);
-
-        return r.position;
-    }
 }
 
-class TrailPath {
-    constructor(simulationModel, stickToObject, relativePosition=null) {
-        if (relativePosition == null) {
-            relativePosition = new Vec2(0, 0);
-        }
-        this.parentObject = stickToObject;
+class ChartObserver {
+    constructor(simulationModel, objectToObserve) {
+        this.parentObject = objectToObserve;
         this.simulationModel = simulationModel;
-        this.ticksPerRecord = 10;
 
+        this.ticksPerRecord = ticksPerFrame * 3;
+        this.dataAmountLimit = 70;
 
-        this.relativePosition = relativePosition;
-
-        this.dataAmountLimit = 1500;
-        this.velocity = new Vec2(0, 0);
+        this.position = new Vec2(NaN, NaN);
 
         this.data = [];
 
         this.counter = 0;
     }
 
-    get position() {
-        return this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle));
-    }
-
     update() {
-        if (this.data.length > 0) {
-            this.velocity = this.position.subtract(this.data[this.data.length - 1].position)
-            .multiply(this.simulationModel.time - this.data[this.data.length - 1].time);
-        } else {
-            this.velocity = new Vec2(0, 0);
-        }
         if (this.counter % this.ticksPerRecord == 0) {
             this.data.push(
                 {
-                    time: round(this.simulationModel.time, 3),
-                    position: this.position,
-                    velocity: this.parentObject.velocity.x,
-                    kineticEnergy: this.parentObject.kineticEnergy,
-                    potentialEnergy: this.simulationModel.spring.kineticEnergy,
-                    fullEnergy: this.simulationModel.spring.kineticEnergy + this.parentObject.kineticEnergy,
+                    "time": round(this.simulationModel.time, 2),
+                    "position": this.parentObject.position,
+                    "velocity": this.parentObject.velocity,
+                    "kineticEnergy": this.parentObject.kineticEnergy,
+                    "potentialEnergy": this.simulationModel.spring.kineticEnergy,
+                    "fullEnergy": this.simulationModel.spring.kineticEnergy + this.parentObject.kineticEnergy,
                 }
             );
+            if (this.data.length > this.dataAmountLimit && this.dataAmountLimit > 0) {
+                this.data.splice(0, this.data.length - this.dataAmountLimit);
+            }
         }
         this.counter++;
-        if (this.data.length > this.dataAmountLimit && this.dataAmountLimit > 0) {
-            this.data.splice(0, this.data.length - this.dataAmountLimit);
-        }
     }
 
     render(renderer) {
-        for (let i = 1; i < this.data.length; i++) {
-            renderer.DrawLine(this.data[i - 1].position, this.data[i].position, 'green', 3);
-        }
-
+        let timeArray = this.data.map((v) => v.time);
+        
         let data = this.simulationModel.xChart.data;
-        data.labels = this.data.map((v) => v.time);
+        data.labels = timeArray;
 
         data.datasets[0].data = this.data.map((v) => v.position.x);
-        data.datasets[1].data = this.data.map((v) => v.velocity);
+        data.datasets[1].data = this.data.map((v) => v.velocity.x);
 
         this.simulationModel.xChart.update();
 
-
         data = this.simulationModel.energyChart.data;
-        data.labels = this.data.map((v) => v.time);
+        data.labels = timeArray;
 
         data.datasets[0].data = this.data.map((v) => v.kineticEnergy);
         data.datasets[1].data = this.data.map((v) => v.potentialEnergy);
