@@ -12,6 +12,8 @@ class Main {
             new RadioInput("cylindrical", "coordinatesType", "цилиндрической", false, this.updateCoordinatesValuesFormFactory())
         ).AddRadio(
             new RadioInput("spherical", "coordinatesType", "сферической", false, this.updateCoordinatesValuesFormFactory())
+        ).AddInputObject(
+            new NumberInputScheme(3, "знак.").Build('eps', "С точностью", this.updateDisplaysFactory())
         ).AddChildForm(this.coordinatesValuesForm)
         .AddChildForm(this.coordinatesOutputForm);
 
@@ -40,30 +42,31 @@ class Main {
         const rho = this.coordinatesOutputForm.GetElement('rho_display');
         const alpha = this.coordinatesOutputForm.GetElement('alpha_display');
         const theta = this.coordinatesOutputForm.GetElement('theta_display');
+        const eps = values['eps'];
 
         if (values["coordinatesType"] == "cartesian") {
-            zeta.innerText = values['z'] + ' м';
-            r.innerText = toScientificNotation(Math.hypot(values['x'], values['y'])) + ' м';
-            phi.innerText = toScientificNotation(Math.atan2(values['y'], values['x'])) + ' rad';
+            zeta.innerText = toScientificNotation(values['z'], eps) + ' м';
+            r.innerText = toScientificNotation(Math.hypot(values['x'], values['y']), eps) + ' м';
+            phi.innerText = toScientificNotation(Math.atan2(values['y'], values['x']), eps) + ' rad';
             let rhoValue = Math.hypot(values['x'], values['y'], values['z']);
-            rho.innerText = toScientificNotation(rhoValue) + ' м';
-            alpha.innerText = toScientificNotation(Math.atan2(values['y'], values['x'])) + ' rad';
-            theta.innerText = toScientificNotation(rhoValue != 0 ? Math.acos(values['z'] / rhoValue) : 0) + ' rad';
+            rho.innerText = toScientificNotation(rhoValue, eps) + ' м';
+            alpha.innerText = toScientificNotation(Math.atan2(values['y'], values['x']), eps) + ' rad';
+            theta.innerText = toScientificNotation(rhoValue != 0 ? Math.acos(values['z'] / rhoValue) : 0, eps) + ' rad';
         } else if (values["coordinatesType"] == "cylindrical") {
-            z.innerText = values['z'] + ' м';
-            x.innerText = toScientificNotation(Math.cos(values['phi']) * values['r']) + ' м';
-            y.innerText = toScientificNotation(Math.sin(values['phi']) * values['r']) + ' м';
+            z.innerText = toScientificNotation(values['z'], eps) + ' м';
+            x.innerText = toScientificNotation(Math.cos(values['phi']) * values['r'], eps) + ' м';
+            y.innerText = toScientificNotation(Math.sin(values['phi']) * values['r'], eps) + ' м';
             let rhoValue = Math.hypot(values['r'], values['z']);
-            rho.innerText = toScientificNotation(rhoValue) + ' м';
-            alpha.innerText = toScientificNotation(values['phi']) + ' rad';
-            theta.innerText = toScientificNotation(rhoValue != 0 ? Math.acos(values['z'] / rhoValue) : 0) + ' rad';
+            rho.innerText = toScientificNotation(rhoValue, eps) + ' м';
+            alpha.innerText = toScientificNotation(values['phi'], eps) + ' rad';
+            theta.innerText = toScientificNotation(rhoValue != 0 ? Math.acos(values['z'] / rhoValue) : 0, eps) + ' rad';
         } else if (values["coordinatesType"] == "spherical") {
-            z.innerText = toScientificNotation(values['r'] * Math.sin(values['theta'])) + ' м';
-            x.innerText = toScientificNotation(values['r'] * Math.cos(values['theta']) * Math.cos(values['phi'])) + ' м';
-            y.innerText = toScientificNotation(values['r'] * Math.cos(values['theta']) * Math.sin(values['phi'])) + ' м';
-            r.innerText = toScientificNotation(values['r'] * Math.sin(values['theta'])) + ' м';
-            phi.innerText = values['phi'] + ' rad';
-            zeta.innerText = toScientificNotation(values['r'] * Math.cos(values['theta'])) + ' м';
+            z.innerText = toScientificNotation(values['r'] * Math.sin(values['theta']), eps) + ' м';
+            x.innerText = toScientificNotation(values['r'] * Math.cos(values['theta']) * Math.cos(values['phi']), eps) + ' м';
+            y.innerText = toScientificNotation(values['r'] * Math.cos(values['theta']) * Math.sin(values['phi']), eps) + ' м';
+            r.innerText = toScientificNotation(values['r'] * Math.sin(values['theta']), eps) + ' м';
+            phi.innerText = toScientificNotation(values['phi'], eps) + ' rad';
+            zeta.innerText = toScientificNotation(values['r'] * Math.cos(values['theta']), eps) + ' м';
         }
     }
 
