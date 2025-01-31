@@ -418,6 +418,80 @@ class ListInput extends InputBase {
 
 }
 
+class CompoundInputScheme {
+    constructor(inputScheme) {
+        this.inputScheme = inputScheme;
+    }
+
+    Build(id, label) {
+        return new CompoundInput(id, label, this);
+    }
+
+}
+
+
+class CompoundInput extends InputBase {
+    constructor(id, label, compoundInputScheme) {
+        super();
+        this.id = id;
+        this.label = label;
+        this.inputScheme = compoundInputScheme.inputScheme;
+
+        this.inputObjects = {};
+
+        for (let i in this.inputScheme) {
+            this.inputObjects[i] = this.inputScheme[i].Build(this.id + '-' + i, 'TEST CHAnge it');
+        }
+    }
+
+    get type() { return "compound"; }
+
+    get key() { return this.id; }
+
+    get groupId() { return this.id; }
+
+    GetValue(formId) {
+        let values = {};
+
+        for (let i in this.inputObjects) {
+            values[i] = this.inputObjects[i].GetValue(formId);
+        }
+
+        return values;
+    }
+
+    SetValue(formId, valueObject) {
+        for (let i in this.inputObjects) {
+            if (valueObject[i] != undefined)
+                this.inputObjects[i].SetValue(formId, values[i]);
+        }
+    }
+
+    BuildNode(form) {
+        const inputId = makeInputId(form.formId, this.id);
+        const divNode = document.createElement('div');
+        divNode.id = inputId + '-div';
+
+        divNode.appendChild(this.MakeLabel(this.label, inputId));
+
+        Object.values(this.inputObjects).forEach((inputObject) => {
+            divNode.appendChild(inputObject.BuildNode(form));
+        });
+
+        return divNode;
+    }
+
+    AddChangeHandler(form, func) {
+        Object.values(this.inputObjects).forEach((inputObject) => {
+            inputObject.AddChangeHandler(form, func);
+        });
+
+        return this;
+    }
+
+}
+
+
 class FormMaker {
     constructor(formId) {
         this.formId = formId;
