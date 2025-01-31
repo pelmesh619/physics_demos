@@ -153,12 +153,16 @@ class CollisionSimulationModel extends MechanicsSimulationModel {
     handleCollision() {
         for (let i = 0; i < this.objects.length; i++) {
             let obj1 = this.objects[i];
+            if (!obj1.position.isValid() || obj1.rigidbody == undefined) {
+                continue;
+            }
+
             for (let j = 0; j < i; j++) {
                 let obj2 = this.objects[j];
                 if (obj1.immoveable && obj2.immoveable) {
                     continue;
                 }
-                if (!obj1.position.isValid() || !obj2.position.isValid()) {
+                if (!obj2.position.isValid() || obj2.rigidbody == undefined) {
                     continue;
                 }
                 let r = obj1.rigidbody.DoesIntersect(obj2.rigidbody);
