@@ -4,7 +4,7 @@ const timeScale = 1;
 
 const showDebugInfo = false;
 
-const borderWidth = 60;
+const borderWidth = 70;
 
 function dt() {
     return frameRenderTime / ticksPerFrame * timeScale;
@@ -25,39 +25,21 @@ class Main {
         this.renderer = new Renderer2D('balls', borderWidth);
         this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
         this.simulationModel.useGravity = false;
+        this.simulationModel.addObject(new GravitationalForce(this.simulationModel));
 
-        // let r = 10;
+        let r = 15;
         
-        // let n = 8;
+        let n = 3;
 
-        // for (let i = 0; i < n; i++) {
-        //     let circle = new CircleBody(0.5, new Vec2(r, 0).rotate(i * 2 * Math.PI / n), 2e10, this.simulationModel);
+        for (let i = 0; i < n; i++) {
+            let circle = new CircleBody(0.5, new Vec2(r, 0).rotate(i * 2 * Math.PI / n), 30e11, this.simulationModel);
 
-        //     circle.velocity = Vec2.Up.multiply(10).rotate(i * 2 * Math.PI / n);
+            circle.velocity = Vec2.Up.multiply(5).rotate(i * 2 * Math.PI / n);
 
-        //     this.simulationModel
-        //     .addObject(new TrailPath(this.simulationModel, circle))
-        //     .addObject(circle);
-        // }
-
-        let sun = new CircleBody(0.1, new Vec2(0, 0), 33940e7, this.simulationModel);
-        this.simulationModel
-        .addObject(new TrailPath(this.simulationModel, sun))
-        .addObject(sun);
-
-        let earth = new CircleBody(0.07, new Vec2(15, 0), 43e7, this.simulationModel);
-        earth.velocity = Vec2.Down.multiply(Math.sqrt(Constants.G * (earth.mass + sun.mass) / earth.position.length));
-        this.simulationModel
-        .addObject(new TrailPath(this.simulationModel, earth))
-        .addObject(earth);
-
-        let moon = new CircleBody(0.05, new Vec2(15.3, 0), 0.523e7, this.simulationModel);
-        moon.velocity = Vec2.Down.multiply(Math.sqrt(Constants.G * (earth.mass + moon.mass) / (earth.position.subtract(moon.position)).length)).add(earth.velocity);
-        this.simulationModel
-        .addObject(new TrailPath(this.simulationModel, moon))
-        .addObject(moon);
-
-        // circle.velocity = Vec2.Right.multiply(0.2);
+            this.simulationModel
+            .addObject(new TrailPath(this.simulationModel, circle))
+            .addObject(circle)
+        }
 
         this.simulationModel.addObject(new MassCenter(this.simulationModel));
     }
@@ -122,6 +104,46 @@ function main() {
     )
 }
 
+class GravitationalForce {
+    constructor(simulationModel=null) {
+        this.simulationModel = simulationModel;
+        this.position = new Vec2(NaN, NaN);
+    }
+    
+    update() {
+        if (this.simulationModel != null) {
+            const moveableObjects = this.simulationModel.objects.filter(
+                (obj) => obj.position != undefined && obj.mass != undefined && obj.position.isValid()
+            )
+
+            for (let i = 0; i < moveableObjects.length; i++) {
+                const obj1 = moveableObjects[i];
+                for (let j = 0; j < i; j++) {
+                    const obj2 = moveableObjects[j];
+                    const obj1ToObj2 = obj2.position.subtract(obj1.position);
+                    const length = obj1ToObj2.length;
+
+                    if (length > (obj1.radius + obj2.radius) / 2) {
+                        let force = obj1ToObj2.normalize().multiply(Constants.G * obj1.mass * obj2.mass / Math.pow(length, 2));
+
+                        if (force.length > Constants.G * obj1.mass * obj2.mass / Math.pow(obj1.radius + obj2.radius, 2)) {
+                            force = force.normalize().multiply(Constants.G * obj1.mass * obj2.mass / Math.pow(obj1.radius + obj2.radius, 2))
+                        }
+                        obj1.applyForce(force);
+                        obj2.applyForce(force.multiply(-1));
+                    } else {
+                        let force = obj1ToObj2.normalize().multiply(obj1.futureVelocity().scalarProduct(obj1ToObj2.normalize()));
+                        obj1.applyForce(force.multiply(-obj1.mass / dt()));
+                        obj2.applyForce(force.multiply(obj2.mass / dt()));
+                    }
+                }
+            }
+        }
+    }
+
+    render() { }
+}
+
 class CircleBody extends DynamicObject {
     constructor(radius, startPosition, mass=1, simulationModel=null) {
         super(startPosition);
@@ -132,36 +154,19 @@ class CircleBody extends DynamicObject {
     }
 
     update() {
-        if (this.simulationModel != null) {
-            const thisObj = this;
-
-            
-            const moveableObjects = this.simulationModel.objects.filter(
-                (obj) => obj.position != undefined && obj.mass != undefined && obj.position.isValid()
-            )
-
-            moveableObjects.forEach((obj) => {
-                if (obj === thisObj) {
-                    return;
-                }
-
-                const obj1ToObj2 = obj.position.subtract(thisObj.position);
-                const length = obj1ToObj2.length;
-
-                if (length > obj.radius + thisObj.radius || true) {
-                    const force = obj1ToObj2.normalize().multiply(Constants.G * thisObj.mass * obj.mass / Math.pow(length, 2));
-                    thisObj.applyForce(force);
-                } else {
-                    // const force = obj1ToObj2.normalize().multiply(thisObj.futureVelocity().scalarProduct(obj1ToObj2.normalize()));
-                    // thisObj.applyForce(force.multiply(-thisObj.mass / dt()));
-                }
-            })
-        }
-
         if (this.stopForce.length != 0) {
             this.applyForce(this.stopForce);
         }
         this.position = this.nextPosition;
+
+        // if (this.position.x < this.simulationModel.renderer.offsetX || this.simulationModel.renderer.offsetX + this.simulationModel.renderer.sizeX < this.position.x) {
+        //     this.velocity.x = -this.velocity.x;
+        //     this.position = this.nextPosition;
+        // }
+        // if (this.position.y < this.simulationModel.renderer.offsetY || this.simulationModel.renderer.offsetY + this.simulationModel.renderer.sizeY < this.position.y) {
+        //     this.velocity.y = -this.velocity.y;
+        //     this.position = this.nextPosition;
+        // }
         this.angle = this.nextAngle;
 
         this.velocity = this.velocity.add(this.acceleration.multiply(dt()));
@@ -200,62 +205,9 @@ class MassCenter {
         .reduce((sum, obj) => obj.position.multiply(obj.mass).add(sum), Vec2.Zero)
         .multiply(1 / moveableObjects.reduce((sum, obj) => sum + obj.mass, 0));
 
-        renderer.DrawCircle(position, 0.3, 'rgba(40, 40, 40, 60%)');
+        renderer.DrawCircle(position, 0.1, 'rgba(40, 40, 40, 60%)');
     }
 
-}
-
-
-class TrailPath {
-    constructor(simulationModel, stickToObject, relativePosition=null) {
-        if (relativePosition == null) {
-            relativePosition = new Vec2(0, 0);
-        }
-        this.parentObject = stickToObject;
-        this.simulationModel = simulationModel;
-        this.ticksPerRecord = ticksPerFrame * 2;
-
-
-        this.relativePosition = relativePosition;
-
-        this.dataAmountLimit = 3 / frameRenderTime;
-        this.velocity = new Vec2(0, 0);
-
-        this.data = [];
-
-        this.counter = 0;
-    }
-
-    get position() {
-        return this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle));
-    }
-
-    update() {
-        if (this.data.length > 0) {
-            this.velocity = this.position.subtract(this.data[this.data.length - 1].position)
-            .multiply(this.simulationModel.time - this.data[this.data.length - 1].time);
-        } else {
-            this.velocity = new Vec2(0, 0);
-        }
-        if (this.counter % this.ticksPerRecord == 0) {
-            this.data.push(
-                {
-                    time: this.simulationModel.time,
-                    position: this.position,
-                }
-            );
-        }
-        this.counter++;
-        if (this.data.length > this.dataAmountLimit && this.dataAmountLimit > 0) {
-            this.data.splice(0, this.data.length - this.dataAmountLimit);
-        }
-    }
-
-    render(renderer) {
-        for (let i = 1; i < this.data.length; i++) {
-            renderer.DrawLine(this.data[i - 1].position, this.data[i].position, 'rgba(10, 250, 10, 70%)', 3);
-        }
-    }
 }
 
 
