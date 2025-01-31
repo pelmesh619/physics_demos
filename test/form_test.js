@@ -12,8 +12,8 @@ function main() {
         new RadioInput("cylindical", "coordinatesType", "Цилиндрическая система", false, updateCoordinatesValuesForm)
     ).AddInputObject(
         new RadioInput("spherical", "coordinatesType", "Сферическая система", false, updateCoordinatesValuesForm)
-    ).AddChildForm("coordinatesValuesForm")
-    .AddChildForm("coordinatesOutputForm")
+    ).AddChildForm(new FormMaker("coordinatesValuesForm"))
+    .AddChildForm(new FormMaker("coordinatesOutputForm"))
     .AddSubmitButton("submit", "Подтвердить", (v) => { window.alert(JSON.stringify(v)); })
     .AddInputObject(new CheckboxInput("otherParams", "stop", "Остановить симуляцию?"))
     .AddInputObject(new Vec2InputScheme(new NumberInputScheme(0, 'м'), new NumberInputScheme(0, 'м')).Build('someVector', 'Мой вектор'))
