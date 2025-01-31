@@ -36,11 +36,12 @@ class Main {
 
         this.simulationModel.addObject(point1);
         
-        let circle = new CircleBody(1, new Vec2(values.d + values.deltax, 0), values.m, values.envres);
+        let circle = new CircleBody(1, new Vec2(values.d + values.deltax, 0), values.m);
         circle.velocity = new Vec2(values.v, 0);
         this.circle = circle;
 
         this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
+        this.simulationModel.addObject(new EnvironmentResistanceForce(this.simulationModel, (obj) => obj.velocity.multiply(-values.envres)));
         this.simulationModel.addObject(new ChartObserver(this.simulationModel, circle));
 
         this.simulationModel.spring = new Spring(point1, circle, values.d, values.k);
@@ -239,39 +240,39 @@ class Spring {
 }
 
 class CircleBody extends DynamicObject {
-    constructor(radius, startPosition, mass=1, k) {
+    constructor(radius, startPosition, mass=1) {
         super(startPosition);
         
         this.radius = radius;
         this.mass = mass;
-        this.k = k; // rename
     }
 
     render(renderer) {
         renderer.DrawCircumference(this.position, this.radius, 'red', 5);
     }
+}
 
+class EnvironmentResistanceForce {
+    constructor(simulationModel=null, func) {
+        this.simulationModel = simulationModel;
+        this.position = new Vec2(NaN, NaN);
+        this.func = func;
+    }
     
     update() {
-        if (this.stopForce.length != 0) {
-            this.applyForce(this.stopForce);
+        if (this.simulationModel != null) {
+            const moveableObjects = this.simulationModel.objects.filter(
+                (obj) => obj.position != undefined && obj.applyForce != undefined && obj.velocity != undefined
+            )
+
+            for (let i = 0; i < moveableObjects.length; i++) {
+                moveableObjects[i].applyForce(this.func(moveableObjects[i]));
+            }
         }
-
-        this.applyForce(this.velocity.multiply(-this.k));
-
-        this.position = this.nextPosition;
-        this.angle = this.nextAngle;
-
-        this.velocity = this.velocity.add(this.acceleration.multiply(dt()));
-        this.acceleration = new Vec2(0, 0);
-        this.stopForce = new Vec2(0, 0);
-
-        this.angularVelocity += this.angularAcceleration * dt();
-        this.angularAcceleration = 0;
-
-        this.futureAngle = this.angle + this.angularVelocity * dt();
-
     }
+
+    render() { }
+
 }
 
 class ChartObserver {
