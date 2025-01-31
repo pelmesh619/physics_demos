@@ -37,6 +37,7 @@ class Main {
         circle.velocity = new Vec2(values['v'] * Math.cos(values['alpha']), values['v'] * Math.sin(values['alpha']));
 
         this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
+        this.simulationModel.addObject(new ChartObserver(this.simulationModel, circle));
         this.simulationModel.addObject(circle);
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
@@ -223,20 +224,15 @@ class LineBody extends StaticObject {
     }
 }
 
-class TrailPath {
-    constructor(simulationModel, stickToObject, relativePosition=null) {
-        if (relativePosition == null) {
-            relativePosition = new Vec2(0, 0);
-        }
-        this.parentObject = stickToObject;
+class ChartObserver {
+    constructor(simulationModel, objectToObserve) {
+        this.parentObject = objectToObserve;
         this.simulationModel = simulationModel;
-        this.ticksPerRecord = ticksPerFrame * 3;
 
+        this.ticksPerRecord = ticksPerFrame * 3;
+        this.dataAmountLimit = 70;
 
         this.position = new Vec2(NaN, NaN);
-        this.relativePosition = relativePosition;
-
-        this.dataAmountLimit = round(3 / frameRenderTime / 3);
 
         this.data = [];
 
@@ -248,25 +244,21 @@ class TrailPath {
             this.data.push(
                 {
                     "time": round(this.simulationModel.time, 2),
-                    "position": this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle)),
-                    "velocity": this.parentObject.velocity.add(this.relativePosition.multiply(this.parentObject.angle)),
+                    "position": this.parentObject.position,
+                    "velocity": this.parentObject.velocity,
                     "kineticEnergy": this.parentObject.kineticEnergy,
                     "potentialEnergy": this.parentObject.getPotentialEnergy(1),
                     "fullEnergy": this.parentObject.getFullMechanicEnergy(1),
                 }
             );
+            if (this.data.length > this.dataAmountLimit && this.dataAmountLimit > 0) {
+                this.data.splice(0, this.data.length - this.dataAmountLimit);
+            }
         }
         this.counter++;
-        if (this.data.length > this.dataAmountLimit && this.dataAmountLimit > 0) {
-            this.data.splice(0, this.data.length - this.dataAmountLimit);
-        }
     }
 
     render(renderer) {
-        for (let i = 1; i < this.data.length; i++) {
-            renderer.DrawLine(this.data[i - 1].position, this.data[i].position);
-        }
-
         let timeArray = this.data.map((v) => v.time);
         
         let data = this.simulationModel.xChart.data;
