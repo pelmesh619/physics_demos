@@ -32,7 +32,7 @@ class Main {
         circle.canRotate = true;
         circle.angularVelocity = values.v / values.r;
 
-        this.simulationModel.addObject(new TrailPath(this.simulationModel, circle, new Vec2(0, -values.r)));
+        this.simulationModel.addObject(new TrailPathWithVelocity(this.simulationModel, circle, new Vec2(0, -values.r)));
         this.simulationModel.addObject(circle);
     }
 
@@ -101,56 +101,20 @@ class CircleBody extends DynamicObject {
     }
 }
 
-class TrailPath {
-    constructor(simulationModel, stickToObject, relativePosition=null) {
-        if (relativePosition == null) {
-            relativePosition = new Vec2(0, 0);
-        }
-        this.parentObject = stickToObject;
-        this.simulationModel = simulationModel;
-        this.ticksPerRecord = 10;
-
-
-        this.relativePosition = relativePosition;
-
-        this.dataAmountLimit = 1000;
-        this.velocity = new Vec2(0, 0);
-
-        this.data = [];
-
-        this.counter = 0;
-    }
-
+class TrailPathWithVelocity extends TrailPath {
     get position() {
         return this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle));
     }
 
-    update() {
+    get velocity() {
         if (this.data.length > 0) {
-            this.velocity = this.position.subtract(this.data[this.data.length - 1].position)
-            .multiply(this.simulationModel.time - this.data[this.data.length - 1].time);
-        } else {
-            this.velocity = new Vec2(0, 0);
-        }
-        if (this.counter % this.ticksPerRecord == 0) {
-            this.data.push(
-                {
-                    time: this.simulationModel.time,
-                    position: this.position,
-                }
-            );
-        }
-        this.counter++;
-        if (this.data.length > this.dataAmountLimit && this.dataAmountLimit > 0) {
-            this.data.splice(0, this.data.length - this.dataAmountLimit);
-        }
+            return this.position.subtract(this.data[this.data.length - 1].position)
+            .multiply(1 / (this.simulationModel.time - this.data[this.data.length - 1].time));
+        } 
+        return Vec2.Zero;
     }
 
-    render(renderer) {
-        for (let i = 1; i < this.data.length; i++) {
-            renderer.DrawLine(this.data[i - 1].position, this.data[i].position, 'green', 3);
-        }
-    }
+    set velocity(value) { }
 }
 
 
