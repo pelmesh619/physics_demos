@@ -463,7 +463,7 @@ class CompoundInput extends InputBase {
     SetValue(formId, valueObject) {
         for (let i in this.inputObjects) {
             if (valueObject[i] != undefined)
-                this.inputObjects[i].SetValue(formId, values[i]);
+                this.inputObjects[i].SetValue(formId, valueObject[i]);
         }
     }
 
