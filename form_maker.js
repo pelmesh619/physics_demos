@@ -565,16 +565,16 @@ class FormMaker {
         return this;
     }
 
-    AddChildForm(id) {
+    AddChildForm(form) {
         const node = document.createElement("div");
 
-        node.id = id;
+        node.id = form.formId;
         node.classList.add("childForm");
 
         this.DOMObject.appendChild(node);
         this.DOMObject.appendChild(document.createElement("br"));
 
-        this.childForms.push(id);
+        this.childForms.push(form);
         return this;
     }
 
@@ -638,9 +638,9 @@ class FormMaker {
         for (let inputObj of this.inputObjects) {
             values[inputObj.key] = inputObj.GetValue(this.formId);
         }
-        for (let formId of this.childForms) {
-            if (document.getElementById(formId)) {
-                new FormMaker(formId).GetValues(values);
+        for (let form of this.childForms) {
+            if (document.getElementById(form.formId)) {
+                form.GetValues(values);
             }
         }
 
