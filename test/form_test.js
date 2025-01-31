@@ -21,7 +21,11 @@ function main() {
     .ConnectInputs('someVector', 'someVectorLength', (vec) => vec.length, (x) => Vec2.Right.multiply(x))
     .AddInputObject(new ListInputScheme(new Vec2InputScheme(new NumberInputScheme(0, 'м'), new NumberInputScheme(0, 'м'))).Build('someVectorList', 'Мой вектор'))
     .AddInputObject(new NumberInputScheme(0, 'м').Build('someVectorListLength', 'Длина векторов'))
-    .ConnectInputs('someVectorList', 'someVectorListLength', (vecList) => { let s = 0; vecList.forEach((v) => { s += v.length; }); return s; }, );
+    .ConnectInputs('someVectorList', 'someVectorListLength', (vecList) => { let s = 0; vecList.forEach((v) => { s += v.length; }); return s; }, )
+    .AddInputObject(new ListInputScheme(new CompoundInputScheme({
+        charge: new NumberInputScheme(0, 'Кл'), 
+        position: new Vec2InputScheme(new NumberInputScheme(0, 'м'), new NumberInputScheme(0, 'м'))
+    })).Build('chargeList', 'Заряды'));
 
     updateCoordinatesValuesForm();
 }
