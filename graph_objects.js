@@ -25,3 +25,62 @@ class Grid extends StaticObject {
         }
     }
 }
+
+class TrailPath {
+    constructor(simulationModel, stickToObject, relativePosition=null, secondsToHold=3) {
+        if (relativePosition == null) {
+            relativePosition = new Vec2(0, 0);
+        }
+        this.parentObject = stickToObject;
+        this.simulationModel = simulationModel;
+        this.ticksPerRecord = ticksPerFrame;
+
+
+        this.relativePosition = relativePosition;
+
+        this.secondsToHold = secondsToHold;
+        this.velocity = new Vec2(0, 0);
+
+        this.data = [];
+
+        this.counter = 0;
+
+        this.color = 'rgba(10, 250, 10, 70%)';
+        this.width = 3;
+    }
+
+    get position() {
+        return this.parentObject.position.add(this.relativePosition.rotate(this.parentObject.angle));
+    }
+
+    get secondsToHold() {
+        return this.dataAmountLimit * frameRenderTime;
+    }
+
+    set secondsToHold(value) {
+        this.dataAmountLimit = round(value / frameRenderTime);
+    }
+
+    update() {
+        if (this.counter % this.ticksPerRecord == 0) {
+            this.data.push(
+                {
+                    time: this.simulationModel.time,
+                    position: this.position,
+                }
+            );
+            this.velocity = this.position.subtract(this.data[this.data.length - 1].position)
+            .multiply(this.simulationModel.time - this.data[this.data.length - 1].time);
+        }
+        this.counter++;
+        if (this.data.length > this.dataAmountLimit && this.dataAmountLimit > 0) {
+            this.data.splice(0, this.data.length - this.dataAmountLimit);
+        }
+    }
+
+    render(renderer) {
+        for (let i = 1; i < this.data.length; i++) {
+            renderer.DrawLine(this.data[i - 1].position, this.data[i].position, this.color, this.width);
+        }
+    }
+}
