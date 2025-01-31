@@ -37,12 +37,13 @@ class Main {
         circle.velocity = new Vec2(values['v'] * Math.cos(values['alpha']), values['v'] * Math.sin(values['alpha']));
 
         this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
+        this.simulationModel.addObject(new EnvironmentResistanceForce(this.simulationModel, (obj) => obj.velocity.multiply(-values.envres)));
         this.simulationModel.addObject(new ChartObserver(this.simulationModel, circle));
         this.simulationModel.addObject(circle);
-        this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(20, 0)));
-        this.simulationModel.objects.push(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
-        this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
-        this.simulationModel.objects.push(new LineBody(new Vec2(9, 0), new Vec2(0, 10)));
+        this.simulationModel.addObject(new LineBody(new Vec2(-10, 0), new Vec2(20, 0)));
+        this.simulationModel.addObject(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
+        this.simulationModel.addObject(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
+        this.simulationModel.addObject(new LineBody(new Vec2(9, 0), new Vec2(0, 10)));
 
 
 
@@ -154,9 +155,10 @@ function main() {
     var mainObject = new Main(ballisticForm);
 
     ballisticForm
-    .AddNumber(new NumberInput("v", "|v| = ", new NumberDomain(10, "м/с", 0.001, 0)))
-    .AddNumber(new NumberInput("alpha", "α = ", new NumberDomain(1.57 / 2, "рад", 0.001, -1.570, 1.570)))
-    .AddNumber(new NumberInput("h", "h = ", new NumberDomain(1, "м", 0.001, 0)))
+    .AddNumber(new NumberInput("v", "\\( |v| \\) = ", new NumberDomain(10, "м/с", 0.001, 0)))
+    .AddNumber(new NumberInput("alpha", "\\( \\alpha \\) = ", new NumberDomain(1.57 / 2, "рад", 0.001, -1.570, 1.570)))
+    .AddNumber(new NumberInput("h", "\\( h \\) = ", new NumberDomain(1, "м", 0.001, 0)))
+    .AddNumber(new NumberInput("envres", "\\( \\lambda \\) = ", new NumberDomain(0, "Н·с/м", 0.001)))
     .AddSubmitButton('submitButton', "Перезапустить симуляцию", () => { mainObject.reloadModel(); })
     .AddButton('nextStepButton', "Следующий шаг симуляции", () => { 
         mainObject.simulationModel.update();
@@ -186,6 +188,8 @@ function main() {
     ballisticForm.DOMObject.appendChild(xChart);
     ballisticForm.DOMObject.appendChild(yChart);
     ballisticForm.DOMObject.appendChild(energyChart);
+    
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
     mainObject.reloadModel();
 
@@ -287,6 +291,28 @@ class ChartObserver {
 
         this.simulationModel.energyChart.update();
     }
+}
+
+class EnvironmentResistanceForce {
+    constructor(simulationModel=null, func) {
+        this.simulationModel = simulationModel;
+        this.position = new Vec2(NaN, NaN);
+        this.func = func;
+    }
+    
+    update() {
+        if (this.simulationModel != null) {
+            const moveableObjects = this.simulationModel.objects.filter(
+                (obj) => obj.position != undefined && obj.applyForce != undefined && obj.velocity != undefined
+            )
+
+            for (let i = 0; i < moveableObjects.length; i++) {
+                moveableObjects[i].applyForce(this.func(moveableObjects[i]));
+            }
+        }
+    }
+
+    render() { }
 }
 
 window.onload = main;
