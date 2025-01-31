@@ -163,7 +163,7 @@ function main() {
         mainObject.simulationModel.renderFrame();
     })
     .AddButton('nextFrameButton', "Следующий кадр", () => { 
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < ticksPerFrame; i++) {
             mainObject.simulationModel.update();
         }
         mainObject.simulationModel.renderFrame();
