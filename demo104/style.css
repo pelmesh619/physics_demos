@@ -1,0 +1,33 @@
+#main {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+#form {
+    width: max(30vw, 250px);
+    height: calc(100% - 2 * 20px);
+    border-right-style: solid;
+    border-color: var(--secondary-background-color);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+}
+
+#simulationDiv {
+    flex: 1 1 auto;
+    overflow: clip;
+}
+
+canvas {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
