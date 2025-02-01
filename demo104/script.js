@@ -30,7 +30,7 @@ class Main {
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
 
         for (let body of values.bodies) {
-            let circle = new CircleBody(1, body.position, body.mass);
+            let circle = new CircleBody(body.radius, body.position, body.mass);
             circle.velocity = body.velocity;
 
             this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
@@ -85,18 +85,22 @@ function main() {
 
     var mainObject = new Main(form);
 
+    const bodies = new ListInputScheme(
+        new CompoundInputScheme({
+            mass: new NumberInputScheme(1, 'кг', 0.001, 0.001).WithLabel('\\( m = \\)'),
+            radius: new NumberInputScheme(1, 'м', 0.001, 0.001).WithLabel('\\( R = \\)'),
+            position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)).WithLabel('\\( \\vec{r} = \\)'),
+            velocity: new Vec2InputScheme(new NumberInputScheme(0, 'м/с', 0.001), new NumberInputScheme(0, 'м/с', 0.001)).WithLabel('\\( \\vec{v} = \\)'),
+        })
+    ).Build("bodies", 'Тела:')
+    .WithAddButtonText('Добавить тело')
+    .WithRemoveButtonText('Удалить тело')
+
+    bodies.CreateNewInputObject();
+    bodies.CreateNewInputObject();
+
     form
-    .AddInputObject(
-        new ListInputScheme(
-            new CompoundInputScheme({
-                mass: new NumberInputScheme(1, 'кг', 0.001, 0.001).WithLabel('\\( m = \\)'),
-                position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)).WithLabel('\\( \\vec{r} = \\)'),
-                velocity: new Vec2InputScheme(new NumberInputScheme(0, 'м/с', 0.001), new NumberInputScheme(0, 'м/с', 0.001)).WithLabel('\\( \\vec{v} = \\)'),
-            })
-        ).Build("bodies", 'Тела:')
-        .WithAddButtonText('Добавить тело')
-        .WithRemoveButtonText('Удалить тело')
-    )
+    .AddInputObject(bodies)
     .AddSubmitButton('submitButton', "Перезапустить симуляцию", () => { mainObject.reloadModel(); })
     .AddButton('nextStepButton', "Следующий шаг симуляции", () => { 
         mainObject.simulationModel.update();
@@ -113,6 +117,22 @@ function main() {
             mainObject.stopped = e.target.checked;
         }
     ));
+
+    bodies.SetValue(form.formId, [
+        {
+            radius: 1,
+            mass: 1,
+            position: Vec2.UpLeft,
+            velocity: Vec2.DownRight,
+        },
+        {
+            radius: 2,
+            mass: 10,
+            position: Vec2.DownRight.multiply(2),
+            velocity: Vec2.UpLeft,
+        }
+    ]);
+    bodies.Reload(form);
 
     mainObject.reloadModel();
 
