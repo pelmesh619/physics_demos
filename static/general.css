@@ -55,6 +55,9 @@ form {
 input, button, select {
     margin: 5px;
 }
+input.shortNumberInput {
+    width: 70px;
+}
 
 #hintDiv {
     position: absolute;
