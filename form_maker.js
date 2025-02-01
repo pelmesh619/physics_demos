@@ -33,6 +33,36 @@ class InputBase {
     }
 }
 
+class InputSchemeBase {
+    constructor() {
+        this.label = '';
+    }
+
+    WithLabel(text) {
+        this.label = text;
+
+        return this;
+    }
+
+    MakeBasicInputNode(form) {
+        const node = document.createElement("input");
+
+        node.type = this.type;
+        node.id = makeInputId(form.formId, this.id);
+        node.name = this.groupId;
+        if (this.type != 'checkbox') {
+            node.required = true;
+        }
+        node.value = this.value;
+
+        return node;
+    }
+
+    Build() {
+        throw new TypeError("Call in base class");
+    }
+}
+
 class RadioInput extends InputBase {
     constructor(id, groupId, label, defaultValue=false, func=(e) => { }) {
         super();
@@ -163,7 +193,7 @@ class NumberInput extends InputBase {
                 parseFloat(value), 
                 this.domain.step ? this.domain.step : 1, 
                 this.domain.min ? this.domain.min : 0
-            );;
+            );
         }
     }
 
@@ -220,8 +250,9 @@ class NumberDomain {
     }
 }
 
-class NumberInputScheme {
+class NumberInputScheme extends InputSchemeBase {
     constructor(value=0, units='', step=1, min=null, max=null) {
+        super();
         this.value = value;
         this.units = units;
         this.step = step;
@@ -230,18 +261,19 @@ class NumberInputScheme {
     }
 
     Build(id, label, changeFunc) {
-        return new NumberInput(id, label, this, changeFunc);
+        return new NumberInput(id, label != undefined ? label : this.label, this, changeFunc);
     }
 }
 
-class Vec2InputScheme {
+class Vec2InputScheme extends InputSchemeBase {
     constructor(numberInputScheme1, numberInputScheme2) {
+        super();
         this.numberInputScheme1 = numberInputScheme1;
         this.numberInputScheme2 = numberInputScheme2;
     }
 
     Build(id, label, changeFunc) {
-        return new Vec2Input(id, label, this, changeFunc);
+        return new Vec2Input(id, label != undefined ? label : this.label, this, changeFunc);
     }
 }
 
@@ -280,7 +312,9 @@ class Vec2Input extends InputBase {
 
         const inputId = makeInputId(form.formId, this.id);
         const node1 = this.numberObject1.MakeInputNode(form);
+        node1.classList.add('shortNumberInput');
         const node2 = this.numberObject2.MakeInputNode(form);
+        node2.classList.add('shortNumberInput');
 
         divNode.appendChild(this.MakeLabel(this.label, inputId));
         divNode.appendChild(spanFactory(' ('));
@@ -315,13 +349,14 @@ class Vec2Input extends InputBase {
     }
 }
 
-class ListInputScheme {
+class ListInputScheme extends InputSchemeBase {
     constructor(inputScheme) {
+        super();
         this.inputScheme = inputScheme;
     }
 
     Build(id, label) {
-        return new ListInput(id, label, this);
+        return new ListInput(id, label != undefined ? label : this.label, this);
     }
 }
 
@@ -346,7 +381,7 @@ class ListInput extends InputBase {
     get groupId() { return this.id; }
 
     CreateNewInputObject() {
-        this.inputObjects.push(this.inputScheme.Build(this.id + '-' + this.inputObjects.length, 'TEST CHANGE IT'));
+        this.inputObjects.push(this.inputScheme.Build(this.id + '-' + this.inputObjects.length));
     }
 
     RemoveInputObject(index) {
@@ -382,6 +417,10 @@ class ListInput extends InputBase {
         });
 
         this.SetValue(form.formId, this.values);
+
+        if (typeof MathJax !== undefined) {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
     }
 
     WithAddButtonText(text) {
@@ -407,6 +446,7 @@ class ListInput extends InputBase {
         addButton.onclick = (e) => { t.CreateNewInputObject(); t.Reload(form); };
 
         divNode.appendChild(addButton);
+        divNode.appendChild(document.createElement('hr'));
 
         this.inputObjects.forEach((inputObject, i) => {
             divNode.appendChild(inputObject.BuildNode(form));
@@ -417,6 +457,7 @@ class ListInput extends InputBase {
             removeButton.onclick = (e) => { t.RemoveInputObject(i); t.Reload(form); };
 
             divNode.appendChild(removeButton);
+            divNode.appendChild(document.createElement('hr'));
         });
     }
 
@@ -441,13 +482,14 @@ class ListInput extends InputBase {
 
 }
 
-class CompoundInputScheme {
+class CompoundInputScheme extends InputSchemeBase {
     constructor(inputScheme) {
+        super(); 
         this.inputScheme = inputScheme;
     }
 
     Build(id, label) {
-        return new CompoundInput(id, label, this);
+        return new CompoundInput(id, label != undefined ? label : this.label, this);
     }
 
 }
@@ -463,7 +505,7 @@ class CompoundInput extends InputBase {
         this.inputObjects = {};
 
         for (let i in this.inputScheme) {
-            this.inputObjects[i] = this.inputScheme[i].Build(this.id + '-' + i, 'TEST CHAnge it');
+            this.inputObjects[i] = this.inputScheme[i].Build(this.id + '-' + i);
         }
     }
 
