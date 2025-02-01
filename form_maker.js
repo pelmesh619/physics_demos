@@ -386,6 +386,7 @@ class ListInput extends InputBase {
 
     RemoveInputObject(index) {
         this.inputObjects.splice(index, 1);
+        
     }
 
     GetValue(formId) {
@@ -394,7 +395,8 @@ class ListInput extends InputBase {
 
     SetValue(formId, value) {
         this.inputObjects.forEach((v, i) => {
-            if (i < this.values.length) {
+            if (i < value.length) {
+                this.values[i] = value[i];
                 v.SetValue(formId, value[i]);
             }
         });
@@ -402,6 +404,10 @@ class ListInput extends InputBase {
 
     Reload(form) {
         this.values = this.GetValue(form.formId);
+
+        for (let i = 0; i < this.inputObjects.length; i++) {
+            this.inputObjects[i] = this.inputScheme.Build(this.id + '-' + i)
+        } 
 
         const divId = makeInputId(form.formId, this.id) + '-div';
 
