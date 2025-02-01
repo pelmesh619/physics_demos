@@ -5,7 +5,7 @@
 
 #coordinatesSystemForm {
     width: max(50vw, 250px);
-    min-height: 100%;
+    max-height: fit-content;
     border-style: solid;
     border-radius: 10px;
     border-width: 10px;
