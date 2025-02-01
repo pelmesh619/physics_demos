@@ -29,13 +29,18 @@ class Main {
         this.simulationModel.enableColliderRender = document.getElementById('showColliders').checked;
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
 
+        let objects = [];
+
         for (let body of values.bodies) {
             let circle = new CircleBody(body.radius, body.position, body.mass);
             circle.velocity = body.velocity;
 
             this.simulationModel.addObject(new TrailPath(this.simulationModel, circle));
-            this.simulationModel.addObject(circle);
+            objects.push(circle);
         }
+
+        let t = this;
+        objects.forEach((obj) => t.simulationModel.addObject(obj));
 
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, -6), new Vec2(20, 0)));
         this.simulationModel.objects.push(new LineBody(new Vec2(-10, 7), new Vec2(20, 0)));
