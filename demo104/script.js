@@ -73,9 +73,9 @@ function main() {
     .AddInputObject(
         new ListInputScheme(
             new CompoundInputScheme({
-                mass: new NumberInputScheme(1, 'кг', 0.001, 0.001),
-                position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)),
-                velocity: new Vec2InputScheme(new NumberInputScheme(0, 'м/с', 0.001), new NumberInputScheme(0, 'м/с', 0.001)),
+                mass: new NumberInputScheme(1, 'кг', 0.001, 0.001).WithLabel('\\( m = \\)'),
+                position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)).WithLabel('\\( \\vec{r} = \\)'),
+                velocity: new Vec2InputScheme(new NumberInputScheme(0, 'м/с', 0.001), new NumberInputScheme(0, 'м/с', 0.001)).WithLabel('\\( \\vec{v} = \\)'),
             })
         ).Build("bodies", 'Тела:')
         .WithAddButtonText('Добавить тело')
