@@ -259,21 +259,7 @@ class CollisionSimulationModel extends MechanicsSimulationModel {
         obj1.applyForce(n2.multiply(force1 * m1 / dt()), applyPoint);
         obj2.applyForce(n1.multiply(force2 * m2 / dt()), applyPoint);
     }
-
-    getFullEnergy() {
-        let s = 0; 
-        let this_ = this;
-        this.objects
-        .filter((v) => v.position.isValid() && !v.immoveable)
-        .forEach((v) => { 
-            s += v.kineticEnergy;
-            if (this_.useGravity) { 
-                s += v.getPotentialEnergy(0); 
-            }
-        }); 
-        return s; 
-    }
-
+    
     renderFrame() {
         this.renderer.PrepareFrame();
         this.objects.forEach((obj) => { obj.render(this.renderer); });
