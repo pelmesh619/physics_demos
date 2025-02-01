@@ -22,8 +22,7 @@ body {
 }
 
 #simulationDiv {
-    flex: 1 1 auto;
-    overflow: clip;
+    flex: 1 1 min(70vw, calc(100vw - 250px));
 }
 
 canvas {
