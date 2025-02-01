@@ -335,6 +335,8 @@ class ListInput extends InputBase {
         this.inputObjects = [];
         this.changeHandlers = [];
         this.values = [];
+        this.addButtonText = 'addButtonText';
+        this.removeButtonText = 'removeButtonText';
     }
 
     get type() { return "list"; }
@@ -345,6 +347,10 @@ class ListInput extends InputBase {
 
     CreateNewInputObject() {
         this.inputObjects.push(this.inputScheme.Build(this.id + '-' + this.inputObjects.length, 'TEST CHANGE IT'));
+    }
+
+    RemoveInputObject(index) {
+        this.inputObjects.splice(index, 1);
     }
 
     GetValue(formId) {
@@ -378,13 +384,23 @@ class ListInput extends InputBase {
         this.SetValue(form.formId, this.values);
     }
 
+    WithAddButtonText(text) {
+        this.addButtonText = text;
+        return this;
+    }
+
+    WithRemoveButtonText(text) {
+        this.removeButtonText = text;
+        return this;
+    }
+
     _buildNode(form, divNode) {
         const inputId = makeInputId(form.formId, this.id);
 
         divNode.appendChild(this.MakeLabel(this.label, inputId));
 
         const addButton = document.createElement('button');
-        addButton.innerText = 'SAMPLE TEXT';
+        addButton.innerText = this.addButtonText;
         addButton.id = inputId + '-addButton';
 
         let t = this;
@@ -392,8 +408,15 @@ class ListInput extends InputBase {
 
         divNode.appendChild(addButton);
 
-        this.inputObjects.forEach((inputObject) => {
+        this.inputObjects.forEach((inputObject, i) => {
             divNode.appendChild(inputObject.BuildNode(form));
+
+            const removeButton = document.createElement('button');
+            removeButton.innerText = this.removeButtonText;
+            removeButton.id = inputId + `-removeButton${i}`;
+            removeButton.onclick = (e) => { t.RemoveInputObject(i); t.Reload(form); };
+
+            divNode.appendChild(removeButton);
         });
     }
 
