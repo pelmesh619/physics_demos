@@ -588,12 +588,10 @@ class FormMaker {
         this.DOMObject.appendChild(node);
         this.DOMObject.appendChild(document.createElement("br"));
         
-        if (!this.DOMObject.onsubmit) {
-            this.DOMObject.onsubmit = (e) => {
-                e.preventDefault();
-                func(this.GetValues());
-            };
-        }
+        this.DOMObject.onsubmit = (e) => {
+            e.preventDefault();
+            func(this.GetValues());
+        };
 
         return this;
     }
