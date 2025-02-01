@@ -21,7 +21,7 @@ class Main {
     reloadModel() {
         const values = this.form.GetValues();
 
-        this.renderer = new Renderer2D('simulation', borderWidth, -borderWidth / 2, -4);
+        this.renderer = new Renderer2D('simulation', borderWidth);
         this.simulationModel = new CollisionSimulationModel(this.form, this.renderer);
         this.simulationModel.useGravity = false;
         this.simulationModel.enableColliderRender = document.getElementById('showColliders').checked;
@@ -35,10 +35,10 @@ class Main {
             this.simulationModel.addObject(circle);
         }
 
-        this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(20, 0)));
-        this.simulationModel.objects.push(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
-        this.simulationModel.objects.push(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
-        this.simulationModel.objects.push(new LineBody(new Vec2(9, 0), new Vec2(0, 10)));
+        this.simulationModel.objects.push(new LineBody(new Vec2(-10, -6), new Vec2(20, 0)));
+        this.simulationModel.objects.push(new LineBody(new Vec2(-10, 7), new Vec2(20, 0)));
+        this.simulationModel.objects.push(new LineBody(new Vec2(-10, -7), new Vec2(0, 14)));
+        this.simulationModel.objects.push(new LineBody(new Vec2(9, -7), new Vec2(0, 14)));
 
     }
 
@@ -78,6 +78,8 @@ function main() {
                 velocity: new Vec2InputScheme(new NumberInputScheme(0, 'м/с', 0.001), new NumberInputScheme(0, 'м/с', 0.001)),
             })
         ).Build("bodies", 'Тела:')
+        .WithAddButtonText('Добавить тело')
+        .WithRemoveButtonText('Удалить тело')
     )
     .AddSubmitButton('submitButton', "Перезапустить симуляцию", () => { mainObject.reloadModel(); })
     .AddButton('nextStepButton', "Следующий шаг симуляции", () => { 
