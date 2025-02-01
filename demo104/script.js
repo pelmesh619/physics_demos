@@ -19,6 +19,8 @@ class Main {
     }
 
     reloadModel() {
+        this.allTimeMaximum = -Infinity;
+        this.allTimeMinimum = Infinity;
         const values = this.form.GetValues();
 
         this.renderer = new Renderer2D('simulation', borderWidth);
@@ -46,9 +48,23 @@ class Main {
         if (!this.stopped) {
             for (let i = 0; i < ticksPerFrame; i++) {
                 this.simulationModel.update();
+                this.updateEnergyValues();
+
             }
             this.simulationModel.renderFrame();
+            this.updateEnergyDisplay();
         }
+    }
+
+    updateEnergyDisplay() {
+        document.getElementById('energyDisplay').innerText = 
+            'Энергия системы: \n' + toScientificNotation(this.simulationModel.getFullEnergy(), 6) + "\n" +  
+            "Минимум: \n" + toScientificNotation(this.allTimeMinimum, 6) + "\n" + 
+            "Максимум: \n" + toScientificNotation(this.allTimeMaximum, 6);
+    }
+    updateEnergyValues() {
+        this.allTimeMaximum = Math.max(this.simulationModel.getFullEnergy(), this.allTimeMaximum);
+        this.allTimeMinimum = Math.min(this.simulationModel.getFullEnergy(), this.allTimeMinimum);
     }
 
     nextTickFactory() {
