@@ -14,12 +14,12 @@ class Main {
     constructor(form) {
         this.form = form;
         this.stopped = false;
+        this.renderer = new Renderer2D('brachistochrone', borderWidth, -1);
     }
 
     reloadModel() {
         const values = this.form.GetValues();
 
-        this.renderer = new Renderer2D('brachistochrone', borderWidth, -1);
         this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
         this.simulationModel.addObject(new Grid(new Vec2(10, 0), new Vec2(20, 20)));
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;

@@ -16,6 +16,7 @@ class Main {
     constructor(form) {
         this.form = form;
         this.stopped = false;
+        this.renderer = new Renderer2D('simulation', borderWidth);
     }
 
     reloadModel() {
@@ -23,7 +24,6 @@ class Main {
         this.allTimeMinimum = Infinity;
         const values = this.form.GetValues();
 
-        this.renderer = new Renderer2D('simulation', borderWidth);
         this.simulationModel = new CollisionSimulationModel(this.form, this.renderer);
         this.simulationModel.useGravity = false;
         this.simulationModel.enableColliderRender = document.getElementById('showColliders').checked;

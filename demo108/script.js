@@ -16,6 +16,7 @@ class Main {
     constructor(form) {
         this.form = form;
         this.stopped = false;
+        this.renderer = new Renderer2D('spring', borderWidth);
     }
 
     reloadModel() {
@@ -26,7 +27,6 @@ class Main {
 
         const values = this.form.GetValues();
 
-        this.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2);
         this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
         this.simulationModel.addObject(new Grid(new Vec2(0, 0), new Vec2(20, 20)));
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;

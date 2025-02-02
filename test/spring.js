@@ -17,13 +17,11 @@ class Main {
 
         this.allTimeMaximum = -Infinity;
         this.allTimeMinimum = Infinity;
+        this.renderer = new Renderer2D('spring', borderWidth);
     }
 
     static scenarios = {
         pendulum: (mainObject) => {
-            borderWidth = 20;
-            mainObject.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2);
-
             let point1 = new StaticObject(new Vec2(0, 0));
 
             mainObject.simulationModel.addObject(point1);
@@ -39,9 +37,6 @@ class Main {
         },
         string_paradox: (mainObject) => {
             document.getElementById('removeMiddleString').removeAttribute("disabled");
-
-            borderWidth = 30;
-            mainObject.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2, -15);
 
             let point1 = new StaticObject(new Vec2(0, 0));
 
@@ -75,8 +70,6 @@ class Main {
             .addObject(spring5);
         },
         ellipse: (mainObject) => {
-            borderWidth = 30;
-            mainObject.renderer = new Renderer2D('spring', borderWidth);
             mainObject.simulationModel.useGravity = false;
             
             let circle = new CircleBody(1, new Vec2(4, 0), 1, 0, integrators[document.getElementById('integrator-select').value]);
@@ -90,9 +83,6 @@ class Main {
             .addObject(circle);
         },
         triple_pendulum: (mainObject) => {
-            borderWidth = 35;
-            mainObject.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2, -10);
-
             let point1 = new StaticObject(new Vec2(0, 0));
 
             mainObject.simulationModel.addObject(point1);
@@ -116,9 +106,6 @@ class Main {
 
         },
         spring_pendulum: (mainObject) => {
-            borderWidth = 35;
-            mainObject.renderer = new Renderer2D('spring', borderWidth, -borderWidth / 2, -10);
-
             let point1 = new StaticObject(new Vec2(0, 0));
 
             let circle1 = new CircleBody(0.7, new Vec2(2, -5), 0.5, 0, integrators[document.getElementById('integrator-select').value]);
@@ -139,7 +126,7 @@ class Main {
         this.allTimeMaximum = -Infinity;
         this.allTimeMinimum = Infinity;
 
-        this.simulationModel = new MechanicsSimulationModel(this.form, undefined);
+        this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
         this.simulationModel.addObject(new Grid(new Vec2(0, 0), new Vec2(20, 20)));
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
 
@@ -155,7 +142,6 @@ class Main {
         let scenario = document.getElementById('scenario-select').value;
 
         Main.scenarios[scenario](this);
-        this.simulationModel.renderer = this.renderer;
 
         let commentaryNode = document.getElementById(scenario + '-commentary');
         if (commentaryNode) {

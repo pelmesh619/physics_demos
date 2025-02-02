@@ -16,6 +16,7 @@ class Main {
     constructor(form) {
         this.form = form;
         this.stopped = false;
+        this.renderer = new Renderer2D('ballisticSimulation', borderWidth, -borderWidth / 2, -4);
     }
 
     reloadModel() {
@@ -27,7 +28,6 @@ class Main {
 
         const values = this.form.GetValues();
 
-        this.renderer = new Renderer2D('ballisticSimulation', borderWidth, -borderWidth / 2, -4);
         this.simulationModel = new CollisionSimulationModel(this.form, this.renderer);
         this.simulationModel.enableColliderRender = document.getElementById('showColliders').checked;
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;

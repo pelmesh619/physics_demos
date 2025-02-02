@@ -15,12 +15,11 @@ DynamicObject.integrator = integrators.rk4;
 class Main {
     constructor(form) {
         this.form = form;
-        this.reloadModel();
         this.stopped = false;
+        this.renderer = new Renderer2D('balls', borderWidth, -borderWidth / 2, -1.5);
     }
 
     reloadModel() {
-        this.renderer = new Renderer2D('balls', borderWidth, -borderWidth / 2, -1.5);
         this.simulationModel = new CollisionSimulationModel(this.form, this.renderer);
         this.simulationModel.enableColliderRender = document.getElementById('showColliders').checked;
         // this.simulationModel.useGravity = false;
@@ -56,7 +55,6 @@ class Main {
 function main() {
     var mainObject = new Main();
 
-    mainObject.reloadModel();
 
     document.getElementById('showColliders').addEventListener('change', (event) => {
         mainObject.simulationModel.enableColliderRender = event.target.checked;
@@ -78,6 +76,8 @@ function main() {
         }
         mainObject.simulationModel.renderFrame();
     })
+    
+    mainObject.reloadModel();
 
     setInterval(
         mainObject.nextTickFactory(),

@@ -16,13 +16,13 @@ class Main {
     constructor(form) {
         this.form = form;
         this.stopped = false;
+        this.renderer = new Renderer2D('balls', borderWidth);
     }
 
     reloadModel() {
         this.allTimeMaximum = -Infinity;
         this.allTimeMinimum = Infinity;
 
-        this.renderer = new Renderer2D('balls', borderWidth);
         this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
         this.simulationModel.useGravity = false;
         this.simulationModel.addObject(new GravitationalForce(this.simulationModel));
