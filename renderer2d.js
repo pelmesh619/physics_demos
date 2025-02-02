@@ -3,14 +3,72 @@ class Renderer2D {
     constructor(canvasId, sizeX, offsetX=null, offsetY) {
         this.canvasId = canvasId;
         this.sizeX = sizeX;
-        this.sizeY = this.sizeX / this.contextWidth * this.contextHeight;
+        this.ratio = this.contextHeight / this.contextWidth;
+        this.sizeY = this.sizeX * this.ratio;
         this.offsetX = offsetX == null ? -sizeX / 2 : offsetX;
         this.offsetY = offsetY == null ? -this.sizeY / 2 : offsetY;
+
+        this.mouseResponseHandlers = [];
+        this.addMouseResponse();
+
         this.context = this.DOMObject.getContext('2d');
+
         
         this.DOMObject.width = this.contextWidth;
         this.DOMObject.height = this.contextHeight;
         this.context.scale(1, 1);
+    }
+
+    callMouseResponseHandlers() {
+        let renderer = this;
+        this.mouseResponseHandlers.forEach((func) => {
+            func(renderer);
+        })
+    }
+
+    addMouseResponse() {
+        this.DOMObject.outerHTML = this.DOMObject.outerHTML;
+
+        let t = this;
+        t.isDragging = false;
+        let startX, startY;
+        let oldOffsetX, oldOffsetY;
+
+        this.DOMObject.addEventListener('mousedown', (e) => {
+            t.isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            [oldOffsetX, oldOffsetY] = [t.offsetX, t.offsetY];
+
+        });
+
+        this.DOMObject.addEventListener('mouseup', () => {
+            t.isDragging = false;
+        });
+
+        this.DOMObject.addEventListener('mousemove', (e) => {
+            if (t.isDragging) {
+                let v = new Vec2(e.clientX - startX, e.clientY - startY).multiply(t.sizeX / t.contextWidth);
+
+                t.offsetX = oldOffsetX - v.x;
+                t.offsetY = oldOffsetY + v.y;
+
+                this.callMouseResponseHandlers();
+            }
+        });
+
+        this.DOMObject.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const scaleAmount = 0.02 * Math.sign(e.deltaY) * t.sizeX;
+
+            t.sizeX += scaleAmount;
+            t.offsetX += -scaleAmount / 2;
+            t.sizeY += scaleAmount * t.ratio;
+            t.offsetY += -scaleAmount / 2 * t.ratio;
+
+            this.callMouseResponseHandlers();
+        });
+
     }
 
     get DOMObject() {
@@ -41,6 +99,21 @@ class Renderer2D {
         return new Vec2(
             (x - this.offsetX) / this.sizeX * this.contextWidth,
             this.contextHeight - (y - this.offsetY) / this.sizeY * this.contextHeight
+        );
+    }
+
+    translateCoordinatesToModelSpace(vec2, y=undefined) {
+        let x;
+        if (y === undefined) {
+            x = vec2.x;
+            y = vec2.y;
+        } else {
+            x = vec2;
+        }
+
+        return new Vec2(
+            x * this.sizeX / this.contextWidth + this.offsetX,
+            (this.contextHeight - y) * this.sizeY / this.contextHeight + this.offsetY
         );
     }
 
