@@ -223,4 +223,9 @@ class Renderer2D {
     }
 
     DrawFrame() { }
+
+    DrawPixel(point, color='black', width=1) {
+        this.context.fillStyle = color;
+        this.context.fillRect(point.x, point.y, width, width);
+    }
 }
