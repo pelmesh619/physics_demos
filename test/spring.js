@@ -18,6 +18,9 @@ class Main {
         this.allTimeMaximum = -Infinity;
         this.allTimeMinimum = Infinity;
         this.renderer = new Renderer2D('spring', borderWidth);
+        
+        let t = this;
+        this.renderer.addMouseResponseHandler((r) => { if (t.stopped) t.simulationModel.renderFrame(r); });
     }
 
     static scenarios = {

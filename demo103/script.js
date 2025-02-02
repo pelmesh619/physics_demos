@@ -15,6 +15,9 @@ class Main {
         this.form = form;
         this.stopped = false;
         this.renderer = new Renderer2D('brachistochrone', borderWidth, -1);
+        
+        let t = this;
+        this.renderer.addMouseResponseHandler((r) => { if (t.stopped) t.simulationModel.renderFrame(r); });
     }
 
     reloadModel() {

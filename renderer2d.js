@@ -26,6 +26,10 @@ class Renderer2D {
         })
     }
 
+    addMouseResponseHandler(func) {
+        this.mouseResponseHandlers.push(func);
+    }
+
     addMouseResponse() {
         this.DOMObject.outerHTML = this.DOMObject.outerHTML;
 

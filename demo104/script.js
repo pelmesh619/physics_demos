@@ -17,6 +17,9 @@ class Main {
         this.form = form;
         this.stopped = false;
         this.renderer = new Renderer2D('simulation', borderWidth);
+        
+        let t = this;
+        this.renderer.addMouseResponseHandler((r) => { if (t.stopped) t.simulationModel.renderFrame(r); });
     }
 
     reloadModel() {

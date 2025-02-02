@@ -17,6 +17,9 @@ class Main {
         this.form = form;
         this.stopped = false;
         this.renderer = new Renderer2D('ballisticSimulation', borderWidth, -borderWidth / 2, -4);
+        
+        let t = this;
+        this.renderer.addMouseResponseHandler((r) => { if (t.stopped) t.simulationModel.renderFrame(r); });
     }
 
     reloadModel() {

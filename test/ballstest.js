@@ -17,6 +17,9 @@ class Main {
         this.form = form;
         this.stopped = false;
         this.renderer = new Renderer2D('balls', borderWidth, -borderWidth / 2, -1.5);
+        
+        let t = this;
+        this.renderer.addMouseResponseHandler((r) => { if (t.stopped) t.simulationModel.renderFrame(r); });
     }
 
     reloadModel() {
@@ -76,7 +79,7 @@ function main() {
         }
         mainObject.simulationModel.renderFrame();
     })
-    
+
     mainObject.reloadModel();
 
     setInterval(
