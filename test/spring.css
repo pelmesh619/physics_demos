@@ -1,25 +1,9 @@
 #main {
-    display: flex;
-    flex-direction: row;
-    flex: 1 1 auto;
     overflow: hidden;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    width: 100vw;
-    height: 100vh;
-}
-
 #ballsDiv {
-    flex: 1 1 min(70vw, calc(100vw - 250px));
-}
-
-canvas {
-    margin: 0;
-    width: 100%;
-    height: 100%;
+    flex: 1 1 auto;
 }
 
 #scenario-commentary {

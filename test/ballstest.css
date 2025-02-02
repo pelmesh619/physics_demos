@@ -1,20 +1,9 @@
 #main {
-    display: flex;
-    flex-direction: row;
-    flex: 1 1 auto;
     overflow: hidden;
-}
-
-body {
-    display: flex;
-    flex-direction: column;
-    width: 100vw;
-    height: 100vh;
 }
 
 #ballsDiv {
     flex: 1 1 auto;
-    overflow: clip;
 }
 
 canvas {
