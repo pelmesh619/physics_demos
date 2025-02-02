@@ -265,6 +265,83 @@ class NumberInputScheme extends InputSchemeBase {
     }
 }
 
+
+class StringInputScheme extends InputSchemeBase {
+    constructor(value="") {
+        super();
+        this.value = value;
+    }
+
+    Build(id, label, changeFunc) {
+        return new StringInput(id, label != undefined ? label : this.label, this, changeFunc);
+    }
+}
+
+class StringInput extends InputBase {
+    constructor(id, label, inputScheme, changeFunc) {
+        super();
+        this.id = id;
+        this.label = label;
+        this.func = changeFunc;
+
+        this.inputScheme = inputScheme;
+    }
+
+    get type() { return "string"; }
+
+    get key() { return this.id; }
+
+    get value() { return this.inputScheme.value; }
+
+
+    GetValue(formId) {
+        const elem = document.getElementById(makeInputId(formId, this.id));
+        
+        return elem === null ? null : elem.value;
+    }
+
+    SetValue(formId, value) {
+        const elem = document.getElementById(makeInputId(formId, this.id));
+        
+        if (elem != null) {
+            elem.value = value;
+        }
+    }
+
+    BuildNode(form) {
+        const divNode = document.createElement('div');
+        const inputId = makeInputId(form.formId, this.id);
+        
+        const node = this.MakeInputNode(form);
+        node.setAttribute('purpose', 'solo');
+
+
+        divNode.appendChild(this.MakeLabel(this.label, inputId));
+        divNode.appendChild(node);
+        divNode.appendChild(document.createElement("br"));
+
+        return divNode;
+    }
+
+    MakeInputNode(form) {
+        const node = document.createElement("input");
+
+        node.type = "text";
+        node.id = makeInputId(form.formId, this.id);
+        node.value = this.value;
+
+        return node;
+    }
+
+    AddChangeHandler(form, func) {
+        document.getElementById(
+            makeInputId(form.formId, this.id)
+        ).addEventListener("change", func);
+
+        return this;
+    }
+}
+
 class Vec2InputScheme extends InputSchemeBase {
     constructor(numberInputScheme1, numberInputScheme2) {
         super();
