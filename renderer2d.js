@@ -151,6 +151,10 @@ class Renderer2D {
         return a / this.sizeX * this.contextWidth;
     }
 
+    translateLengthToModelSpace(a) {
+        return a / this.contextWidth * this.sizeX;
+    }
+
     DrawCircle(point, radius, color='red') {
         point = this.translateCoordinatesToRenderSpace(point);
 
@@ -222,7 +226,9 @@ class Renderer2D {
     
         const angle = (new Vec2(1, 0)).angleBetween(to.subtract(from));
 
-        color = 'black';
+        if (color == null) {
+            color = 'black';
+        }
 
         ctx.fillStyle = color;
         ctx.strokeStyle = color;
