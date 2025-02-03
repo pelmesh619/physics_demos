@@ -81,8 +81,28 @@ class Vec2 {
     static DownRight = new Vec2(1, -1);
 
     constructor(x, y) {
-        this.x = x;
-        this.y = y;
+        this._x = x;
+        this._y = y;
+    }
+
+    get x() {
+        return this._x;
+    }
+
+    set x(value) {
+        this._x = value;
+        this._key = undefined;
+        this._length = undefined;
+    }
+
+    get y() {
+        return this._y;
+    }
+
+    set y(value) {
+        this._y = value;
+        this._key = undefined;
+        this._length = undefined;
     }
 
     get xy() {
@@ -95,7 +115,17 @@ class Vec2 {
     }
 
     get length() {
-        return Math.hypot(this.x, this.y);
+        if (this._length === undefined) {
+            this._length = Math.hypot(this.x, this.y);
+        }
+        return this._length;
+    }
+
+    get key() {
+        if (this._key === undefined) {
+            this._key = `${this.x}:${this.y}`;
+        }
+        return this._key;
     }
 
     add(other) {
