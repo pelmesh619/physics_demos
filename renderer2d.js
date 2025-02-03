@@ -127,8 +127,8 @@ class Renderer2D {
         }
 
         return new Vec2(
-            (x - this.offsetX) / this.sizeX * this.contextWidth,
-            this.contextHeight - (y - this.offsetY) / this.sizeY * this.contextHeight
+            Math.round((x - this.offsetX) / this.sizeX * this.contextWidth),
+            Math.round(this.contextHeight - (y - this.offsetY) / this.sizeY * this.contextHeight)
         );
     }
 
