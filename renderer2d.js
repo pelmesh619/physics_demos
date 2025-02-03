@@ -9,6 +9,8 @@ class Renderer2D {
         this.offsetY = offsetY == null ? -this.sizeY / 2 : offsetY;
 
         this.mouseResponseHandlers = [];
+        this.scrollResponseHandlers = [];
+        this.mouseDragHandlers = [];
         this.addMouseResponse();
 
         this.context = this.DOMObject.getContext('2d');
@@ -26,8 +28,30 @@ class Renderer2D {
         })
     }
 
+    callMouseDragHandlers() {
+        let renderer = this;
+        this.mouseDragHandlers.forEach((func) => {
+            func(renderer);
+        })
+    }
+
+    callScrollResponseHandlers() {
+        let renderer = this;
+        this.scrollResponseHandlers.forEach((func) => {
+            func(renderer);
+        })
+    }
+
     addMouseResponseHandler(func) {
         this.mouseResponseHandlers.push(func);
+    }
+
+    addMouseDragHandler(func) {
+        this.mouseDragHandlers.push(func);
+    }
+
+    addScrollResponseHandler(func) {
+        this.scrollResponseHandlers.push(func);
     }
 
     addMouseResponse() {
@@ -58,6 +82,7 @@ class Renderer2D {
                 t.offsetY = oldOffsetY + v.y;
 
                 this.callMouseResponseHandlers();
+                this.callMouseDragHandlers();
             }
         });
 
@@ -71,6 +96,7 @@ class Renderer2D {
             t.offsetY += -scaleAmount / 2 * t.ratio;
 
             this.callMouseResponseHandlers();
+            this.callScrollResponseHandlers();
         });
 
     }
