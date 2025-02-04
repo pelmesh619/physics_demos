@@ -43,10 +43,10 @@ class Main {
         this.simulationModel.addObject(new EnvironmentResistanceForce(this.simulationModel, (obj) => obj.velocity.multiply(-values.envres)));
         this.simulationModel.addObject(new ChartObserver(this.simulationModel, circle));
         this.simulationModel.addObject(circle);
-        this.simulationModel.addObject(new LineBody(new Vec2(-10, 0), new Vec2(20, 0)));
-        this.simulationModel.addObject(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
-        this.simulationModel.addObject(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
-        this.simulationModel.addObject(new LineBody(new Vec2(9, 0), new Vec2(0, 10)));
+        this.simulationModel.addObject(new LineBody(new Vec2(-100000, 0), new Vec2(200000, 0)));
+        // this.simulationModel.addObject(new LineBody(new Vec2(-10, 10), new Vec2(20, 0)));
+        // this.simulationModel.addObject(new LineBody(new Vec2(-10, 0), new Vec2(0, 10)));
+        // this.simulationModel.addObject(new LineBody(new Vec2(9, 0), new Vec2(0, 10)));
 
 
 
