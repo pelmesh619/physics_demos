@@ -212,7 +212,7 @@ class Renderer2D {
         ctx.fill();
     }
     
-    DrawVector(point, vector, arrowLength=30, lineWidth=2, color=null) {
+    DrawVector(point, vector, color=null, arrowLength=30, lineWidth=2) {
         const ctx = this.context;
         const arrowSize = 10;
     
