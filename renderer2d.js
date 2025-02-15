@@ -214,31 +214,34 @@ class Renderer2D {
     
     DrawVector(point, vector, color=null, arrowLength=30, lineWidth=2) {
         const ctx = this.context;
+
+        if (!color) {
+            color = 'black';
+        }
+
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+
         const arrowSize = 10;
     
         let from = this.translateCoordinatesToRenderSpace(point);
         let to = this.translateCoordinatesToRenderSpace(vector.add(point));
     
         vector = to.subtract(from);
-        vector = vector.multiply(arrowLength / vector.length).do(round);
+        vector = vector.multiply(arrowLength / vector.length);
     
         to = from.add(vector);
     
         const angle = (new Vec2(1, 0)).angleBetween(to.subtract(from));
 
-        if (color == null) {
-            color = 'black';
-        }
-
-        ctx.fillStyle = color;
-        ctx.strokeStyle = color;
     
         ctx.beginPath();
         ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
+        ctx.lineTo(to.x - (arrowSize - 1) * Math.cos(angle), to.y - (arrowSize - 1) * Math.sin(angle));
         ctx.lineWidth = lineWidth;
         ctx.stroke();
     
+
         ctx.beginPath();
         ctx.moveTo(to.x, to.y);
         ctx.lineTo(
