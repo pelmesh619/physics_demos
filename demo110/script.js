@@ -9,7 +9,7 @@ function getRainbowColor(value) {
   
     const angle = (1 - v) * 270;
   
-    return "hsl(" + Math.round(angle) + " 80 50)";
+    return "hsla(" + Math.round(angle) + " 80 50 / 40%)";
 }
 
 var STEP = 10;
@@ -50,10 +50,14 @@ class Main {
             this.calculator.addObject(new Charge(charge.position, charge.charge));
         }
 
+        this.calculator.addObject(new Dipole(Vec2.Zero, Vec2.Right));
+        this.calculator.addObject(new Dipole(Vec2.Right.multiply(4), Vec2.Right));
+
         // this.calculator.renderPlot(this.renderer, STEP, getRainbowColor);
         this.renderer.PrepareFrame();
         this.calculator.renderObjects(this.renderer);
         this.calculator.renderArrows(this.renderer, getRainbowColor);
+
     }
 }
 
@@ -108,35 +112,8 @@ class GraphCalculator {
         return this.primitiveValues[point.key];
     }
 
-    renderPlot(renderer, pixelStep, colorFunction=(p) => Math.abs(p) < 4 ? 'black' : undefined) {
-        let step = renderer.translateLengthToModelSpace(pixelStep);
-        let dVector = new Vec2(step, step);
-
-        this.translateFunc = (vec) => renderer.translateCoordinatesToModelSpace(vec);
-
-        this.zeroPointR = renderer.translateCoordinatesToRenderSpace(this.zeroPoint);
-        this.primitiveValues[this.zeroPointR.key] = 0;
-
-        for (let i = this.zeroPointR.x; i < renderer.contextWidth; i += pixelStep) {
-            for (let j = this.zeroPointR.y; j < renderer.contextHeight; j += pixelStep) {
-                this.drawPixel(renderer, i, j, pixelStep, dVector, colorFunction);
-            }
-            for (let j = this.zeroPointR.y - pixelStep; j > -pixelStep; j -= pixelStep) {
-                this.drawPixel(renderer, i, j, pixelStep, dVector, colorFunction);
-            }
-        }
-        for (let i = this.zeroPointR.x - pixelStep; i > -pixelStep; i -= pixelStep) {
-            for (let j = this.zeroPointR.y; j < renderer.contextHeight; j += pixelStep) {
-                this.drawPixel(renderer, i, j, pixelStep, dVector, colorFunction);
-            }
-            for (let j = this.zeroPointR.y - pixelStep; j > -pixelStep; j -= pixelStep) {
-                this.drawPixel(renderer, i, j, pixelStep, dVector, colorFunction);
-            }
-        }
-    }
 
     renderArrows(renderer, colorFunction) {
-
         this.zeroPointR = renderer.translateCoordinatesToRenderSpace(
             new Vec2(
                 roundByStep(renderer.offsetX + round(renderer.sizeX / 2), ARROWSTEP),
@@ -197,6 +174,8 @@ function main() {
             position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)).WithLabel('\\( \\vec{r} = \\)'),
         })
     ).Build("charges", 'Заряды:')
+    .WithAddButtonText('Добавить заряд')
+    .WithRemoveButtonText('Удалить заряд')
 
     form
     .AddInputObject(charges)
@@ -225,6 +204,27 @@ class Charge {
         let toPoint = point.subtract(this.position);
 
         return toPoint.multiply(ElectricConstants.k * this.charge / Math.pow(toPoint.length, 3));
+    }
+
+    render(renderer) {
+        renderer.DrawCircle(this.position, 0.2);
+    }
+}
+
+class Dipole {
+    constructor(position, moment) {
+        this.moment = moment;
+        this.position = position;
+    }
+
+    calculateStrengthFieldAtPoint(point) {
+        let toPoint = point.subtract(this.position);
+    
+        return toPoint
+            .normalize()
+            .multiply(2 * toPoint.normalize().scalarProduct(this.moment))
+            .subtract(this.moment)
+            .multiply(ElectricConstants.k / Math.pow(toPoint.length, 3));
     }
 
     render(renderer) {
