@@ -426,6 +426,103 @@ class Vec2Input extends InputBase {
     }
 }
 
+
+class ScienceNumberInputScheme extends InputSchemeBase {
+    constructor(value=0, units='', step=1, min=null, max=null, minExponent=null, maxExponent=null) {
+        super();
+        this.value = value;
+        this.units = units;
+        this.step = step;
+        this.min = min;
+        this.max = max;
+        this.minExponent = minExponent;
+        this.maxExponent = maxExponent;
+    }
+
+    Build(id, label, changeFunc) {
+        return new ScienceNumberInput(id, label != undefined ? label : this.label, this, changeFunc);
+    }
+}
+
+
+class ScienceNumberInput extends InputBase {
+    constructor(id, label, scienceNumberInputScheme) {
+        super();
+        this.id = id;
+        this.label = label;
+        this.units = scienceNumberInputScheme.units;
+
+        let [m, e] = toScientificNotationTuple(scienceNumberInputScheme.value);
+
+        this.mantissaObject = new NumberInputScheme(
+            m,
+            '',
+            scienceNumberInputScheme.step,
+            scienceNumberInputScheme.min,
+            scienceNumberInputScheme.max,
+        ).Build(id + '-mantissa', '');
+        this.exponentObject = new NumberInputScheme(
+            e,
+            '',
+            1,
+            scienceNumberInputScheme.minExponent,
+            scienceNumberInputScheme.maxExponent,
+        ).Build(id + '-exponent', '');
+    }
+
+    get type() { return "scienceNumber"; }
+
+    get key() { return this.id; }
+
+    get groupId() { return this.id; }
+
+    GetValue(formId) {
+        const m = this.mantissaObject.GetValue(formId);
+        const e = this.exponentObject.GetValue(formId);
+        
+        return m === null || e === null ? null : m * Math.pow(10, e);
+    }
+
+    SetValue(formId, value) {
+        let [m, e] = toScientificNotationTuple(value);
+
+        this.mantissaObject.SetValue(formId, m);
+        this.exponentObject.SetValue(formId, e);
+    }
+
+    BuildNode(form) {
+        const divNode = document.createElement('div');
+
+        const inputId = makeInputId(form.formId, this.id);
+        const node1 = this.mantissaObject.MakeInputNode(form);
+        node1.classList.add('shortNumberInput');
+        const node2 = this.exponentObject.MakeInputNode(form);
+        node2.classList.add('shortNumberInput');
+
+        divNode.appendChild(this.MakeLabel(this.label, inputId));
+        divNode.appendChild(node1);
+        divNode.appendChild(spanFactory(' x 10^'));
+        divNode.appendChild(node2);
+        divNode.appendChild(
+            this.MakeLabel(
+                this.units, 
+                makeInputId(form.formId, this.exponentObject.id), 
+                'units'
+            )
+        );;
+        divNode.appendChild(document.createElement("br"));
+
+        return divNode;
+    }
+
+    AddChangeHandler(form, func) {
+        this.mantissaObject.AddChangeHandler(form, func);
+        this.exponentObject.AddChangeHandler(form, func);
+
+        return this;
+    }
+}
+
 class ListInputScheme extends InputSchemeBase {
     constructor(inputScheme) {
         super();
