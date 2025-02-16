@@ -509,7 +509,7 @@ class ScienceNumberInput extends InputBase {
                 makeInputId(form.formId, this.exponentObject.id), 
                 'units'
             )
-        );;
+        );
         divNode.appendChild(document.createElement("br"));
 
         return divNode;
