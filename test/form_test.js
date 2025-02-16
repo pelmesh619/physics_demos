@@ -25,8 +25,11 @@ function main() {
     .AddInputObject(new ListInputScheme(new CompoundInputScheme({
         charge: new NumberInputScheme(0, 'Кл'), 
         position: new Vec2InputScheme(new NumberInputScheme(0, 'м'), new NumberInputScheme(0, 'м'))
-    })).Build('chargeList', 'Заряды'));
-
+    })).Build('chargeList', 'Заряды'))
+    .AddInputObject(new ScienceNumberInputScheme(0, 'м').Build('someAdvancedLength', 'Большая длина'))
+    .AddInputObject(new NumberInputScheme(0, 'м').Build('someAdvancedLengthSimple', 'Большая длина поменьше'))
+    .ConnectInputs('someAdvancedLength', 'someAdvancedLengthSimple', (n) => n, (n) => n);
+    
     updateCoordinatesValuesForm();
 }
 
