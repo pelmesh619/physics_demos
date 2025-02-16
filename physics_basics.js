@@ -53,14 +53,49 @@ function digitnumber(number) {
     }
     return a;
 }
+
+function toScientificNotationTuple(number, base=10) {
+    if (number == 0) {
+        return [0, 0];
+    }
+    let exponent;
+
+    let isInverse = Math.abs(number) < 1;
+
+    let n = Math.abs(!isInverse ? number : 1 / number);
+
+    if (base == 10) {
+        exponent = Math.log10(n);
+    } else if (base == 2) {
+        exponent = Math.log2(n);
+    } else {
+        exponent = Math.log(n) / Math.log(base);
+    }
+
+    if (isInverse) {
+        exponent = -exponent;
+    }
+
+    exponent = Math.floor(exponent);
+
+    let mantissa = number / Math.pow(base, exponent);
+
+    return [mantissa, exponent];
+}
   
 function toScientificNotation(number, roundDigits=3) {
-    exponent = digitnumber(number);
-    if (exponent > 2 || exponent < -2) {
-        number = number * Math.pow(10, -exponent);
+    let [mantissa, exponent] = toScientificNotationTuple(number);
+    
+    if (exponent <= 2 && exponent >= -2) {
+        mantissa = mantissa * Math.pow(10, exponent);
     }
   
-    let string = round(number, roundDigits);
+    let string = round(mantissa, roundDigits);
+
+    if (Math.abs(string) == 10) {
+        string = Math.trunc(mantissa * Math.pow(10, roundDigits)) / Math.pow(10, roundDigits);
+    }
+
     if (exponent > 2 || exponent < -2) {
         string += ' x 10^(' + exponent + ')';
     }
