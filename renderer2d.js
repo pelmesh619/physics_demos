@@ -263,4 +263,12 @@ class Renderer2D {
         this.context.fillStyle = color;
         this.context.fillRect(point.x, point.y, width, width);
     }
+
+    DrawImage(image, position, size) {
+        let point = this.translateCoordinatesToRenderSpace(position);
+        let t = this;
+        size = size.do((n) => t.translateLengthToRenderSpace(n));
+
+        this.context.drawImage(image, ...point.xy, ...size.xy);
+    }
 }
