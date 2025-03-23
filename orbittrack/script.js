@@ -57,12 +57,8 @@ function eccentricAnomalyFromMeanAnomaly(eccentricity, meanAnomaly) {
 }
 
 function orbitMovementFactory(a, e, inclination, orbitalNode, periapsisArgument) {
-    let b = a * Math.sqrt(1 - e*e);
-    let c = a * e;
-
     let T = 2 * Math.PI * Math.sqrt(Math.pow(a, 3) / Planets.Earth.gravitationalParameter);
     let angularFrequency = Math.PI * 2 / T;
-
 
     function ellipse(eccentricAnomaly) {
         let rho = a * (1 - e * Math.cos(eccentricAnomaly));
