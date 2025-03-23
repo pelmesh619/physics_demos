@@ -8,20 +8,16 @@ class Grid extends StaticObject {
     }
 
     render(renderer) {
-        for (let i = 0; i < this.size.x + this.step.x; i += this.step.x) {
-            let x = i - this.size.x / 2 + this.position.x;
-            let startY = this.position.y - this.size.y / 2;
-            let endY = this.position.y + this.size.y / 2;
+        let startY = this.position.y - this.size.y / 2;
+        let endY = this.position.y + this.size.y / 2;
+        let startX = this.position.x - this.size.x / 2;
+        let endX = this.position.x + this.size.x / 2;
 
-            renderer.DrawLine(new Vec2(x, startY), new Vec2(x, endY), this.color);
+        for (let i = startX; i <= endX; i += this.step.x) {
+            renderer.DrawLine(new Vec2(i, startY), new Vec2(i, endY), this.color);
         }
-        for (let j = 0; j < this.size.y + this.step.y; j += this.step.y) {
-            let y = j - this.size.y / 2 + this.position.y;
-            let startX = this.position.x - this.size.x / 2;
-            let endX = this.position.x + this.size.x / 2;
-
-            renderer.DrawLine(new Vec2(startX, y), new Vec2(endX, y), this.color);
-            
+        for (let j = startY; j <= endY; j += this.step.y) {
+            renderer.DrawLine(new Vec2(startX, j), new Vec2(endX, j), this.color);
         }
     }
 }
