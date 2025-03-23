@@ -242,7 +242,7 @@ function main() {
         mainObject.simulationModel.renderFrame();
     })
     
-    // MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
     setInterval(
         mainObject.nextTickFactory(),
