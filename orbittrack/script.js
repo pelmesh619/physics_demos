@@ -182,6 +182,7 @@ class Main {
         let track = new OrbitTrack(this.simulationModel, circle);
         track.color = 'red';
         track.secondsToHold = 24;
+        track.ticksPerRecord = 20;
 
         this.simulationModel.addObject(rect);
         this.simulationModel.addObject(new Grid(Vec2.Zero, new Vec2(4, 2), Vec2.UpRight.multiply(0.333), 'rgba(43, 48, 63, 0.81)'));
