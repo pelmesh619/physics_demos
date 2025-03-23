@@ -243,6 +243,8 @@ class Vec2 {
 }
 
 class Vec3 {
+    static Zero = new Vec3(0, 0, 0);
+
     constructor(x, y, z) {
         this.x = x;
         this.y = y;
@@ -257,6 +259,23 @@ class Vec3 {
         [this.x, this.y, this.z] = c;
         return this.xyz;
     }
+    
+    add(other) {
+        return new Vec3(this.x + other.x, this.y + other.y, this.z + other.z);
+    }
+
+    subtract(other) {
+        return new Vec3(this.x - other.x, this.y - other.y, this.z - other.z);
+    }
+
+    multiply(number) {
+        return new Vec3(this.x * number, this.y * number, this.z * number);
+    }
+
+    scalarProduct(other) {
+        return this.x * other.x + this.y * other.y + this.z * other.z;
+    }
+
 }
 
 class Edge {
