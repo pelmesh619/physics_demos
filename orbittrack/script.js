@@ -269,7 +269,7 @@ class CircleBody {
     }
 
     render(renderer) {
-        renderer.DrawCircle(this.position, 0.1, 'rgba(52, 189, 213, 0.78)');
+        renderer.DrawCircle(this.position, 0.05, 'rgba(52, 189, 213, 0.78)');
     }
 
     update() {
