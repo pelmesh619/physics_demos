@@ -10,6 +10,15 @@ class ElectricConstants {
     static get epsilon0() { return 8.85 * Math.pow(10, -11); }
 }
 
+class Planets {
+    static Earth = {
+        meanRadius: 6371e3,
+        rotationPeriod: 0.99726968 * 24 * 60 * 60,
+        mass: 5.9726e24,
+        gravitationalParameter: 3.986004418e14
+    }
+}
+
 function clamp(v, min, max) {
     return Math.max(min, Math.min(max, v));
 }
