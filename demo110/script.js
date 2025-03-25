@@ -60,10 +60,9 @@ class Main {
         for (let charge of values.charges) {
             this.calculator.addObject(new Charge(charge.position, charge.charge));
         }
-
-        this.calculator.addObject(new Dipole(Vec2.Zero, Vec2.Right));
-        this.calculator.addObject(new Dipole(Vec2.Right.multiply(4), Vec2.Right));
-
+        for (let dipole of values.dipoles) {
+            this.calculator.addObject(new Dipole(dipole.position, dipole.moment));
+        }
         
         this.calculator.arrowstepInMeters = STARTARROWSTEP / this.renderer.contextWidth * this.renderer.sizeX;
 
@@ -131,8 +130,8 @@ class GraphCalculator {
 
     renderArrows(renderer, colorFunction) {
         this.center = new Vec2(
-            roundByStep(renderer.offsetX + round(renderer.sizeX / 2), this.arrowstepInMeters),
-            roundByStep(renderer.offsetY + round(renderer.sizeY / 2), this.arrowstepInMeters),
+            roundByStep(renderer.offsetX + renderer.sizeX / 2, this.arrowstepInMeters),
+            roundByStep(renderer.offsetY + renderer.sizeY / 2, this.arrowstepInMeters),
         );
 
         let step = this.arrowstepInMeters;
@@ -194,8 +193,18 @@ function main() {
     .WithAddButtonText('Добавить заряд')
     .WithRemoveButtonText('Удалить заряд')
 
+    const dipoles = new ListInputScheme(
+        new CompoundInputScheme({
+            moment: new Vec2InputScheme(new NumberInputScheme(0, 'Кл•м', 0.001), new NumberInputScheme(0, 'Кл•м', 0.001)).WithLabel('\\( \\vec p = \\)'),
+            position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)).WithLabel('\\( \\vec{r} = \\)'),
+        })
+    ).Build("dipoles", 'Диполи:')
+    .WithAddButtonText('Добавить диполь')
+    .WithRemoveButtonText('Удалить диполь')
+
     form
     .AddInputObject(charges)
+    .AddInputObject(dipoles)
     .AddInputObject(new NumberInputScheme(0, 'В/м', 0.001).Build("colorGradientEnd", "<div style=\"display: inline-block; background-color: hsl(270 80 50); width: 10px; height: 10px;\"></div"))
     .AddInputObject(new NumberInputScheme(10, 'В/м', 0.001).Build("colorGradientStart", "<div style=\"display: inline-block; background-color: hsl(0 80 50); width: 10px; height: 10px;\"></div"))
     .AddSubmitButton('submitButton', "Перестроить график", () => { mainObject.reloadModel(); });
@@ -245,6 +254,9 @@ class Dipole {
     }
 
     render(renderer) {
-        renderer.DrawCircle(this.position, 0.2);
+        let angle = this.moment.angleBetween(Vec2.Right);
+
+        renderer.DrawFilledArc(this.position, 0.2, angle - Math.PI / 2, angle + Math.PI / 2, false, 'red');
+        renderer.DrawFilledArc(this.position, 0.2, angle - Math.PI / 2, angle + Math.PI / 2, true, 'blue');
     }
 }
