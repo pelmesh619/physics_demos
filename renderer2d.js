@@ -176,6 +176,27 @@ class Renderer2D {
         this.context.stroke();
     }
 
+    DrawArc(point, radius, startAngle, endAngle, isCounterClockwise=false, color='red', width=2) {
+        point = this.translateCoordinatesToRenderSpace(point);
+        radius = this.translateLengthToRenderSpace(radius);
+
+        this.context.strokeStyle = color;
+        this.context.lineWidth = width;
+        this.context.beginPath();
+        this.context.arc(point.x, point.y, radius, startAngle, endAngle, isCounterClockwise);
+        this.context.stroke();
+    }
+
+    DrawFilledArc(point, radius, startAngle, endAngle, isCounterClockwise=false, color='red') {
+        point = this.translateCoordinatesToRenderSpace(point);
+        radius = this.translateLengthToRenderSpace(radius);
+
+        this.context.fillStyle = color;
+        this.context.beginPath();
+        this.context.arc(point.x, point.y, radius, startAngle, endAngle, isCounterClockwise);
+        this.context.fill();
+    }
+
     DrawLine(point1, point2, color='green', width=1) {
         const ctx = this.context;
         ctx.strokeStyle = color;
