@@ -13,7 +13,10 @@ function getRainbowColor(value) {
 }
 
 var STEP = 10;
-var ARROWSTEP = 50;
+var STARTARROWSTEP = 50;
+var UPPERBOUND_ARROWSTEP = 30;
+var LOWERBOUND_ARROWSTEP = 70;
+var ARROWSTEP = STARTARROWSTEP;
 
 // -x / Math.pow(Math.hypot(x, y), 3)
 
@@ -29,6 +32,14 @@ class Main {
         this.renderer.addScrollResponseHandler((_) => {
             t.calculator.reset();
             t.renderer.PrepareFrame();
+            let arrowstep = t.calculator.arrowstepInMeters / t.renderer.sizeX * t.renderer.contextWidth;
+            if (arrowstep > UPPERBOUND_ARROWSTEP) {
+                t.calculator.arrowstepInMeters /= 2;
+            }
+            if (arrowstep < LOWERBOUND_ARROWSTEP) {
+                t.calculator.arrowstepInMeters *= 2;
+            }
+            
             t.calculator.renderObjects(t.renderer);
             t.calculator.renderArrows(t.renderer, getRainbowColor);
         });
@@ -53,6 +64,9 @@ class Main {
         this.calculator.addObject(new Dipole(Vec2.Zero, Vec2.Right));
         this.calculator.addObject(new Dipole(Vec2.Right.multiply(4), Vec2.Right));
 
+        
+        this.calculator.arrowstepInMeters = STARTARROWSTEP / this.renderer.contextWidth * this.renderer.sizeX;
+
         // this.calculator.renderPlot(this.renderer, STEP, getRainbowColor);
         this.renderer.PrepareFrame();
         this.calculator.renderObjects(this.renderer);
@@ -65,6 +79,8 @@ class GraphCalculator {
     constructor() {
         this.reset();
         this.objects = [];
+        this.arrowstep = ARROWSTEP;
+        this.arrowstepInMeters = 0;
     }
 
     reset() {
@@ -114,33 +130,34 @@ class GraphCalculator {
 
 
     renderArrows(renderer, colorFunction) {
-        this.zeroPointR = renderer.translateCoordinatesToRenderSpace(
-            new Vec2(
-                roundByStep(renderer.offsetX + round(renderer.sizeX / 2), ARROWSTEP),
-                roundByStep(renderer.offsetY + round(renderer.sizeY / 2), ARROWSTEP),
-            )
+        this.center = new Vec2(
+            roundByStep(renderer.offsetX + round(renderer.sizeX / 2), this.arrowstepInMeters),
+            roundByStep(renderer.offsetY + round(renderer.sizeY / 2), this.arrowstepInMeters),
         );
 
-        for (let i = this.zeroPointR.x; i < renderer.contextWidth + ARROWSTEP; i += ARROWSTEP) {
-            for (let j = this.zeroPointR.y; j < renderer.contextHeight + ARROWSTEP; j += ARROWSTEP) {
-                let p = renderer.translateCoordinatesToModelSpace(i, j);
+        let step = this.arrowstepInMeters;
+
+
+        for (let i = this.center.x; i < this.center.x + renderer.sizeX / 2 + step; i += step) {
+            for (let j = this.center.y; j < this.center.y + renderer.sizeY / 2 + step; j += step) {
+                let p = new Vec2(i, j);
                 let fieldStrength = this.calculateStrengthFieldAtPoint(p);
                 renderer.DrawVector(p, fieldStrength, colorFunction(fieldStrength.length));
             }
-            for (let j = this.zeroPointR.y - ARROWSTEP; j > -ARROWSTEP; j -= ARROWSTEP) {
-                let p = renderer.translateCoordinatesToModelSpace(i, j);
+            for (let j = this.center.y - step; j > this.center.y - renderer.sizeY / 2 - step; j -= step) {
+                let p = new Vec2(i, j);
                 let fieldStrength = this.calculateStrengthFieldAtPoint(p);
                 renderer.DrawVector(p, fieldStrength, colorFunction(fieldStrength.length));
             }
         }
-        for (let i = this.zeroPointR.x - ARROWSTEP; i > -ARROWSTEP; i -= ARROWSTEP) {
-            for (let j = this.zeroPointR.y; j < renderer.contextHeight + ARROWSTEP; j += ARROWSTEP) {
-                let p = renderer.translateCoordinatesToModelSpace(i, j);
+        for (let i = this.center.x - step; i > this.center.x - renderer.sizeX / 2 - step; i -= step) {
+            for (let j = this.center.y; j < this.center.y + renderer.sizeY / 2 + step; j += step) {
+                let p = new Vec2(i, j);
                 let fieldStrength = this.calculateStrengthFieldAtPoint(p);
                 renderer.DrawVector(p, fieldStrength, colorFunction(fieldStrength.length));
             }
-            for (let j = this.zeroPointR.y - ARROWSTEP; j > -ARROWSTEP; j -= ARROWSTEP) {
-                let p = renderer.translateCoordinatesToModelSpace(i, j);
+            for (let j = this.center.y - step; j > this.center.y - renderer.sizeY / 2 - step; j -= step) {
+                let p = new Vec2(i, j);
                 let fieldStrength = this.calculateStrengthFieldAtPoint(p);
                 renderer.DrawVector(p, fieldStrength, colorFunction(fieldStrength.length));
             }
