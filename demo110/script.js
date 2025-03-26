@@ -49,6 +49,15 @@ class Main {
             t.calculator.renderObjects(t.renderer);
             t.calculator.renderArrows(t.renderer, getRainbowColor);
         });
+
+        this.renderer.addMouseOverHandler((point) => {
+            let fieldStrength = t.calculator.calculateStrengthFieldAtPoint(point);
+            
+            return "(" + toScientificNotation(point.x) + ' м, ' + toScientificNotation(point.y) + " м)<br/>" + 
+              "(" + toScientificNotation(fieldStrength.x) + ' В/м, ' + toScientificNotation(fieldStrength.y) + ' В/м)<br/>' + 
+              toScientificNotation(fieldStrength.length) + ' В/м<br/>' + 
+              toScientificNotation(t.calculator.calculatePotentialAtPoint(point)) + ' В';
+        });
     }
 
     reloadModel() {
