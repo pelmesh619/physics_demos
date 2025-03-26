@@ -205,7 +205,7 @@ function main() {
 
     const dipoles = new ListInputScheme(
         new CompoundInputScheme({
-            moment: new Vec2InputScheme(new NumberInputScheme(0, 'Кл•м', 0.001), new NumberInputScheme(0, 'Кл•м', 0.001)).WithLabel('\\( \\vec p = \\)'),
+            moment: new Vec2InputScheme(new NumberInputScheme(0, 'Кл·м', 0.001), new NumberInputScheme(0, 'Кл·м', 0.001)).WithLabel('\\( \\vec p = \\)'),
             position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)).WithLabel('\\( \\vec{r} = \\)'),
         })
     ).Build("dipoles", 'Диполи:')
