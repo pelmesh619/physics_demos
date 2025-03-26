@@ -101,6 +101,16 @@ class GraphCalculator {
         return sum;
     }
 
+    calculatePotentialAtPoint(p) {
+        let sum = 0;
+
+        this.objects.forEach((obj) => {
+            sum += obj.calculatePotentialAtPoint(p);
+        });
+
+        return sum;
+    }
+
     calculateAtPoint(p) {
         if (this.values[p.key] === undefined) {
             this.values[p.key] = this.func.vecFunc(this.translateFunc(p));
@@ -232,6 +242,14 @@ class Charge {
         return toPoint.multiply(ElectricConstants.k * this.charge / Math.pow(toPoint.length, 3));
     }
 
+    calculatePotentialAtPoint(point) {
+        if (point.equal(this.position)) {
+            return Vec2.Zero;
+        }
+    
+        return ElectricConstants.k * this.charge / point.subtract(this.position).length;
+    }
+
     render(renderer) {
         renderer.DrawCircle(this.position, 0.2);
     }
@@ -251,6 +269,17 @@ class Dipole {
             .multiply(2 * toPoint.normalize().scalarProduct(this.moment))
             .subtract(this.moment)
             .multiply(ElectricConstants.k / Math.pow(toPoint.length, 3));
+    }
+
+    calculatePotentialAtPoint(point) {
+        if (point.equal(this.position)) {
+            return Vec2.Zero;
+        }
+    
+        let r = point.subtract(this.position);
+        let r_n = r.normalize();
+    
+        return ElectricConstants.k / r.length / r.length * this.moment.scalarProduct(r_n);
     }
 
     render(renderer) {
