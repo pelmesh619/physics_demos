@@ -19,6 +19,14 @@ class Renderer2D {
         this.DOMObject.width = this.contextWidth;
         this.DOMObject.height = this.contextHeight;
         this.context.scale(1, 1);
+
+        const infoShower = document.getElementById('mouseoverinfoshower');
+        if (infoShower != null) {
+            this.DOMObject.addEventListener('mouseleave', () => {
+                let shower = document.getElementById('mouseoverinfoshower');
+                shower.style.display = 'none';
+            })
+        }
     }
 
     callMouseResponseHandlers() {
@@ -99,6 +107,38 @@ class Renderer2D {
             this.callScrollResponseHandlers();
         });
 
+    }
+
+    addMouseOverHandler(func) {
+        this.DOMObject.addEventListener(
+            'mousemove',
+            (event) => {
+                const shower = document.getElementById('mouseoverinfoshower');
+                shower.style.display = 'block';
+
+                let point = this.translateCoordinatesToModelSpace(event.offsetX, event.offsetY);
+                
+                shower.innerHTML = func(point);
+                shower.style.left = '0px';
+                shower.style.top = '0px';
+
+                let showerSize = getComputedStyle(shower);
+                let showerWidth = +(showerSize.width.slice(0, showerSize.width.length - 2));
+                let showerHeight = +(showerSize.height.slice(0, showerSize.height.length - 2));
+
+                if (showerWidth + event.offsetX + 15 > this.contextWidth) {
+                    shower.style.left = event.clientX - showerWidth - 10 + 'px';
+                } else {
+                    shower.style.left = event.clientX + 5 + 'px';
+                }
+                if (showerHeight + event.offsetY + 15 > this.contextHeight) {
+                    shower.style.top = event.clientY - showerHeight - 10 + 'px';
+                } else {
+                    shower.style.top = event.clientY + 5 + 'px';
+                }
+
+            }
+        );
     }
 
     get DOMObject() {
