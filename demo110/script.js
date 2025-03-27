@@ -25,13 +25,14 @@ var ARROWSTEP = STARTARROWSTEP;
 class Main {
     constructor(form) {
         this.form = form;
+        this.showEquipotentials = true;
+        this.showElectricVectors = true;
+        this.showCharges = true;
         
         this.renderer = new Renderer2D('simulation', borderWidth);
 
         let t = this;
         this.renderer.addScrollResponseHandler((_) => {
-            t.calculator.reset();
-            t.renderer.PrepareFrame();
             let arrowstep = t.calculator.arrowstepInMeters / t.renderer.sizeX * t.renderer.contextWidth;
             if (arrowstep > UPPERBOUND_ARROWSTEP) {
                 t.calculator.arrowstepInMeters /= 2;
@@ -40,16 +41,10 @@ class Main {
                 t.calculator.arrowstepInMeters *= 2;
             }
             
-            t.calculator.renderEquipotentials(this.renderer);
-            t.calculator.renderObjects(t.renderer);
-            t.calculator.renderArrows(t.renderer, getRainbowColor);
+            this.renderFrame();
         });
         this.renderer.addMouseDragHandler((_) => {
-            t.calculator.reset();
-            t.renderer.PrepareFrame();
-            t.calculator.renderEquipotentials(this.renderer);
-            t.calculator.renderObjects(t.renderer);
-            t.calculator.renderArrows(t.renderer, getRainbowColor);
+            this.renderFrame();
         });
 
         this.renderer.addMouseOverHandler((point) => {
@@ -60,6 +55,17 @@ class Main {
               toScientificNotation(fieldStrength.length) + ' В/м<br/>' + 
               toScientificNotation(t.calculator.calculatePotentialAtPoint(point)) + ' В';
         });
+    }
+
+    renderFrame() {
+        this.calculator.reset();
+        this.renderer.PrepareFrame();
+        if (this.showEquipotentials)
+        this.calculator.renderEquipotentials(this.renderer);
+        if (this.showCharges)
+            this.calculator.renderObjects(this.renderer);
+        if (this.showElectricVectors)
+            this.calculator.renderArrows(this.renderer, getRainbowColor);
     }
 
     reloadModel() {
@@ -77,11 +83,7 @@ class Main {
         
         this.calculator.arrowstepInMeters = STARTARROWSTEP / this.renderer.contextWidth * this.renderer.sizeX;
 
-        // this.calculator.renderPlot(this.renderer, STEP, getRainbowColor);
-        this.renderer.PrepareFrame();
-        this.calculator.renderEquipotentials(this.renderer);
-        this.calculator.renderObjects(this.renderer);
-        this.calculator.renderArrows(this.renderer, getRainbowColor);
+        this.renderFrame();
 
     }
 }
@@ -449,7 +451,19 @@ function main() {
 
 
     var mainObject = new Main(form);
-
+    
+    document.getElementById('showEquipotentials').addEventListener('change', (event) => {
+        mainObject.showEquipotentials = event.target.checked;
+        mainObject.renderFrame();
+    });
+    document.getElementById('showCharges').addEventListener('change', (event) => {
+        mainObject.showCharges = event.target.checked;
+        mainObject.renderFrame();
+    });
+    document.getElementById('showElectricVectors').addEventListener('change', (event) => {
+        mainObject.showElectricVectors = event.target.checked;
+        mainObject.renderFrame();
+    });
     
     MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
