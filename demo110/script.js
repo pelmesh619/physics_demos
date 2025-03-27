@@ -40,12 +40,14 @@ class Main {
                 t.calculator.arrowstepInMeters *= 2;
             }
             
+            t.calculator.renderEquipotentials(this.renderer);
             t.calculator.renderObjects(t.renderer);
             t.calculator.renderArrows(t.renderer, getRainbowColor);
         });
         this.renderer.addMouseDragHandler((_) => {
             t.calculator.reset();
             t.renderer.PrepareFrame();
+            t.calculator.renderEquipotentials(this.renderer);
             t.calculator.renderObjects(t.renderer);
             t.calculator.renderArrows(t.renderer, getRainbowColor);
         });
@@ -77,6 +79,7 @@ class Main {
 
         // this.calculator.renderPlot(this.renderer, STEP, getRainbowColor);
         this.renderer.PrepareFrame();
+        this.calculator.renderEquipotentials(this.renderer);
         this.calculator.renderObjects(this.renderer);
         this.calculator.renderArrows(this.renderer, getRainbowColor);
 
@@ -89,11 +92,14 @@ class GraphCalculator {
         this.objects = [];
         this.arrowstep = ARROWSTEP;
         this.arrowstepInMeters = 0;
+        this.potentialStep = 4;
+        this.pixelPotentialStep = 8;
     }
 
     reset() {
         this.values = {};
         this.primitiveValues = {};
+        this.equipotentialCells = {};
     }
 
     addObject(obj) {
@@ -196,8 +202,127 @@ class GraphCalculator {
             renderer.DrawPixel(p, color, pixelStep);
         }
     }
+
+    
+    renderEquipotentials(renderer) {
+        this.equipotentialCells = {};
+      
+        for (let i = 0; i < renderer.contextWidth + this.pixelPotentialStep; i += this.pixelPotentialStep) {
+            for (let j = 0; j < renderer.contextHeight + this.pixelPotentialStep; j += this.pixelPotentialStep) {      
+                if (this.equipotentialCells[new Vec2(i, j).key] === 1) {
+                    continue;
+                }
+
+                
+      
+                let vec = renderer.translateCoordinatesToModelSpace(i, j);
+                let potential = this.calculatePotentialAtPoint(vec);
+                if (Math.abs(potential) < 0.01 * this.potentialStep) {
+                    continue;
+                }
+      
+                if (Math.abs(potential % this.potentialStep) > 0.03 * this.potentialStep) {
+                    continue;
+                }
+
+                let equipotential = new Equipotential(this, renderer, potential);
+                equipotential.Search(new Vec2(i, j), this.pixelPotentialStep);
+                for (let c in equipotential.cells) {
+                    let p = Vec2.fromKey(c);
+                    renderer.DrawPixel(p, 'black', this.pixelPotentialStep);
+
+                    this.equipotentialCells[p.key] = 1;
+                }
+                for (let c in equipotential.blacklist) {
+                    this.equipotentialCells[c] = 1;
+                }
+            }
+        }
+    }
 }
 
+class Equipotential {
+    constructor(calculator, renderer, targetValue, potentialFunc) {
+        this.targetValue = targetValue;
+        this.potentialFunc = potentialFunc;
+        this.calculator = calculator;
+        this.renderer = renderer;
+        this.cells = {};
+        this.blacklist = {};
+    }
+  
+    Search(startCell, pixelStep) {
+        let startNeighbors = [];
+        for (let d of [Vec2.Up, Vec2.UpRight, Vec2.Right, Vec2.DownRight, Vec2.Down, Vec2.DownLeft, Vec2.Left, Vec2.UpLeft]) {
+            startNeighbors.push(startCell.add(d.multiply(pixelStep)));
+        }
+  
+        startNeighbors.sort((a, b) => {
+            let p1 = this.renderer.translateCoordinatesToModelSpace(a);
+            let p2 = this.renderer.translateCoordinatesToModelSpace(b);
+            let abs1 = Math.abs(this.targetValue - this.calculator.calculatePotentialAtPoint(p1));
+            let abs2 = Math.abs(this.targetValue - this.calculator.calculatePotentialAtPoint(p2));
+            return abs1 - abs2;
+        })
+  
+        this.Add(new Vec2(startCell[0], startCell[1]));
+    
+        while (true) {
+            let neighbors = [];
+            for (let d of [Vec2.Up, Vec2.UpRight, Vec2.Right, Vec2.DownRight, Vec2.Down, Vec2.DownLeft, Vec2.Left, Vec2.UpLeft]) {
+                let newCell = startCell.add(d.multiply(pixelStep));
+                neighbors.push(newCell);
+            }
+  
+            neighbors.sort((a, b) => {
+                let p1 = this.renderer.translateCoordinatesToModelSpace(a);
+                let p2 = this.renderer.translateCoordinatesToModelSpace(b);
+                let abs1 = Math.abs(this.targetValue - this.calculator.calculatePotentialAtPoint(p1));
+                let abs2 = Math.abs(this.targetValue - this.calculator.calculatePotentialAtPoint(p2));
+                return abs1 - abs2;
+            });
+  
+            let success = false;
+    
+            let i = 0;
+            while (i < 3) {
+                if (this.Exists(neighbors[i]) || this.blacklist[neighbors[i].key] === 1) {
+                    i++;
+                    continue;
+                }
+                this.Add(neighbors[i]);
+
+                if (0 <= neighbors[i].x && neighbors[i].x < this.renderer.contextWidth && 
+                    0 <= neighbors[i].y && neighbors[i].y < this.renderer.contextHeight) {
+                    startCell = neighbors[i];
+                } else if (0 <= startNeighbors[1].x && startNeighbors[1].x < this.renderer.contextWidth && 
+                    0 <= startNeighbors[1].y && startNeighbors[1].y < this.renderer.contextHeight) {
+                    startCell = startNeighbors[1];
+                }
+                success = true;
+                break;
+            }
+            for (i = Math.max(i, 3); i < neighbors.length; i++) {
+                this.blacklist[neighbors[i].key] = 1;
+            }
+            if (success) {
+                continue;
+            }
+        
+            break;
+        }
+    }
+  
+    Exists(vec) {
+        return this.cells[vec.key] === 1;
+    }
+  
+    Add(vec) {
+        this.cells[vec.key] = 1;
+    }
+}
+
+  
 function main() {
     var form = new FormMaker("mainForm");
 
