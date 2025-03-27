@@ -521,6 +521,23 @@ class ScienceNumberInput extends InputBase {
 
         return this;
     }
+
+    MakeInputNode(form) {
+        const divNode = document.createElement('span');
+
+        const inputId = makeInputId(form.formId, this.id);
+        const node1 = this.mantissaObject.MakeInputNode(form);
+        node1.classList.add('shortNumberInput');
+        const node2 = this.exponentObject.MakeInputNode(form);
+        node2.classList.add('shortNumberInput');
+
+        divNode.appendChild(this.MakeLabel(this.label, inputId));
+        divNode.appendChild(node1);
+        divNode.appendChild(spanFactory(' x 10^'));
+        divNode.appendChild(node2);
+
+        return divNode;
+    }
 }
 
 class ListInputScheme extends InputSchemeBase {
