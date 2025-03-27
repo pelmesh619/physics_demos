@@ -241,10 +241,6 @@ class GraphCalculator {
     marchingSquares(renderer) {
         let t = this;
         function handleSquare(topLeft, step) {
-            if (step.x < 1 || step.y < 1) {
-                return;
-            }
-
             let point = renderer.translateCoordinatesToModelSpace(topLeft);
             let side = step.do((a) => renderer.translateLengthToModelSpace(a));
 
@@ -267,82 +263,62 @@ class GraphCalculator {
                 },
             ]
 
-            let cond = false;
-            for (let i = 0; i < 4; i++) {
-                for (let j = i + 1; j < 4; j++) {
-                    if (Math.abs(vertices[i].v - vertices[j].v) > t.potentialStep) {
-                        cond = true;
-                        break;
-                    }
+            function connectEdges(i, j, color) {
+                let p1 = vertices[i].p;
+                let v1 = vertices[i].v;
+                let p2 = vertices[(i + 1) % 4].p;
+                let v2 = vertices[(i + 1) % 4].v;
+                let p3 = vertices[j].p;
+                let v3 = vertices[j].v;
+                let p4 = vertices[(j + 1) % 4].p;
+                let v4 = vertices[(j + 1) % 4].v;
+                renderer.DrawLine(
+                    p1.add(p2.subtract(p1).multiply((v1 - targetPotential) / (v1 - v2))), 
+                    p3.add(p4.subtract(p3).multiply((v3 - targetPotential) / (v3 - v4))), 
+                    color, 
+                    3
+                );
+            }
+
+            let targetPotentials = vertices.map((a, ind) => roundByStep((a.v + vertices[(ind + 1) % 4].v) / 2, t.potentialStep));
+            targetPotentials = targetPotentials.filter((a, ind) => targetPotentials.indexOf(a) == ind);
+
+            let targetPotential;
+            for (targetPotential of targetPotentials) {
+                let counter = vertices.reduce((a, b) => a + 1 * (b.v > targetPotential), 0);
+                if (counter == 0 || counter == 4) {
+                    continue;
                 }
-            }
+                if (counter == 1) {
+                    let vertex = vertices.map((a, ind) => [a, ind]).filter((a) => a[0].v > targetPotential)[0];
 
-            if (cond) {
-                let halfX = Math.ceil(step.x / 2);
-                let halfY = Math.ceil(step.y / 2);
-
-                if (step.x / 2 > 1 && step.y / 2 > 1) {
-                    handleSquare(topLeft, new Vec2(halfX, halfY));
+                    connectEdges(vertex[1], (vertex[1] + 3) % 4, 'blue');
                 }
-                handleSquare(topLeft.add(Vec2.Right.multiply(halfX)), new Vec2(step.x - halfX, halfY));
-                handleSquare(topLeft.add(Vec2.Down.multiply(halfY)), new Vec2(halfX, step.y - halfY));
-                handleSquare(topLeft.add(new Vec2(halfX, halfY)), new Vec2(step.x - halfX, step.y - halfY));
-                return;
-            }
+                if (counter == 3) {
+                    let vertex = vertices.map((a, ind) => [a, ind]).filter((a) => a[0].v < targetPotential)[0];
+                    
+                    connectEdges(vertex[1], (vertex[1] + 3) % 4, 'blue');
+                }
+                if (counter == 2) {
+                    let bools = vertices.map((a, ind) => 1 * (a.v > targetPotential) + 1 * (vertices[(ind + 1) % 4].v > targetPotential));
 
-            let targetPotential = roundByStep((vertices[0].v + vertices[1].v) / 2, t.potentialStep);
-            let counter = vertices.reduce((a, b) => a + 1 * (b.v > targetPotential), 0);
-            if (counter == 0 || counter == 4) {
-                return;
-            }
-            if (counter == 1) {
-                let vertex = vertices.map((a, ind) => [a, ind]).filter((a) => a[0].v > targetPotential)[0];
-                let p1 = vertices[(vertex[1] + 3) % 4].p;
-                let p2 = vertices[(vertex[1] + 1) % 4].p;
-                vertex = vertex[0].p;
+                    if (bools.indexOf(2) != -1) {
+                        let ind = bools.indexOf(2);
 
-                renderer.DrawLine(p1.add(vertex).multiply(0.5), p2.add(vertex).multiply(0.5), 'red');
-            }
-            if (counter == 3) {
-                let vertex = vertices.map((a, ind) => [a, ind]).filter((a) => a[0].v < targetPotential)[0];
-                let p1 = vertices[(vertex[1] + 3) % 4].p;
-                let p2 = vertices[(vertex[1] + 1) % 4].p;
-                vertex = vertex[0].p;
-
-                renderer.DrawLine(p1.add(vertex).multiply(0.5), p2.add(vertex).multiply(0.5), 'blue');
-            }
-            if (counter == 2) {
-                let bools = vertices.map((a, ind) => 1 * (a.v > targetPotential) + 1 * (vertices[(ind + 1) % 4].v > targetPotential));
-
-                if (bools.indexOf(2) != -1) {
-                    let ind = bools.indexOf(2);
-                    renderer.DrawLine(
-                        vertices[ind].p.add(vertices[(ind + 3) % 4].p).multiply(0.5), 
-                        vertices[(ind + 1) % 4].p.add(vertices[(ind + 2) % 4].p).multiply(0.5),
-                        'yellow'
-                    );
-                } else {
-                    let middlePoint = topLeft.add(step.do((a) => Math.ceil(a / 2)));
-
-                    if (middlePoint > t.targetPotential) {
-                        for (let i = 0; i < 4; i++) {
-                            if (vertices[i].v < t.targetPotential) {
-                                renderer.DrawLine(
-                                    vertices[i].p.add(vertices[(i + 3) % 4].p).multiply(0.5), 
-                                    vertices[i].p.add(vertices[(i + 1) % 4].p).multiply(0.5),
-                                    'violet'
-                                );
-                            }
-                        }
+                        connectEdges((ind + 3) % 4, (ind + 1) % 4, 'blue');
                     } else {
-                        for (let i = 0; i < 4; i++) {
-                            if (vertices[i].v > t.targetPotential) {
-                                renderer.DrawLine(
-                                    vertices[i].p.add(vertices[(i + 3) % 4].p).multiply(0.5), 
-                                    vertices[i].p.add(vertices[(i + 1) % 4].p).multiply(0.5),
-                                    'orange'
-                                );
-                            }
+                        let middlePoint = t.calculatePotentialAtPoint(point.add(new Vec2(side.x / 2, -side.y / 2)));
+
+                        if (middlePoint > targetPotential) {
+                            let ind = vertices[0].v < targetPotential ? 0 : 1;
+                            
+                            connectEdges(ind, (ind + 1) % 4, 'violet');
+                            connectEdges((ind + 2) % 4, (ind + 3) % 4, 'violet');
+                        } else {
+                            let ind = vertices[0].v > targetPotential ? 0 : 1;
+                            
+                            connectEdges(ind, (ind + 1) % 4, 'green');
+                            connectEdges((ind + 2) % 4, (ind + 3) % 4, 'green');
                         }
                     }
                 }
