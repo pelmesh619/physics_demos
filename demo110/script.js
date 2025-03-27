@@ -314,13 +314,13 @@ class GraphCalculator {
                         if (middlePoint > targetPotential) {
                             let ind = vertices[0].v < targetPotential ? 0 : 1;
                             
-                            connectEdges(ind, (ind + 1) % 4, 'violet');
-                            connectEdges((ind + 2) % 4, (ind + 3) % 4, 'violet');
+                            connectEdges(ind, (ind + 1) % 4, 'blue');
+                            connectEdges((ind + 2) % 4, (ind + 3) % 4, 'blue');
                         } else {
                             let ind = vertices[0].v > targetPotential ? 0 : 1;
                             
-                            connectEdges(ind, (ind + 1) % 4, 'green');
-                            connectEdges((ind + 2) % 4, (ind + 3) % 4, 'green');
+                            connectEdges(ind, (ind + 1) % 4, 'blue');
+                            connectEdges((ind + 2) % 4, (ind + 3) % 4, 'blue');
                         }
                     }
                 }
