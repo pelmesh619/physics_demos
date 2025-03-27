@@ -172,6 +172,10 @@ class Vec2 {
         return this._key;
     }
 
+    static fromKey(key) {
+        return new Vec2(...key.split(':'));
+    }
+
     add(other) {
         return new Vec2(this.x + other.x, this.y + other.y);
     }
