@@ -1,6 +1,15 @@
 function main() {
     var coordinatesSystemForm = new FormMaker("myForm");
 
+    const dipoles = new ListInputScheme(
+        new CompoundInputScheme({
+            moment: new Vec2InputScheme(new ScienceNumberInputScheme(1e-9, 'Кл·м', 0.001), new ScienceNumberInputScheme(1e-9, 'Кл·м', 0.001)).WithLabel('\\( \\vec p = \\)'),
+            position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)).WithLabel('\\( \\vec{r} = \\)'),
+        })
+    ).Build("dipoles", 'Диполи:')
+    .WithAddButtonText('Добавить диполь')
+    .WithRemoveButtonText('Удалить диполь');
+
     coordinatesSystemForm
     .AddInputObject(
         new RadioInput("isometric", "outputProjection", "Изометрическая", true)
@@ -28,7 +37,8 @@ function main() {
     })).Build('chargeList', 'Заряды'))
     .AddInputObject(new ScienceNumberInputScheme(0, 'м').Build('someAdvancedLength', 'Большая длина'))
     .AddInputObject(new NumberInputScheme(0, 'м').Build('someAdvancedLengthSimple', 'Большая длина поменьше'))
-    .ConnectInputs('someAdvancedLength', 'someAdvancedLengthSimple', (n) => n, (n) => n);
+    .ConnectInputs('someAdvancedLength', 'someAdvancedLengthSimple', (n) => n, (n) => n)
+    .AddInputObject(dipoles);
     
     updateCoordinatesValuesForm();
 }
