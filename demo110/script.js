@@ -93,7 +93,7 @@ class GraphCalculator {
         this.arrowstep = ARROWSTEP;
         this.arrowstepInMeters = 0;
         this.potentialStep = 4;
-        this.pixelPotentialStep = 8;
+        this.pixelPotentialStep = 16;
     }
 
     reset() {
@@ -203,8 +203,7 @@ class GraphCalculator {
         }
     }
 
-    
-    renderEquipotentials(renderer) {
+    lazyAlgorithm(renderer) {
         this.equipotentialCells = {};
       
         for (let i = 0; i < renderer.contextWidth + this.pixelPotentialStep; i += this.pixelPotentialStep) {
@@ -213,8 +212,6 @@ class GraphCalculator {
                     continue;
                 }
 
-                
-      
                 let vec = renderer.translateCoordinatesToModelSpace(i, j);
                 let potential = this.calculatePotentialAtPoint(vec);
                 if (Math.abs(potential) < 0.01 * this.potentialStep) {
@@ -238,6 +235,129 @@ class GraphCalculator {
                 }
             }
         }
+
+    }
+
+    marchingSquares(renderer) {
+        let t = this;
+        function handleSquare(topLeft, step) {
+            if (step.x < 1 || step.y < 1) {
+                return;
+            }
+
+            let point = renderer.translateCoordinatesToModelSpace(topLeft);
+            let side = step.do((a) => renderer.translateLengthToModelSpace(a));
+
+            let vertices = [
+                {
+                    p: point,
+                    v: t.calculatePotentialAtPoint(point)
+                },
+                {
+                    p: point.add(Vec2.Right.multiply(side.x)),
+                    v: t.calculatePotentialAtPoint(point.add(Vec2.Right.multiply(side.x)))
+                },
+                {
+                    p: point.add(new Vec2(side.x, -side.y)),
+                    v: t.calculatePotentialAtPoint(point.add(new Vec2(side.x, -side.y)))
+                },
+                {
+                    p: point.add(Vec2.Down.multiply(side.y)),
+                    v: t.calculatePotentialAtPoint(point.add(Vec2.Down.multiply(side.y)))
+                },
+            ]
+
+            let cond = false;
+            for (let i = 0; i < 4; i++) {
+                for (let j = i + 1; j < 4; j++) {
+                    if (Math.abs(vertices[i].v - vertices[j].v) > t.potentialStep) {
+                        cond = true;
+                        break;
+                    }
+                }
+            }
+
+            if (cond) {
+                let halfX = Math.ceil(step.x / 2);
+                let halfY = Math.ceil(step.y / 2);
+
+                if (step.x / 2 > 1 && step.y / 2 > 1) {
+                    handleSquare(topLeft, new Vec2(halfX, halfY));
+                }
+                handleSquare(topLeft.add(Vec2.Right.multiply(halfX)), new Vec2(step.x - halfX, halfY));
+                handleSquare(topLeft.add(Vec2.Down.multiply(halfY)), new Vec2(halfX, step.y - halfY));
+                handleSquare(topLeft.add(new Vec2(halfX, halfY)), new Vec2(step.x - halfX, step.y - halfY));
+                return;
+            }
+
+            let targetPotential = roundByStep((vertices[0].v + vertices[1].v) / 2, t.potentialStep);
+            let counter = vertices.reduce((a, b) => a + 1 * (b.v > targetPotential), 0);
+            if (counter == 0 || counter == 4) {
+                return;
+            }
+            if (counter == 1) {
+                let vertex = vertices.map((a, ind) => [a, ind]).filter((a) => a[0].v > targetPotential)[0];
+                let p1 = vertices[(vertex[1] + 3) % 4].p;
+                let p2 = vertices[(vertex[1] + 1) % 4].p;
+                vertex = vertex[0].p;
+
+                renderer.DrawLine(p1.add(vertex).multiply(0.5), p2.add(vertex).multiply(0.5), 'red');
+            }
+            if (counter == 3) {
+                let vertex = vertices.map((a, ind) => [a, ind]).filter((a) => a[0].v < targetPotential)[0];
+                let p1 = vertices[(vertex[1] + 3) % 4].p;
+                let p2 = vertices[(vertex[1] + 1) % 4].p;
+                vertex = vertex[0].p;
+
+                renderer.DrawLine(p1.add(vertex).multiply(0.5), p2.add(vertex).multiply(0.5), 'blue');
+            }
+            if (counter == 2) {
+                let bools = vertices.map((a, ind) => 1 * (a.v > targetPotential) + 1 * (vertices[(ind + 1) % 4].v > targetPotential));
+
+                if (bools.indexOf(2) != -1) {
+                    let ind = bools.indexOf(2);
+                    renderer.DrawLine(
+                        vertices[ind].p.add(vertices[(ind + 3) % 4].p).multiply(0.5), 
+                        vertices[(ind + 1) % 4].p.add(vertices[(ind + 2) % 4].p).multiply(0.5),
+                        'yellow'
+                    );
+                } else {
+                    let middlePoint = topLeft.add(step.do((a) => Math.ceil(a / 2)));
+
+                    if (middlePoint > t.targetPotential) {
+                        for (let i = 0; i < 4; i++) {
+                            if (vertices[i].v < t.targetPotential) {
+                                renderer.DrawLine(
+                                    vertices[i].p.add(vertices[(i + 3) % 4].p).multiply(0.5), 
+                                    vertices[i].p.add(vertices[(i + 1) % 4].p).multiply(0.5),
+                                    'violet'
+                                );
+                            }
+                        }
+                    } else {
+                        for (let i = 0; i < 4; i++) {
+                            if (vertices[i].v > t.targetPotential) {
+                                renderer.DrawLine(
+                                    vertices[i].p.add(vertices[(i + 3) % 4].p).multiply(0.5), 
+                                    vertices[i].p.add(vertices[(i + 1) % 4].p).multiply(0.5),
+                                    'orange'
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < renderer.contextWidth + this.pixelPotentialStep; i += this.pixelPotentialStep) {
+            for (let j = 0; j < renderer.contextHeight + this.pixelPotentialStep; j += this.pixelPotentialStep) { 
+                handleSquare(new Vec2(i, j), Vec2.UpRight.multiply(this.pixelPotentialStep));
+            }
+        }
+    }
+    
+    renderEquipotentials(renderer) {
+        this.marchingSquares(renderer);
     }
 }
 
