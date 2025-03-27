@@ -93,7 +93,7 @@ class GraphCalculator {
         this.arrowstep = ARROWSTEP;
         this.arrowstepInMeters = 0;
         this.potentialStep = 4;
-        this.pixelPotentialStep = 16;
+        this.pixelPotentialStep = 10;
     }
 
     reset() {
