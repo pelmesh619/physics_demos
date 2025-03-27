@@ -154,30 +154,28 @@ class GraphCalculator {
         );
 
         let step = this.arrowstepInMeters;
+        let t = this;
+
+        function drawArrow(p) {
+            let fieldStrength = t.calculateStrengthFieldAtPoint(p);
+            renderer.DrawVector(p, fieldStrength.normalize(), colorFunction(fieldStrength.length));
+        }
 
 
         for (let i = this.center.x; i < this.center.x + renderer.sizeX / 2 + step; i += step) {
             for (let j = this.center.y; j < this.center.y + renderer.sizeY / 2 + step; j += step) {
-                let p = new Vec2(i, j);
-                let fieldStrength = this.calculateStrengthFieldAtPoint(p);
-                renderer.DrawVector(p, fieldStrength, colorFunction(fieldStrength.length));
+                drawArrow(new Vec2(i, j));
             }
             for (let j = this.center.y - step; j > this.center.y - renderer.sizeY / 2 - step; j -= step) {
-                let p = new Vec2(i, j);
-                let fieldStrength = this.calculateStrengthFieldAtPoint(p);
-                renderer.DrawVector(p, fieldStrength, colorFunction(fieldStrength.length));
+                drawArrow(new Vec2(i, j));
             }
         }
         for (let i = this.center.x - step; i > this.center.x - renderer.sizeX / 2 - step; i -= step) {
             for (let j = this.center.y; j < this.center.y + renderer.sizeY / 2 + step; j += step) {
-                let p = new Vec2(i, j);
-                let fieldStrength = this.calculateStrengthFieldAtPoint(p);
-                renderer.DrawVector(p, fieldStrength, colorFunction(fieldStrength.length));
+                drawArrow(new Vec2(i, j));
             }
             for (let j = this.center.y - step; j > this.center.y - renderer.sizeY / 2 - step; j -= step) {
-                let p = new Vec2(i, j);
-                let fieldStrength = this.calculateStrengthFieldAtPoint(p);
-                renderer.DrawVector(p, fieldStrength, colorFunction(fieldStrength.length));
+                drawArrow(new Vec2(i, j));
             }
         }
     }
