@@ -203,7 +203,7 @@ function main() {
 
     const charges = new ListInputScheme(
         new CompoundInputScheme({
-            charge: new NumberInputScheme(1, 'Кл', 0.001).WithLabel('\\( q = \\)'),
+            charge: new ScienceNumberInputScheme(1e-9, 'Кл', 0.001).WithLabel('\\( q = \\)'),
             position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)).WithLabel('\\( \\vec{r} = \\)'),
         })
     ).Build("charges", 'Заряды:')
@@ -212,7 +212,7 @@ function main() {
 
     const dipoles = new ListInputScheme(
         new CompoundInputScheme({
-            moment: new Vec2InputScheme(new NumberInputScheme(0, 'Кл·м', 0.001), new NumberInputScheme(0, 'Кл·м', 0.001)).WithLabel('\\( \\vec p = \\)'),
+            moment: new Vec2InputScheme(new ScienceNumberInputScheme(1e-9, 'Кл·м', 0.001), new ScienceNumberInputScheme(1e-9, 'Кл·м', 0.001)).WithLabel('\\( \\vec p = \\)'),
             position: new Vec2InputScheme(new NumberInputScheme(0, 'м', 0.001), new NumberInputScheme(0, 'м', 0.001)).WithLabel('\\( \\vec{r} = \\)'),
         })
     ).Build("dipoles", 'Диполи:')
