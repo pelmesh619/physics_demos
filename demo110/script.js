@@ -73,6 +73,7 @@ class Main {
         [colorGradientStart, colorGradientEnd] = [values.colorGradientStart, values.colorGradientEnd].sort();
 
         this.calculator = new GraphCalculator();
+        this.calculator.potentialStep = values.potentialStep;
         
         for (let charge of values.charges) {
             this.calculator.addObject(new Charge(charge.position, charge.charge));
@@ -449,6 +450,7 @@ function main() {
     .AddInputObject(dipoles)
     .AddInputObject(new NumberInputScheme(0, 'В/м', 0.001).Build("colorGradientEnd", "<div style=\"display: inline-block; background-color: hsl(270 80 50); width: 10px; height: 10px;\"></div"))
     .AddInputObject(new NumberInputScheme(10, 'В/м', 0.001).Build("colorGradientStart", "<div style=\"display: inline-block; background-color: hsl(0 80 50); width: 10px; height: 10px;\"></div"))
+    .AddInputObject(new NumberInputScheme(5, 'В', 0.1).Build("potentialStep", "Эквипотенциальные поверхности каждые "))
     .AddSubmitButton('submitButton', "Перестроить график", () => { mainObject.reloadModel(); });
 
     dipoles.SetValue(form.formId, [
