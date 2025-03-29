@@ -431,7 +431,7 @@ function main() {
         })
     ).Build("charges", 'Заряды:')
     .WithAddButtonText('Добавить заряд')
-    .WithRemoveButtonText('Удалить заряд')
+    .WithRemoveButtonText('Удалить заряд');
 
     const dipoles = new ListInputScheme(
         new CompoundInputScheme({
@@ -440,7 +440,9 @@ function main() {
         })
     ).Build("dipoles", 'Диполи:')
     .WithAddButtonText('Добавить диполь')
-    .WithRemoveButtonText('Удалить диполь')
+    .WithRemoveButtonText('Удалить диполь');
+
+    dipoles.CreateNewInputObject();
 
     form
     .AddInputObject(charges)
@@ -449,6 +451,13 @@ function main() {
     .AddInputObject(new NumberInputScheme(10, 'В/м', 0.001).Build("colorGradientStart", "<div style=\"display: inline-block; background-color: hsl(0 80 50); width: 10px; height: 10px;\"></div"))
     .AddSubmitButton('submitButton', "Перестроить график", () => { mainObject.reloadModel(); });
 
+    dipoles.SetValue(form.formId, [
+        {
+            moment: new Vec2(1e-9, 1e-9),
+            position: Vec2.Zero,
+        },
+    ]);
+    dipoles.Reload(form);
 
     var mainObject = new Main(form);
     
