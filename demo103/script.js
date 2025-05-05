@@ -33,7 +33,7 @@ class Main {
 
         circle.velocity = new Vec2(values.v, 0);
         circle.canRotate = true;
-        circle.angularVelocity = values.v / values.r;
+        circle.angularVelocity = -values.v / values.r;
 
         this.simulationModel.addObject(new TrailPathWithVelocity(this.simulationModel, circle, new Vec2(0, -values.r)));
         this.simulationModel.addObject(circle);
