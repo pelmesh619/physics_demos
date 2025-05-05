@@ -10,7 +10,7 @@ function dt() {
 
 const borderWidth = 20;
 
-DynamicObject.integrator = integrators.rk3over8
+DynamicObject.integrator = integrators.ssprk3
 
 class Main {
     constructor(form) {
