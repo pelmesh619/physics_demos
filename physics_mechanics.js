@@ -27,6 +27,8 @@ class StaticObject {
     getPotentialEnergy = () => 0;
 
     getFullMechanicEnergy = () => 0;
+
+    localToGlobal(localPoint) { return localPoint.add(this.position); }
 }
 
 
@@ -92,6 +94,10 @@ class DynamicObject {
 
         this.futureAngle = this.angle + this.angularVelocity * dt();
 
+    }
+
+    localToGlobal(localPoint) {
+        return this.position.add(localPoint.rotate(this.angle));
     }
 
     get futurePosition() {
