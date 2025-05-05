@@ -42,6 +42,14 @@ function round(number, a=0) {
 function roundByStep(number, step, min=0) {
     return round((number - min) / step) * step + min;
 }
+
+function ceilByStep(number, step, min=0) {
+    return Math.ceil((number - min) / step) * step + min;
+}
+
+function floorByStep(number, step, min=0) {
+    return Math.floor((number - min) / step) * step + min;
+}
   
 function digitnumber(number) {
     let a = 0;
