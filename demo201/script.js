@@ -23,9 +23,11 @@ class Main {
     }
 
     reloadModel() {
-        if (this.simulationModel != undefined && this.simulationModel.xChart != undefined) {
-            this.simulationModel.xChart.destroy();
-            this.simulationModel.energyChart.destroy();
+        this.allTimeMaximum = -Infinity;
+        this.allTimeMinimum = Infinity;
+        if (this.simulationModel != undefined && this.simulationModel.angleChart != undefined) {
+            this.simulationModel.angleChart.destroy();
+            this.simulationModel.velocityChart.destroy();
         } 
 
         const values = this.form.GetValues();
@@ -54,6 +56,61 @@ class Main {
         this.simulationModel.addObject(circle);
         this.simulationModel.addObject(circle2);
 
+        this.circle1ChartObserver = new ChartObserver(this.simulationModel, circle);
+        this.circle2ChartObserver = new ChartObserver(this.simulationModel, circle2);
+        this.simulationModel.addObject(this.circle1ChartObserver);
+        this.simulationModel.addObject(this.circle2ChartObserver);
+
+        
+        this.simulationModel.angleChart = new Chart('angleChart',
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Угол первого маятника φ, rad",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(255,0,0,0.5)",
+                        data: []
+                    }, {
+                        label: "Угол второго маятника φ, rad",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,0,255,0.5)",
+                        data: []
+                    }]
+                },
+                options: {
+                    animation: false
+                }
+            }
+        );
+        this.simulationModel.velocityChart = new Chart('velocityChart',
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Скорость первого маятника v_1, м/с",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(255,0,0,0.5)",
+                        data: []
+                    }, {
+                        label: "Скорость второго маятника v_2, м/с",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,0,255,0.5)",
+                        data: []
+                    }]
+                },
+                options: {
+                    animation: false
+                }
+            }
+        );
+
     }
 
     nextTick() {
@@ -62,10 +119,40 @@ class Main {
                 this.simulationModel.update();
                 this.updateEnergyValues();
             }
+            this.updateEnergyDisplay();
             this.simulationModel.renderFrame();
+            this.updateCharts();
         }
     }
 
+    updateCharts() {
+        
+
+        let timeArray = this.circle1ChartObserver.data.map((v) => v.time);
+        
+        let data = this.simulationModel.angleChart.data;
+        data.labels = timeArray;
+
+        data.datasets[0].data = this.circle1ChartObserver.data.map((v) => v.angle);
+        data.datasets[1].data = this.circle2ChartObserver.data.map((v) => v.angle);
+
+        this.simulationModel.angleChart.update();
+
+        data = this.simulationModel.velocityChart.data;
+        data.labels = timeArray;
+
+        data.datasets[0].data = this.circle1ChartObserver.data.map((v) => v.velocity);
+        data.datasets[1].data = this.circle2ChartObserver.data.map((v) => v.velocity);
+
+        this.simulationModel.velocityChart.update();
+    }
+
+    updateEnergyDisplay() {
+        document.getElementById('energyDisplay').innerText = 
+            'Энергия системы: \n' + toScientificNotation(this.simulationModel.getFullEnergy(), 6) + "\n" +  
+            "Минимум: \n" + toScientificNotation(this.allTimeMinimum, 6) + "\n" + 
+            "Максимум: \n" + toScientificNotation(this.allTimeMaximum, 6);
+    }
     updateEnergyValues() {
         this.allTimeMaximum = Math.max(this.simulationModel.getFullEnergy(), this.allTimeMaximum);
         this.allTimeMinimum = Math.min(this.simulationModel.getFullEnergy(), this.allTimeMinimum);
@@ -113,14 +200,14 @@ function main() {
         mainObject.simulationModel.enableVelocityVectorRender = event.target.checked;
     });
 
-    const xChart = document.createElement('canvas');
-    xChart.id = 'xChart';
+    const angleChart = document.createElement('canvas');
+    angleChart.id = 'angleChart';
 
-    const energyChart = document.createElement('canvas');
-    energyChart.id = 'energyChart';
+    const velocityChart = document.createElement('canvas');
+    velocityChart.id = 'velocityChart';
 
-    form.DOMObject.appendChild(xChart);
-    form.DOMObject.appendChild(energyChart);
+    form.DOMObject.appendChild(angleChart);
+    form.DOMObject.appendChild(velocityChart);
     
     MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
@@ -199,6 +286,10 @@ class Spring {
             this.obj2.position.add(this.applyPoint2.rotate(this.obj2.angle)), 
             this.getRainbowColor(), 5);
     }
+
+    get kineticEnergy() {
+        return Math.pow(this.obj2.futurePosition.subtract(this.obj1.futurePosition).length - this.distance, 2) * this.k / 2;
+    }
 }
 
 class Pendulum extends DynamicObject {
@@ -257,8 +348,6 @@ class Pendulum extends DynamicObject {
 
         this.futureAngle = this.angle + this.angularVelocity * dt();
 
-        console.log(this);
-
     }
 
     render(renderer) {
@@ -269,6 +358,10 @@ class Pendulum extends DynamicObject {
         })
 
         this.forces = [];
+    }
+
+    get kineticEnergy() {
+        return this.momentOfInertia * Math.pow(this.angularVelocity, 2) / 2 + this.weightPosition.y * this.mass * Constants.g;
     }
 }
 
@@ -292,11 +385,8 @@ class ChartObserver {
             this.data.push(
                 {
                     "time": round(this.simulationModel.time, 2),
-                    "position": this.parentObject.position,
-                    "velocity": this.parentObject.velocity,
-                    "kineticEnergy": this.parentObject.kineticEnergy,
-                    "potentialEnergy": this.simulationModel.spring.kineticEnergy,
-                    "fullEnergy": this.simulationModel.spring.kineticEnergy + this.parentObject.kineticEnergy,
+                    "angle": this.parentObject.angle,
+                    "velocity": this.parentObject.angularVelocity * this.parentObject.radius,
                 }
             );
             if (this.data.length > this.dataAmountLimit && this.dataAmountLimit > 0) {
@@ -307,24 +397,6 @@ class ChartObserver {
     }
 
     render(renderer) {
-        let timeArray = this.data.map((v) => v.time);
-        
-        let data = this.simulationModel.xChart.data;
-        data.labels = timeArray;
-
-        data.datasets[0].data = this.data.map((v) => v.position.x);
-        data.datasets[1].data = this.data.map((v) => v.velocity.x);
-
-        this.simulationModel.xChart.update();
-
-        data = this.simulationModel.energyChart.data;
-        data.labels = timeArray;
-
-        data.datasets[0].data = this.data.map((v) => v.kineticEnergy);
-        data.datasets[1].data = this.data.map((v) => v.potentialEnergy);
-        data.datasets[2].data = this.data.map((v) => v.fullEnergy);
-
-        this.simulationModel.energyChart.update();
     }
 }
 
