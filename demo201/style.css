@@ -1,0 +1,4 @@
+#springDiv {
+    flex: 1 1 min(70vw, calc(100vw - 250px));
+    overflow: hidden;
+}
