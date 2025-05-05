@@ -232,8 +232,8 @@ class Vec2 {
 
     rotate(angle) {
         return new Vec2(
-            this.x * Math.cos(angle) + this.y * Math.sin(angle), 
-            -this.x * Math.sin(angle) + this.y * Math.cos(angle)
+            this.x * Math.cos(angle) - this.y * Math.sin(angle), 
+            this.x * Math.sin(angle) + this.y * Math.cos(angle)
         );
     }
 
