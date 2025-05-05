@@ -169,7 +169,7 @@ function main() {
 
     form
     .AddNumber(new NumberInput("r", "Расстояние между подвесами </br>\\( r \\) = ", new NumberDomain(4, "м", 0.001, 0)))
-    .AddNumber(new NumberInput("m", "Масса тела </br>\\( m \\) = ", new NumberDomain(1, "кг", 0.001, 0)))
+    .AddNumber(new NumberInput("m", "Масса грузов </br>\\( m \\) = ", new NumberDomain(1, "кг", 0.001, 0)))
     .AddNumber(new NumberInput("L", "Длина маятника </br>\\( L \\) = ", new NumberDomain(2, "м", 0.001, 0)))
     .AddNumber(new NumberInput("L1", "Длина крепления пружины </br>\\( L_1 \\) = ", new NumberDomain(1, "м", 0.001, 0)))
     .AddNumber(new NumberInput("d", "Изначальная длина пружины </br>\\( d \\) = ", new NumberDomain(3, "м", 0.001, 0)))
