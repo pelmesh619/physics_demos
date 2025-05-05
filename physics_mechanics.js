@@ -50,10 +50,7 @@ class DynamicObject {
         this.futureAngle = this.angle;
         this.angularVelocity = 0;
         this.angularAcceleration = 0;
-    }
-
-    get momentOfInertia() {
-        return this.rigidbody != undefined ? this.mass * Math.pow(this.rigidbody.radius, 2) / 2 : 0;
+        this.momentOfInertia = this.rigidbody != undefined ? this.mass * Math.pow(this.rigidbody.radius, 2) / 2 : this.mass / 2;
     }
 
     render() { }
