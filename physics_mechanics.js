@@ -12,6 +12,7 @@ class StaticObject {
         this.futurePosition = this.position;
         this.futureAngle = this.angle;
         this.nextAngle = this.angle;
+        this.angularVelocity = 0;
         this.kineticEnergy = 0;
         this.potentialEnergy = 0;
         this.fullMechanicEnergy = 0;
