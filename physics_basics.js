@@ -258,10 +258,43 @@ class Vec3 {
     static Zero = new Vec3(0, 0, 0);
 
     constructor(x, y, z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this._x = x;
+        this._y = y;
+        this._z = z;
     }
+
+    _reset() {
+        this._key = undefined;
+        this._length = undefined
+    }
+
+    get x() {
+        return this._x;
+    }
+
+    set x(value) {
+        this._x = value;
+        this._reset();
+    }
+
+    get y() {
+        return this._y;
+    }
+
+    set y(value) {
+        this._y = value;
+        this._reset();
+    }
+
+    get z() {
+        return this._z;
+    }
+
+    set z(value) {
+        this._z = value;
+        this._reset();
+    }
+
 
     get xyz() {
         return [this.x, this.y, this.z];
@@ -270,6 +303,13 @@ class Vec3 {
     set xyz(c) {
         [this.x, this.y, this.z] = c;
         return this.xyz;
+    }
+    
+    get length() {
+        if (this._length === undefined) {
+            this._length = Math.hypot(this.x, this.y, this.z);
+        }
+        return this._length;
     }
     
     add(other) {
