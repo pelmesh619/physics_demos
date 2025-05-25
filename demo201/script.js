@@ -322,7 +322,7 @@ class Pendulum extends DynamicObject {
         this.canRotate = true;
         this.center = Vec2.Zero;
         this.forces = [];
-        this.momentOfInertia = radius * radius * mass / 2;
+        this.momentOfInertia = radius * radius * mass;
     }
 
     get weightPosition() {
