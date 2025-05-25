@@ -13,8 +13,9 @@ const borderWidth = 20;
 DynamicObject.integrator = integrators.euler;
 
 class Main {
-    constructor(form) {
+    constructor(form, settingsForm) {
         this.form = form;
+        this.settingsForm = settingsForm;
         this.stopped = false;
         this.renderer = new Renderer2D('simulationCanvas', borderWidth);
         
@@ -31,6 +32,7 @@ class Main {
         } 
 
         const values = this.form.GetValues();
+        const settingsValues = this.settingsForm.GetValues();
 
         this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
         this.simulationModel.addObject(new Grid(new Vec2(0, 0), new Vec2(20, 20)));
@@ -194,7 +196,18 @@ function main() {
         }
     ));
 
-    var mainObject = new Main(form);
+    var settingsForm = new FormMaker("settingsForm");
+
+    settingsForm
+    .AddInputObject(new NumberInput("recordsPerSecond", "Записей в секунду ", new NumberDomain(5, "", 0.1, 0)))
+    .AddInputObject(new NumberInput("dataAmountLimit", "Лимит записей", new NumberDomain(120, "", 1, 1)))
+    .AddButton("export1", "Экспорт для первого маятника", 
+        () => { downloadData("pendulum1.json", JSON.stringify(mainObject.circle1ChartObserver.data, null, 2)); }
+    ).AddButton("export2", "Экспорт для второго маятника", 
+        () => { downloadData("pendulum2.json", JSON.stringify(mainObject.circle2ChartObserver.data, null, 2)); }
+    )
+
+    var mainObject = new Main(form, settingsForm);
 
     document.getElementById('showVelocities').addEventListener('change', (event) => {
         mainObject.simulationModel.enableVelocityVectorRender = event.target.checked;
