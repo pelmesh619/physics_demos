@@ -34,6 +34,9 @@ class Main {
         const values = this.form.GetValues();
         const settingsValues = this.settingsForm.GetValues();
 
+        document.getElementById('omega_1').innerText = toScientificNotation(Math.sqrt(Constants.g / values.L)) + ' Гц'
+        document.getElementById('omega_2').innerText = toScientificNotation(Math.sqrt(Constants.g / values.L + (2 * values.k * values.L1**2) / (values.m * values.L**2))) + ' Гц'
+
         this.simulationModel = new MechanicsSimulationModel(this.form, this.renderer);
         this.simulationModel.addObject(new Grid(new Vec2(0, 0), new Vec2(20, 20)));
         this.simulationModel.enableVelocityVectorRender = document.getElementById('showVelocities').checked;
