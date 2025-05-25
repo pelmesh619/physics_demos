@@ -375,64 +375,154 @@ const RungeKuttaConstants = {
 
 // TODO properly integrate acceleration
 
+class IntegratorTemplate {
+    constructor(integrator) {
+        this.integrator = integrator;
+    }
+
+    translationalIntegrate(obj) {
+        let result = this.integrator.vector(obj.position, obj.velocity, obj.acceleration);
+        return {
+            position: result.value,
+            velocity: result.derivative
+        };
+    }
+
+    rotationalIntegrate(obj) {
+        let result = this.integrator.scalar(obj.angle, obj.angularVelocity, obj.angularAcceleration);
+        return {
+            angle: result.value,
+            angularVelocity: result.derivative
+        };
+    }
+}
+
 var integrators = {
-    euler: (obj) => {
-        return {
-            position: obj.position.add(obj.velocity.add(obj.acceleration.multiply(dt())).multiply(dt())),
-            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
-        };
+    euler: {
+        vector: (value, derivative, secondDerivative=Vec2.Zero) => {
+            return {
+                value: value.add(derivative.add(secondDerivative.multiply(dt())).multiply(dt())),
+                derivative: derivative.add(secondDerivative.multiply(dt()))
+            };
+        },
+        scalar: (value, derivative, secondDerivative=0) => {
+            return {
+                value: value + (derivative + (secondDerivative * dt())) * dt(),
+                derivative: derivative + (secondDerivative * dt())
+            };
+        },
     },
-    rk4: (obj) => {
-        let k1_v = obj.acceleration;
-        let k1_x = obj.velocity;
-        let k2_x = obj.velocity.add(k1_v.multiply(0.5 * dt()));
-        let k3_x = obj.velocity.add(k1_v.multiply(0.5 * dt()));
-        let k4_x = obj.velocity.add(k1_v.multiply(dt()));
+    rk4: {
+        vector: (value, derivative, secondDerivative=Vec2.Zero) => {
+            let k1_v = secondDerivative;
+            let k1_x = derivative;
+            let k2_x = derivative.add(k1_v.multiply(0.5 * dt()));
+            let k3_x = derivative.add(k1_v.multiply(0.5 * dt()));
+            let k4_x = derivative.add(k1_v.multiply(dt()));
 
-        return {
-            position: obj.position.add((k1_x.add(k2_x.multiply(2)).add(k3_x.multiply(2)).add(k4_x)).multiply(dt() / 6)),
-            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
-        };
+            return {
+                value: value.add((k1_x.add(k2_x.multiply(2)).add(k3_x.multiply(2)).add(k4_x)).multiply(dt() / 6)),
+                derivative: derivative.add(secondDerivative.multiply(dt()))
+            };
+        },
+        scalar: (value, derivative, secondDerivative=0) => {
+            let k1_v = secondDerivative;
+            let k1_x = derivative;
+            let k2_x = derivative + (k1_v * (0.5 * dt()));
+            let k3_x = derivative + (k1_v * (0.5 * dt()));
+            let k4_x = derivative + (k1_v * (dt()));
+
+            return {
+                value: value + ((k1_x + (k2_x * 2) + (k3_x * 2) + (k4_x)) * (dt() / 6)),
+                derivative: derivative + (secondDerivative * (dt()))
+            };
+        }
     },
-    rk3over8: (obj) => {
-        let k1_v = obj.acceleration;
-        let k1_x = obj.velocity;
-        let k2_x = obj.velocity.add(k1_v.multiply(dt() / 3));
-        let k3_x = obj.velocity.add(k1_v.multiply(-dt() * 2 / 3));
-        let k4_x = obj.velocity.add(k1_v.multiply(dt()));
+    rk3over8: { 
+        vector: (value, derivative, secondDerivative=Vec2.Zero) => {
+            let k1_v = secondDerivative;
+            let k1_x = derivative;
+            let k2_x = derivative.add(k1_v.multiply(dt() / 3));
+            let k3_x = derivative.add(k1_v.multiply(-dt() * 2 / 3));
+            let k4_x = derivative.add(k1_v.multiply(dt()));
 
-        return {
-            position: obj.position.add((k1_x.add(k2_x.multiply(3)).add(k3_x.multiply(3)).add(k4_x)).multiply(dt() / 8)),
-            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
-        };
+            return {
+                value: value.add((k1_x.add(k2_x.multiply(3)).add(k3_x.multiply(3)).add(k4_x)).multiply(dt() / 8)),
+                derivative: derivative.add(secondDerivative.multiply(dt()))
+            };
+        },
+        scalar: (value, derivative, secondDerivative=0) => {
+            let k1_v = secondDerivative;
+            let k1_x = derivative;
+            let k2_x = derivative + (k1_v * (dt() / 3));
+            let k3_x = derivative + (k1_v * (-dt() * 2 / 3));
+            let k4_x = derivative + (k1_v * (dt()));
+
+            return {
+                value: value + ((k1_x + (k2_x * (3)) + (k3_x * (3)) + (k4_x)) * (dt() / 8)),
+                derivative: derivative + (secondDerivative * (dt()))
+            };
+        }
     },
-    rkRalston: (obj) => {
-        let a = RungeKuttaConstants.rkRalston.a;
-        let b = RungeKuttaConstants.rkRalston.b;
+    rkRalston: {
+        vector: (value, derivative, secondDerivative=Vec2.Zero) => {
+            let a = RungeKuttaConstants.rkRalston.a;
+            let b = RungeKuttaConstants.rkRalston.b;
 
-        let k1_v = obj.acceleration;
-        let k1_x = obj.velocity;
-        let k2_x = obj.velocity.add(k1_v.multiply(dt() * a[1][0]));
-        let k3_x = obj.velocity.add(k1_v.multiply(dt() * (a[2][0] + a[2][1])));
-        let k4_x = obj.velocity.add(k1_v.multiply(dt() * (a[3][0] + a[3][1] + a[3][2])));
+            let k1_v = secondDerivative;
+            let k1_x = derivative;
+            let k2_x = derivative.add(k1_v.multiply(dt() * a[1][0]));
+            let k3_x = derivative.add(k1_v.multiply(dt() * (a[2][0] + a[2][1])));
+            let k4_x = derivative.add(k1_v.multiply(dt() * (a[3][0] + a[3][1] + a[3][2])));
 
-        return {
-            position: obj.position.add(
-                (k1_x.multiply(b[0]).add(k2_x.multiply(b[1])).add(k3_x.multiply(b[2])).add(k4_x.multiply(b[3]))).multiply(dt())),
-            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
-        };
+            return {
+                value: value.add(
+                    (k1_x.multiply(b[0]).add(k2_x.multiply(b[1])).add(k3_x.multiply(b[2])).add(k4_x.multiply(b[3]))).multiply(dt())),
+                derivative: derivative.add(secondDerivative.multiply(dt()))
+            };
+        },
+        scalar: (value, derivative, secondDerivative = 0) => {
+            let a = RungeKuttaConstants.rkRalston.a;
+            let b = RungeKuttaConstants.rkRalston.b;
+
+            let k1_v = secondDerivative;
+            let k1_x = derivative;
+            let k2_x = derivative + (k1_v * (dt() * a[1][0]));
+            let k3_x = derivative + (k1_v * (dt() * (a[2][0] + a[2][1])));
+            let k4_x = derivative + (k1_v * (dt() * (a[3][0] + a[3][1] + a[3][2])));
+
+            return {
+                value: value + (
+                    (k1_x * (b[0]) + (k2_x * (b[1])) + (k3_x * (b[2])) + (k4_x * (b[3]))) * (dt())),
+                derivative: derivative + (secondDerivative * (dt()))
+            };
+        }
     },
-    ssprk3: (obj) => {
-        let k1_v = obj.acceleration;
-        let k1_x = obj.velocity;
-        let k2_x = obj.velocity.add(k1_v.multiply(dt() * 8 / 15));
-        let k3_x = obj.velocity.add(k1_v.multiply(dt() * 2 / 3));
+    ssprk3: {
+        vector: (value, derivative, secondDerivative=Vec2.Zero) => {
+            let k1_v = secondDerivative;
+            let k1_x = derivative;
+            let k2_x = derivative.add(k1_v.multiply(dt() * 8 / 15));
+            let k3_x = derivative.add(k1_v.multiply(dt() * 2 / 3));
 
-        return {
-            position: obj.position.add(
-                (k1_x.multiply(1 / 4).add(k3_x.multiply(3 / 4))).multiply(dt())),
-            velocity: obj.velocity.add(obj.acceleration.multiply(dt()))
-        };
-    },
+            return {
+                value: value.add(
+                    (k1_x.multiply(1 / 4).add(k3_x.multiply(3 / 4))).multiply(dt())),
+                derivative: derivative.add(secondDerivative.multiply(dt()))
+            };
+        },
+        scalar: (value, derivative, secondDerivative=0) => {
+            let k1_v = secondDerivative;
+            let k1_x = derivative;
+            let k2_x = derivative + (k1_v * (dt() * 8 / 15));
+            let k3_x = derivative + (k1_v * (dt() * 2 / 3));
+
+            return {
+                value: value + (
+                    (k1_x * (1 / 4) + (k3_x * (3 / 4))) * (dt())),
+                derivative: derivative + (secondDerivative * (dt()))
+            };
+        }
+    }
 }
 

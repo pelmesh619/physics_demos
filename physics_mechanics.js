@@ -110,18 +110,15 @@ class DynamicObject {
     }
 
     get nextPosition() {
-        let r = DynamicObject.integrator(this);
+        let r = DynamicObject.integrator.vector(this.position, this.velocity, this.acceleration);
 
-        return r.position;
+        return r.value;
     }
 
     get nextAngle() {
-        let k1 = this.angularVelocity;
-        let k2 = this.angularVelocity + this.angularAcceleration * (0.5 * dt());
-        let k3 = this.angularVelocity + this.angularAcceleration * (0.5 * dt());
-        let k4 = this.angularVelocity + this.angularAcceleration * dt();
+        let r = DynamicObject.integrator.scalar(this.angle, this.angularVelocity, this.angularAcceleration);
 
-        return this.angle + (k1 + 2 * k2 + 2 * k3 + k4) * (dt() / 6);
+        return r.value;
     }
 
     get kineticEnergy() {
