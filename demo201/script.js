@@ -177,7 +177,7 @@ function main() {
     .AddNumber(new NumberInput("m", "Масса грузов </br>\\( m \\) = ", new NumberDomain(1, "кг", 0.001, 0)))
     .AddNumber(new NumberInput("L", "Длина маятника </br>\\( L \\) = ", new NumberDomain(2, "м", 0.001, 0)))
     .AddNumber(new NumberInput("L1", "Длина крепления пружины </br>\\( L_1 \\) = ", new NumberDomain(1, "м", 0.001, 0)))
-    .AddNumber(new NumberInput("d", "Изначальная длина пружины </br>\\( d \\) = ", new NumberDomain(3, "м", 0.001, 0)))
+    .AddNumber(new NumberInput("d", "Изначальная длина пружины </br>\\( d \\) = ", new NumberDomain(4, "м", 0.001, 0)))
     .AddNumber(new NumberInput("varphi1", "Начальная фаза 1 </br>\\( \\varphi_1 \\) = ", new NumberDomain(30, "\\( ^\\circ \\)", 0.001)))
     .AddNumber(new NumberInput("varphi2", "Начальная фаза 2 </br>\\( \\varphi_2 \\) = ", new NumberDomain(90, "\\( ^\\circ \\)", 0.001)))
     .AddNumber(new NumberInput("k", "Коэффициент упругости </br><span>\\( k \\) = </span>", new NumberDomain(1, "Н·м", 0.001)))
