@@ -58,8 +58,8 @@ class Main {
         this.simulationModel.addObject(circle);
         this.simulationModel.addObject(circle2);
 
-        this.circle1ChartObserver = new ChartObserver(this.simulationModel, circle);
-        this.circle2ChartObserver = new ChartObserver(this.simulationModel, circle2);
+        this.circle1ChartObserver = new ChartObserver(this.simulationModel, circle, settingsValues.recordsPerSecond, settingsValues.dataAmountLimit);
+        this.circle2ChartObserver = new ChartObserver(this.simulationModel, circle2, settingsValues.recordsPerSecond, settingsValues.dataAmountLimit);
         this.simulationModel.addObject(this.circle1ChartObserver);
         this.simulationModel.addObject(this.circle2ChartObserver);
 
@@ -379,12 +379,12 @@ class Pendulum extends DynamicObject {
 }
 
 class ChartObserver {
-    constructor(simulationModel, objectToObserve) {
+    constructor(simulationModel, objectToObserve, recordsPerSecond=5, dataAmountLimit=120) {
         this.parentObject = objectToObserve;
         this.simulationModel = simulationModel;
 
-        this.ticksPerRecord = ticksPerFrame * 3;
-        this.dataAmountLimit = 70;
+        this.ticksPerRecord = round(ticksPerFrame / frameRenderTime / recordsPerSecond);
+        this.dataAmountLimit = dataAmountLimit;
 
         this.position = new Vec2(NaN, NaN);
 
