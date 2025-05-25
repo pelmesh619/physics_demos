@@ -301,7 +301,11 @@ class Spring {
     }
 
     get kineticEnergy() {
-        return Math.pow(this.obj2.futurePosition.subtract(this.obj1.futurePosition).length - this.distance, 2) * this.k / 2;
+        let a = this.obj1.position.add(this.applyPoint1.rotate(this.obj1.angle));
+        let b = this.obj2.position.add(this.applyPoint2.rotate(this.obj2.angle));
+
+        let obj1ToObj2 = a.subtract(b);
+        return Math.pow(obj1ToObj2.length - this.distance, 2) * this.k / 2;
     }
 }
 
