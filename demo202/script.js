@@ -131,21 +131,8 @@ class Main {
     reloadModel() {
         const values = this.form.GetValues();
 
-        // [colorGradientStart, colorGradientEnd] = [values.colorGradientStart, values.colorGradientEnd].sort();
-
-        let grid = Array(values.d.x).fill().map(() => Array(values.d.y).fill(0));
-        // grid[Math.round(values.d.x/2)][3] = 1;
-        for (let i = 1; i < values.d.x; i += 100) {
-            for (let j = 1; j < values.d.y; j += 100) {
-                grid[i][j] = 1;
-            }
-        }
-
-        grid[values.d.x - 2][values.d.y - 2] = 1;
-        // grid[Math.round(values.d.x/2)] = Array(values.d.y).fill().map(() => 1);
-        // grid[Math.round(values.d.x/2) - 1] = Array(values.d.y).fill().map(() => 1);
-        // grid[Math.round(values.d.x/2) + 1] = Array(values.d.y).fill().map(() => 1);
-
+        let grid = this.gridMatrix.map((a) => a.toReversed());
+        
         let klambda = 10;
 
         this.calculator = new GraphCalculator(grid, values.a, values.lambda * 1e-9, values.dlambda * 1e-9, values.L);
@@ -300,20 +287,70 @@ class GraphCalculator {
 function main() {
     var form = new FormMaker("mainForm");
 
+    let d = new Vec2InputScheme(new NumberInputScheme(30, "", 1, 1), new NumberInputScheme(30, "", 1, 1))
+    .Build(
+        "d", 
+        "Разрешение сетки </br>\\( d \\) = ",
+    );
+
     form
     .AddNumber(new NumberInput("lambda", "Центральная длина волны </br>\\( \\lambda \\) = ", new NumberDomain(500, "нм", 0.001, 0)))
     .AddNumber(new NumberInput("dlambda", "Ширина спектра </br>\\( \\Delta \\lambda \\) = ", new NumberDomain(0, "нм", 0.001, 0)))
     .AddNumber(new NumberInput("L", "Расстояние до экрана </br>\\( L \\) = ", new NumberDomain(1, "м", 0.001, 0)))
     .AddNumber(new NumberInput("a", "Ширина сетки </br>\\( a \\) = ", new NumberDomain(0.02, "м", 0.001, 0)))
-    .AddInputObject(new Vec2Input("d", "Разрешение сетки </br>\\( d \\) = ", new Vec2InputScheme(new NumberInputScheme(30, "", 0.001, 1), new NumberInputScheme(30, "", 0.001, 1))))
+    .AddInputObject(d)
     .AddSubmitButton('submitButton', "Перестроить график", () => { mainObject.reloadModel(); });
+    d.AddChangeHandler(form, () => { const values = form.GetValues(); resetGridMatrix(mainObject, ...values.d.xy); });
 
     var mainObject = new Main(form);
     
     MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
+    const values = form.GetValues(); 
+    resetGridMatrix(mainObject, ...values.d.xy);
     mainObject.reloadModel();
 }
 
+function resetGridMatrix(mainObject, cols, rows) {
+    const grid = document.getElementById('gridMatrix');
+    grid.innerHTML = '';
 
+
+    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+    mainObject.gridMatrix.length = cols;
+    for (let i = 0; i < cols; i++) {
+        mainObject.gridMatrix[i] = resizeArray(mainObject.gridMatrix[i] || [], rows);
+    }            
+    for (let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'gridMatrixCell';
+            cell.dataset.row = j;
+            cell.dataset.col = i;
+            if (mainObject.gridMatrix[i][j]) {
+                cell.classList.add('active');
+            }
+
+            cell.addEventListener('click', (event) => {
+                const r = parseInt(event.target.dataset.row);
+                const c = parseInt(event.target.dataset.col);
+                mainObject.gridMatrix[c][r] = mainObject.gridMatrix[c][r] === 0 ? 1 : 0;
+                event.target.classList.toggle('active');
+            });
+
+            grid.appendChild(cell);
+        }
+    }
+}
+
+function resizeArray(arr, targetLength) {
+    const result = arr.slice(0, targetLength);
+    while (result.length < targetLength) {
+        result.push(0);
+    }
+    return result;
+}
+  
 window.onload = main;
