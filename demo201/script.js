@@ -404,7 +404,7 @@ class ChartObserver {
         if (this.counter % this.ticksPerRecord == 0) {
             this.data.push(
                 {
-                    "time": round(this.simulationModel.time, 2),
+                    "time": round(this.simulationModel.time, 4),
                     "angle": this.parentObject.angle,
                     "velocity": this.parentObject.angularVelocity * this.parentObject.radius,
                 }
