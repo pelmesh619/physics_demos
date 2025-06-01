@@ -150,7 +150,7 @@ class Main {
         
         let klambda = values.klambda;
 
-        this.calculator = new GraphCalculator(f, values.N * values.d, steps, values.lambda * 1e-9, values.dlambda * 1e-9, values.L);
+        this.calculator = new GraphCalculator(f, values.N * values.d + values.d - values.b, steps, values.lambda * 1e-9, values.dlambda * 1e-9, values.L);
         this.calculator.intensityChart = new Chart('intensityChart',
             {
                 type: "line",
