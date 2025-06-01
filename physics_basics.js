@@ -328,6 +328,10 @@ class Vec3 {
         return this.x * other.x + this.y * other.y + this.z * other.z;
     }
 
+    do(func) {
+        return new Vec3(func(this.x), func(this.y), func(this.z));
+    }
+
 }
 
 class Edge {
