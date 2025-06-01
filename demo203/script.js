@@ -131,6 +131,7 @@ class Main {
     reloadModel() {        
         if (this.calculator != undefined && this.calculator.intensityChart != undefined) {
             this.calculator.intensityChart.destroy();
+            this.calculator.chosenIntensityChart.destroy();
         } 
 
         const values = this.form.GetValues();
@@ -168,7 +169,25 @@ class Main {
                 }
             }
         );
-        
+        this.calculator.chosenIntensityChart = new Chart('chosenIntensityChart',
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Интенсивность для выбранной длины волны",
+                        fill: false,
+                        pointRadius: 1,
+                        borderColor: "rgba(0,0,255,0.5)",
+                        data: []
+                    }]
+                },
+                options: {
+                    animation: false
+                }
+            }
+        );
+
         this.calculator.arrowstepInMeters = STARTARROWSTEP / this.renderer.contextWidth * this.renderer.sizeX;
         
         if (values.dlambda > 0){
@@ -179,6 +198,8 @@ class Main {
             this.calculator.calculate(values.lambda * 1e-9);
         }
         this.calculator.finalCalculate();
+
+        this.calculator.calculateForChosenLambda(values.chosenLambda * 1e-9);
         
         this.renderer.PrepareFrame();
         this.calculator.renderPlot(this.renderer, STEP, interpolateColor);
@@ -213,6 +234,8 @@ class GraphCalculator {
         }
         this.intensity = Array(calculationSteps).fill(0);
         this.rgbImage = Array(calculationSteps).fill(Vec3.Zero);
+        this.chosenIntensity = Array(calculationSteps).fill(0);
+        this.chosenRgbImage = Array(calculationSteps).fill(Vec3.Zero);
 
         this.lambda = lambda;
         this.dlambda = dlambda;
@@ -264,7 +287,7 @@ class GraphCalculator {
         for (let lambda in this.values) {
             let values = this.values[lambda];
             for (let i = 0; i < values.length; i++) {                  
-                this.rgbImage[i] = wavelength_to_rgb(lambda).multiply(values[i].x**2 + values[i].y**2);
+                this.rgbImage[i] = this.rgbImage[i].add(wavelength_to_rgb(lambda).multiply(values[i].x**2 + values[i].y**2));
             }
         }
 
@@ -290,6 +313,52 @@ class GraphCalculator {
         }
 
         this.updateCharts();
+    }
+
+    calculateForChosenLambda(lambda) {
+        this.calculate(lambda);
+
+        let maximum = -Infinity;
+        let rgbMaximum = 0;
+
+        let values = this.values[lambda];
+
+        for (let i = 0; i < values.length; i++) {
+            this.chosenIntensity[i] += values[i].x**2 + values[i].y**2;
+        }
+        for (let i = 0; i < values.length; i++) {                  
+            this.chosenRgbImage[i] = wavelength_to_rgb(lambda).multiply(values[i].x**2 + values[i].y**2);
+        }
+
+        for (let i = 0; i < this.chosenIntensity.length; i++) {
+            if (this.chosenIntensity[i] > maximum) {
+                maximum = this.chosenIntensity[i];
+            }
+            if (Math.max(...this.chosenRgbImage[i].do(Math.abs).xyz) > rgbMaximum) {
+                rgbMaximum = Math.max(...this.chosenRgbImage[i].do(Math.abs).xyz);
+            }
+        }
+
+        if (maximum == 0) {
+            maximum = 1;
+        }
+        if (rgbMaximum == 0) {
+            rgbMaximum = 1;
+        }
+
+        for (let i = 0; i < this.chosenIntensity.length; i++) {
+            this.chosenIntensity[i] = this.chosenIntensity[i] / maximum;
+            this.chosenRgbImage[i] = this.chosenRgbImage[i].multiply(1 / rgbMaximum);
+        }
+
+        let data = this.chosenIntensityChart.data;
+        data.labels = [...Array(this.calculationSteps).keys()].map(
+            (i) => round((i + 0.5) * this.gridWidth / this.calculationSteps, 4)
+        );
+
+        data.datasets[0].data = this.chosenIntensity;
+
+        this.chosenIntensityChart.update();
     }
 
     updateCharts() {
@@ -321,6 +390,14 @@ class GraphCalculator {
                 renderer, 
                 (i + this.calculationSteps + 1), 0, 
                 this.rgbImage[i], dVector, 
+                (a) => `rgb(${round(a.x * 255)}, ${round(a.y * 255)}, ${round(a.z * 255)})`
+            );
+        }
+        for (let i = 0; i < this.calculationSteps; i++) {
+            this.drawPixel(
+                renderer, 
+                (i + 2 * this.calculationSteps + 2), 0, 
+                this.chosenRgbImage[i], dVector, 
                 (a) => `rgb(${round(a.x * 255)}, ${round(a.y * 255)}, ${round(a.z * 255)})`
             );
         }
@@ -365,6 +442,13 @@ function main() {
     intensityChart.id = 'intensityChart';
 
     form.DOMObject.appendChild(intensityChart);
+
+    form.AddNumber(new NumberInput("chosenLambda", "Выбранная длина волны </br>\\( \\lambda_1 \\) = ", new NumberDomain(500, "нм", 0.001, 0)))
+
+    const chosenIntensityChart = document.createElement('canvas');
+    chosenIntensityChart.id = 'chosenIntensityChart';
+
+    form.DOMObject.appendChild(chosenIntensityChart);
     
     MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
