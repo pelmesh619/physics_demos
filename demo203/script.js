@@ -8,7 +8,7 @@ function dt() {
     return frameRenderTime / ticksPerFrame * timeScale;
 }
 
-const borderWidth = 20;
+const borderWidth = 1;
 
 
 var colorGradientStart = 0;
@@ -429,9 +429,9 @@ function main() {
     .AddNumber(new NumberInput("lambda", "Центральная длина волны </br>\\( \\lambda \\) = ", new NumberDomain(500, "нм", 0.001, 0)))
     .AddNumber(new NumberInput("dlambda", "Ширина спектра </br>\\( \\Delta \\lambda \\) = ", new NumberDomain(0, "нм", 0.001, 0)))
     .AddNumber(new NumberInput("L", "Расстояние до экрана </br>\\( L \\) = ", new NumberDomain(1, "м", 0.001, 0)))
-    .AddNumber(new NumberInput("b", "Ширина щели </br>\\( a \\) = ", new NumberDomain(0.01, "м", 0.001, 0)))
-    .AddNumber(new NumberInput("d", "Период </br>\\( d \\) = ", new NumberDomain(0.02, "м", 0.001, 0)))
-    .AddNumber(new NumberInput("N", "Количество щелей </br>\\( N \\) = ", new NumberDomain(10, "", 1, 1)))
+    .AddNumber(new NumberInput("b", "Ширина щели </br>\\( a \\) = ", new NumberDomain(0.02, "м", 0.001, 0)))
+    .AddNumber(new NumberInput("d", "Период </br>\\( d \\) = ", new NumberDomain(0.04, "м", 0.001, 0)))
+    .AddNumber(new NumberInput("N", "Количество щелей </br>\\( N \\) = ", new NumberDomain(5, "", 1, 1)))
     .AddNumber(new NumberInput("M", "Шагов вычислений </br>\\( M \\) = ", new NumberDomain(50, "", 1, 1)))
     .AddNumber(new NumberInput("klambda", "Шагов вычислений волн света </br>\\( k_\\lambda \\) = ", new NumberDomain(10, "", 1, 1)))
     .AddSubmitButton('submitButton', "Перестроить график", () => { mainObject.reloadModel(); });
