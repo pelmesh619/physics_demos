@@ -96,7 +96,6 @@ function interpolateColor(value) {
     const color1 = infernoColors[index1];
     const color2 = infernoColors[index2];
 
-    // Линейная интерполяция для каждого канала
     return "rgb(" + 
         Math.round(color1[0] + fraction * (color2[0] - color1[0])) + " " +
         Math.round(color1[1] + fraction * (color2[1] - color1[1])) + " " +
@@ -116,6 +115,7 @@ class Main {
         this.form = form;
         this.stopped = false;
         this.renderer = new Renderer2D('simulationCanvas', borderWidth);
+        this.gridMatrix = [];
         
         let t = this;
         this.renderer.addScrollResponseHandler((renderer) => {
@@ -174,6 +174,7 @@ class GraphCalculator {
             }
         }
         this.intensity = Array(this.grid.length).fill().map(() => Array(this.grid[0].length).fill(0));
+        this.rgbImage = Array(this.grid.length).fill().map(() => Array(this.grid[0].length).fill(Vec3.Zero));
 
         this.lambda = lambda;
         this.dlambda = dlambda;
@@ -215,6 +216,8 @@ class GraphCalculator {
 
     finalCalculate() {
         let maximum = -Infinity;
+        let rgbMaximum = 0;
+
 
         for (let lambda in this.values) {
             let values = this.values[lambda];
@@ -225,8 +228,13 @@ class GraphCalculator {
             }
         }
 
-        if (maximum == 0) {
-            maximum = 1;
+        for (let lambda in this.values) {
+            let values = this.values[lambda];
+            for (let i = 0; i < values.length; i++) {
+                for (let j = 0; j < values[i].length; j++) {                        
+                    this.rgbImage[i][j] = wavelength_to_rgb(lambda).multiply(values[i][j].x**2 + values[i][j].y**2);
+                }
+            }
         }
 
         for (let i = 0; i < this.intensity.length; i++) {
@@ -234,12 +242,23 @@ class GraphCalculator {
                 if (this.intensity[i][j] > maximum) {
                     maximum = this.intensity[i][j];
                 }
+                if (Math.max(...this.rgbImage[i][j].do(Math.abs).xyz) > rgbMaximum) {
+                    rgbMaximum = Math.max(...this.rgbImage[i][j].do(Math.abs).xyz);
+                }
             }
+        }
+
+        if (maximum == 0) {
+            maximum = 1;
+        }
+        if (rgbMaximum == 0) {
+            rgbMaximum = 1;
         }
 
         for (let i = 0; i < this.intensity.length; i++) {
             for (let j = 0; j < this.intensity[i].length; j++) {
                 this.intensity[i][j] = this.intensity[i][j] / maximum;
+                this.rgbImage[i][j] = this.rgbImage[i][j].multiply(1 / rgbMaximum);
             }
         }
     }
@@ -247,7 +266,8 @@ class GraphCalculator {
     renderPlot(renderer, pixelStep, colorFunction=(p) => Math.abs(p) < 4 ? 'black' : undefined) {       
         let step = this.arrowstepInMeters 
         // let step = renderer.translateLengthToModelSpace(pixelStep);
-        let dVector = new Vec2(1, 1);
+        let a = 10 / Math.min(this.grid.length, this.grid[0].length);
+        let dVector = new Vec2(a, a);
 
         for (let i = 0; i < this.intensity.length; i++) {
             for (let j = 0; j < this.intensity[0].length; j++) {
@@ -256,9 +276,21 @@ class GraphCalculator {
         }
         for (let i = 0; i < this.grid.length; i++) {
             for (let j = 0; j < this.grid[0].length; j++) {
-                this.drawPixel(renderer, i - this.grid.length - 1, j, this.grid[i][j], dVector, (a) => a == 0 ? "black" : "gray");
+                this.drawPixel(renderer, (i - this.grid.length - 1), j, this.grid[i][j], dVector, (a) => a == 0 ? "black" : "gray");
             }
         }
+        for (let i = 0; i < this.grid.length; i++) {
+            for (let j = 0; j < this.grid[0].length; j++) {
+                this.drawPixel(
+                    renderer, 
+                    (i + this.grid.length + 1), j, 
+                    this.rgbImage[i][j], dVector, 
+                    (a) => `rgb(${round(a.x * 255)}, ${round(a.y * 255)}, ${round(a.z * 255)})`
+                );
+            }
+        }
+
+
     }
 
     drawPixel(renderer, i, j, value, dVector, colorFunction) {
