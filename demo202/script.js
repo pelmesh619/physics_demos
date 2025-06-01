@@ -262,21 +262,17 @@ class GraphCalculator {
     }
 
     drawPixel(renderer, i, j, value, dVector, colorFunction) {
-        let px = (i - this.intensity.length / 2) * dVector.x;
-        let py = (j - this.intensity[0].length / 2) * dVector.y;
+        let px = i * dVector.x;
+        let py = j * dVector.y;
         let p = new Vec2(px, py).add(this.origin);
 
         let color = colorFunction(
             value
         );
         if (color !== undefined) {
-            renderer.DrawPolygon(
-                [
-                    p, 
-                    p.add(Vec2.Right.multiply(dVector.x)), 
-                    p.add(Vec2.Right.multiply(dVector.x)).add(Vec2.Down.multiply(dVector.y)), 
-                    p.add(Vec2.Down.multiply(dVector.y))
-                ], 
+            renderer.DrawCircle(
+                p, 
+                dVector.x / 2,
                 color
             );
         }
