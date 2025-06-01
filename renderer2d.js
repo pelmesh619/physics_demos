@@ -272,6 +272,33 @@ class Renderer2D {
 
         ctx.fill();
     }
+
+    DrawRectangle(upperLeftVertex, lowerRightVertex, fillColor="black") {
+        let v1 = this.translateCoordinatesToRenderSpace(upperLeftVertex);
+        let v2 = this.translateCoordinatesToRenderSpace(lowerRightVertex);
+
+        [v1, v2] = [new Vec2(Math.min(v1.x, v2.x), Math.min(v1.y, v2.y)), new Vec2(Math.max(v1.x, v2.x), Math.max(v1.y, v2.y))]
+        
+        v1 = v1.do(Math.round);
+        v2 = v2.do(Math.round);
+
+        const ctx = this.context;
+        ctx.fillStyle = fillColor;
+        ctx.strokeStyle = fillColor;
+
+        ctx.rect(v1.x, v1.y, v2.x - v1.x, v2.y - v1.y);
+
+        ctx.stroke();
+    }
+
+    DrawRectangleAsPolygon(upperLeftVertex, lowerRightVertex, fillColor="black") {
+        let v1 = upperLeftVertex;
+        let v2 = lowerRightVertex;
+
+        [v1, v2] = [new Vec2(Math.min(v1.x, v2.x), Math.min(v1.y, v2.y)), new Vec2(Math.max(v1.x, v2.x), Math.max(v1.y, v2.y))]
+        
+        this.DrawPolygon([v1, new Vec2(v1.x, v2.y), v2, new Vec2(v2.x, v1.y)], fillColor);
+    }
     
     DrawVector(point, vector, color=null, arrowLength=30, lineWidth=2) {
         const ctx = this.context;
