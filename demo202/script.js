@@ -32,6 +32,51 @@ function getRainbowColor2(value) {
     return "hsl(" + Math.round(angle) + " 80 30)";
 }
 
+
+let wavelengthsToRgb = {};
+
+function wavelength_to_rgb(wavelength) {
+    if (wavelength in wavelengthsToRgb)
+        return wavelengthsToRgb[wavelength];
+
+    gamma = 0.8;
+    intensity_max = 255;
+    factor = 0;
+    R = G = B = 0
+    if ((wavelength >= 380e-9) && (wavelength < 440e-9)) {
+        R = -(wavelength - 440e-9) / (440e-9 - 380e-9);
+        G = 0.0;
+        B = 1.0;
+    } else if ((wavelength >= 440e-9) && (wavelength < 490e-9)) {
+        R = 0.0;
+        G = (wavelength - 440e-9) / (490e-9 - 440e-9);
+        B = 1.0;
+    } else if ((wavelength >= 490e-9) && (wavelength < 510e-9)) {
+        R = 0.0;
+        G = 1.0;
+        B = -(wavelength - 510e-9) / (510e-9 - 490e-9);
+    } else if ((wavelength >= 510e-9) && (wavelength < 580e-9)) {
+        R = (wavelength - 510e-9) / (580e-9 - 510e-9);
+        G = 1.0;
+        B = 0.0;
+    } else if ((wavelength >= 580e-9) && (wavelength < 645e-9)) {
+        R = 1.0;
+        G = -(wavelength - 645e-9) / (645e-9 - 580e-9);
+        B = 0.0;
+    } else if ((wavelength >= 645e-9) && (wavelength <= 750e-9)) {
+        R = 1.0;
+        G = 0.0;
+        B = 0.0;
+    }
+    
+    R = round(intensity_max * (R * (1.0 - gamma) + gamma))
+    G = round(intensity_max * (G * (1.0 - gamma) + gamma))
+    B = round(intensity_max * (B * (1.0 - gamma) + gamma))
+    
+    wavelengthsToRgb[wavelength] = new Vec3(R, G, B);
+    return wavelengthsToRgb[wavelength];
+}
+
 const infernoColors = [
     [0, 0, 0],         // Черный (начало)
     [72, 12, 168],     // Темно-фиолетовый
