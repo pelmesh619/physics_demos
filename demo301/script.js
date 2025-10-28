@@ -238,8 +238,8 @@ function main() {
 
     form
     .AddInputObject(functionBuilder)
-    .AddInputObject(new Vec2InputScheme(new NumberInputScheme(-1, 'м', 0.001), new NumberInputScheme(1, 'м', 0.001)).WithLabel('').Build("domain"))
-    .AddInputObject(new NumberInputScheme(100, '', 1, 1).WithLabel('\\( N = \\)').Build("N"))
+    .AddInputObject(new Vec2InputScheme(new NumberInputScheme(-1, 'м', 0.001), new NumberInputScheme(1, 'м', 0.001)).WithLabel('Область исследования: <br>').Build("domain"))
+    .AddInputObject(new NumberInputScheme(100, '', 1, 1).WithLabel('Число разбиений: <br> \\( N = \\)').Build("N"))
     .AddInputObject(new NumberInputScheme(500, '', 1, 1).WithLabel('Количество итераций: ').Build("maxIter"))
     .AddSubmitButton('submitButton', "Перестроить график", () => { mainObject.reloadModel(); });
 
