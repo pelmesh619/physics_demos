@@ -16,7 +16,7 @@ class Main {
         this.form = form;
         this.stopped = false;
         this.renderer = new Renderer2D('simulationCanvas', borderWidth);
-        this.gridMatrix = [];
+        this.rawPotentialFunc = [];
         
         let t = this;
         this.renderer.addScrollResponseHandler((renderer) => {
@@ -29,19 +29,16 @@ class Main {
         });
     }
 
-    reloadModel(willCalculate=true) {        
-        const values = this.form.GetValues();
-
+    evalPotentialFunction(rawPotentialFunc) {
         let functionParts = []
         try {
-            for (let i = 0; i < values.potentialFunc.length; i++) {
-                let f = eval("(x) => { return " + values.potentialFunc[i].expr + "; }");
-                functionParts.push({expr: f, cond: values.potentialFunc[i].cond});
+            for (let i = 0; i < rawPotentialFunc.length; i++) {
+                let f = eval("(x) => { return " + rawPotentialFunc[i].expr + "; }");
+                functionParts.push({expr: f, cond: rawPotentialFunc[i].cond});
             }
         } catch (error) {
             console.log(error);
-            window.alert('Функция задана неправильно!');
-            return;
+            return undefined;
         }
 
         function potentialFunc(x) {
@@ -54,6 +51,19 @@ class Main {
             return 0;
         }
 
+        return potentialFunc;
+    }
+
+    reloadModel(willCalculate=true, energies=undefined, wavefunctions=undefined) {        
+        const values = this.form.GetValues();
+
+        let potentialFunc = this.evalPotentialFunction(values.potentialFunc);
+        if (potentialFunc === undefined) {
+            window.alert('Функция задана неправильно!');
+            return;
+        }
+
+        this.rawPotentialFunc = values.potentialFunc;
         this.calculator = new GraphCalculator(this.renderer, values.domain, potentialFunc);
         this.calculator.N = values.N;
         this.calculator.chosenWaveFunction = values.chosenWaveFunction - 1;
