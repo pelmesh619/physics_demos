@@ -217,10 +217,11 @@ function main() {
         "chosenWaveFunction", 
         '\\( i = \\)', 
         () => { 
-            const v = form.GetValues();
+            let v = form.GetValues();
             if (v.chosenWaveFunction > v.N) {
                 chosenWaveFunction.SetValue(form.formId, v.N);
             }
+            v = form.GetValues();
             mainObject.calculator.chosenWaveFunction = v.chosenWaveFunction - 1;
             mainObject.render(); 
             mainObject.updateProbabilityDisplay();
