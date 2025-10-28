@@ -258,6 +258,29 @@ function main() {
     MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
     mainObject.reloadModel(false);
+
+    var advancedForm = new FormMaker("advancedForm")
+    .AddButton(
+        "exportResults",
+        "Экспорт результатов", 
+        () => {
+            downloadData("wavefunctions.json", JSON.stringify(mainObject.export(), null, 2));
+        }
+    );
+
+    document.getElementById("importResults").addEventListener("change", function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = JSON.parse(e.target.result);
+            console.log("Загруженные данные:", data);
+        
+            mainObject.import(data);
+        };
+        reader.readAsText(file);
+    });
 }
 
 window.onload = main;
