@@ -448,3 +448,105 @@ class LinearAlgorithms {
         return { energies: eigenvalues, vectors: eigenvectors };
     }
 }
+
+function assertEqual(a, b, message) {
+    if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length || !a.every((v, i) => Math.abs(v - b[i]) < 1e-6)) {
+            console.error("❌ FAIL:", message, "Expected", b, "but got", a);
+            return;
+        }
+    } else {
+        if (Math.abs(a - b) > 1e-6) {
+            console.error("❌ FAIL:", message, "Expected", b, "but got", a);
+            return;
+        }
+    }
+    console.log("✅ PASS:", message);
+}
+
+// Тест создания и методов матрицы
+function testMatrixBasic() {
+    let v1 = new LinearVector([1, 2]);
+    let v2 = new LinearVector([3, 4]);
+    let m = new Matrix([v1.copy(), v2.copy()]);
+
+    assertEqual(m.get(0, 0), 1, "get element (0,0)");
+    assertEqual(m.get(1, 1), 4, "get element (1,1)");
+
+    m.set(0, 0, 10);
+    assertEqual(m.get(0, 0), 10, "set element (0,0)");
+
+    let sum = m.add(new Matrix([new LinearVector([1,1]), new LinearVector([1,1])]));
+    assertEqual(sum.get(0,0), 11, "matrix addition");
+    assertEqual(sum.get(1,1), 5, "matrix addition");
+
+    let diff = m.subtract(new Matrix([new LinearVector([1,1]), new LinearVector([1,1])]));
+    assertEqual(diff.get(0,0), 9, "matrix subtraction");
+    assertEqual(diff.get(1,1), 3, "matrix subtraction");
+
+    let scaled = m.multiply(2);
+    assertEqual(scaled.get(0,0), 20, "matrix multiply scalar");
+    assertEqual(scaled.get(1,1), 8, "matrix multiply scalar");
+
+    let m2 = m.copy();
+    assertEqual(m2.get(0,0), 10, "matrix copy");
+    assertEqual(m2.get(0,1), 2, "matrix copy");
+    assertEqual(m2.get(1,0), 3, "matrix copy");
+    assertEqual(m2.get(1,1), 4, "matrix copy");
+}
+
+// Тест нахождения собственных значений
+function testEigenvalues() {
+    // Матрица 2x2: [2, 1; 1, 2] имеет собственные значения 3 и 1
+    let m = new Matrix([
+        new LinearVector([2, 1]),
+        new LinearVector([1, 2])
+    ]);
+
+    let eigenvalues = LinearAlgorithms.findEigenvalues(m, 1e-8, 100);
+    eigenvalues.sort((a,b) => a-b); // сортируем для проверки
+
+    assertEqual(eigenvalues, [1, 3], "eigenvalues of 2x2 symmetric matrix");
+
+    // Матрица 3x3: [[2,0,0],[0,3,0],[0,0,4]] имеет собственные значения 2,3,4
+    let m2 = new Matrix([
+        new LinearVector([2,0,0]),
+        new LinearVector([0,3,0]),
+        new LinearVector([0,0,4])
+    ]);
+    let eig2 = LinearAlgorithms.findEigenvalues(m2, 1e-8, 100);
+    eig2.sort((a,b) => a-b);
+    assertEqual(eig2, [2,3,4], "eigenvalues of diagonal 3x3 matrix");
+}
+
+// Тест push/pop
+function testPushPop() {
+    let v = new LinearVector([1,2]);
+    v.push(3);
+    assertEqual(v.length, 3, "vector push increases length");
+    let x = v.pop();
+    assertEqual(x, 3, "vector pop returns last element");
+    assertEqual(v.length, 2, "vector pop decreases length");
+
+    let m = new Matrix([
+        new LinearVector([1,2]),
+        new LinearVector([3,4])
+    ]);
+    m.push(new LinearVector([5,6]));
+    assertEqual(m.dimension[0], 3, "matrix push increases rows");
+    let last = m.pop();
+    assertEqual(last.get(0), 5, "matrix pop returns last row");
+    assertEqual(m.dimension[0], 2, "matrix pop decreases rows");
+}
+
+// Запуск всех тестов
+function runTests() {
+    console.log("Running Matrix basic tests...");
+    testMatrixBasic();
+    console.log("\nRunning Eigenvalues tests...");
+    testEigenvalues();
+    console.log("\nRunning Push/Pop tests...");
+    testPushPop();
+}
+
+runTests();
