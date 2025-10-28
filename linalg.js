@@ -272,6 +272,31 @@ class Matrix {
         }
         return m;
     }
+
+    do(func) {
+        let m = this.copy();
+
+        for (let i = 0; i < this.dimension[0]; i++) {
+            m.setVec(i, m.getVec(i).do(func))
+        }
+        return m;
+    }
+
+    push(v) {
+        if (v.length != this.dimension[1]) {
+            throw new WrongDimensionsError("vector and matrix's vector have different sizes");
+        }
+        this._m.push(v);
+        this._reset();
+    }
+
+    pop() {
+        let v = this._m.pop();
+        this._reset();
+
+        return v;
+    }
+
     copy() {
         let m = Array.from(this._m);
 
