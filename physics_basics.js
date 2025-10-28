@@ -2,6 +2,10 @@ class Constants {
     static get g() { return 9.8; }
 
     static get G() { return 6.6743 * 10e-11; }
+
+    static get h() { return 6.626070 * 10e-34; }
+
+    static get hbar() { return 1.054571 * 10e-34; }
 }
 
 class ElectricConstants {
