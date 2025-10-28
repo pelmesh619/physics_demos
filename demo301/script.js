@@ -89,6 +89,39 @@ class Main {
         this.updateEnergyDisplay();
     }
 
+    export() {
+        return {
+            "maxIter": this.form.GetValues().maxIter,
+            "N": this.calculator.N,
+            "domain": this.calculator.domain,
+            "potentialFunc": this.rawPotentialFunc,
+            "energies": this.calculator.energies,
+            "wavefunctions": this.calculator.wavefunctions,
+            "chosenWaveFunction": this.calculator.chosenWaveFunction,
+            "probDomain": this.form.GetValues().probDomain
+        }
+    }
+
+    import(data) {
+        if (data["potentialFunc"] === undefined || data["energies"] === undefined || data["wavefunctions"] === undefined 
+            || data["chosenWaveFunction"] === undefined || data["N"] === undefined || data["domain"] === undefined) {
+            window.alert("Данные имеют неправильный формат");
+            return;
+        }
+
+        this.form.GetInputObject("domain").SetValue(this.form.formId, new Vec2(data.domain._x, data.domain._y));
+        this.form.GetInputObject("probDomain").SetValue(this.form.formId, new Vec2(data.probDomain._x, data.probDomain._y));
+        this.form.GetInputObject("N").SetValue(this.form.formId, data.N);
+        this.form.GetInputObject("chosenWaveFunction").SetValue(this.form.formId, data.chosenWaveFunction + 1);
+        this.form.GetInputObject("maxIter").SetValue(this.form.formId, data.maxIter);
+
+        let rawPotentialFunc = data.potentialFunc.map((part) => { return { expr: part.expr, cond: new Vec2(part.cond._x, part.cond._y) }; });
+
+        this.form.GetInputObject("potentialFunc").SetValue(this.form.formId, rawPotentialFunc);
+
+        this.reloadModel(false, data["energies"], data["wavefunctions"].map((v) => new LinearVector(v._v)))
+    }
+
     render() {
         this.renderer.PrepareFrame();
         this.calculator.renderPlot(this.renderer);
