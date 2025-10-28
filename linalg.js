@@ -386,4 +386,65 @@ class LinearAlgorithms {
         return eigenvalues;
     }
 
+    static findEigenvaluesAndVectors(matrix, tol = 1e-10, maxIter = 500) {
+        const [n, m] = matrix.dimension;
+        if (n !== m) throw new Error("Matrix must be square");
+    
+        let A = matrix.copy();
+        let Q_total = Matrix.zero(n, n);
+    
+        // Q_total ← единичная матрица
+        for (let i = 0; i < n; i++) {
+            let row = Array(n).fill(0);
+            row[i] = 1;
+            Q_total.setVec(i, new LinearVector(row));
+        }
+        
+        let startIter = 0;
+        let deltaT = 0;
+        let lastIter = 0;
+
+        for (let iter = 0; iter < maxIter; iter++) {
+            let start = performance.now();
+            let [Q, R] = LinearAlgorithms.qrDecomposition(A);
+            A = R.multiplyMatrix(Q);
+            Q_total = Q_total.multiplyMatrix(Q);
+            
+            // Проверка сходимости
+            let offDiag = 0;
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < i; j++) {
+                    offDiag += Math.abs(A.get(i,j));
+                }
+            }
+            lastIter = iter;
+            if (offDiag < tol) break;
+
+            deltaT += performance.now() - start;
+            if (deltaT > 2000) {
+                let iterString = iter == startIter ? iter : `from ${startIter} to ${iter}`;
+                console.info(`Iteration ${iterString} completed! Took ${deltaT} ms. Last offDiag is ${offDiag}`);
+                startIter = iter + 1;
+                deltaT = 0;
+            }
+        }
+        if (deltaT != 0) {
+            let iterString = lastIter == startIter ? lastIter : `from ${startIter} to ${lastIter}`;
+            console.info(`Iteration ${iterString} completed! Took ${deltaT} ms`);
+        }
+    
+        // Собственные значения — диагональные элементы
+        let eigenvalues = [];
+        for (let i = 0; i < n; i++) {
+            eigenvalues.push(A.get(i, i));
+        }
+    
+        // Собственные векторы — столбцы Q_total
+        let eigenvectors = [];
+        for (let j = 0; j < n; j++) {
+            eigenvectors.push(Q_total.getColumn(j));
+        }
+    
+        return { energies: eigenvalues, vectors: eigenvectors };
+    }
 }
