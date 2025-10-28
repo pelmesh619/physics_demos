@@ -203,3 +203,59 @@ function solveSchrodinger(U, xMin, xMax, N, maxIter, hbar=1, m=1) {
     return {x_values, energies, wavefunctions: vectors};
 }
 
+function main() {
+    const functionBuilder = new ListInputScheme(
+        new CompoundInputScheme({
+            expr: new StringInputScheme('x').WithLabel('\\( U = \\)'),
+            cond: new Vec2InputScheme(new NumberInputScheme(-100, 'м', 0.001), new NumberInputScheme(100, 'м', 0.001)).WithLabel(''),
+        })
+    ).Build("potentialFunc", 'Функция потенциала')
+    .WithAddButtonText('Добавить кусок')
+    .WithRemoveButtonText('Удалить кусок')
+
+    const chosenWaveFunction = new NumberInputScheme(1, '', 1, 1).Build(
+        "chosenWaveFunction", 
+        '\\( i = \\)', 
+        () => { 
+            const v = form.GetValues();
+            if (v.chosenWaveFunction > v.N) {
+                chosenWaveFunction.SetValue(form.formId, v.N);
+            }
+            mainObject.calculator.chosenWaveFunction = v.chosenWaveFunction - 1;
+            mainObject.render(); 
+            mainObject.updateProbabilityDisplay();
+            mainObject.updateEnergyDisplay();
+        }
+    )
+
+    let probDomain = new Vec2InputScheme(new NumberInputScheme(-1, 'м', 0.001), new NumberInputScheme(1, 'м', 0.001))
+        .Build(
+            "probDomain", 
+            'Вычислить вероятность для области: <br>'
+        );
+
+    var form = new FormMaker("mainForm");
+
+    form
+    .AddInputObject(functionBuilder)
+    .AddInputObject(new Vec2InputScheme(new NumberInputScheme(-1, 'м', 0.001), new NumberInputScheme(1, 'м', 0.001)).WithLabel('').Build("domain"))
+    .AddInputObject(new NumberInputScheme(100, '', 1, 1).WithLabel('\\( N = \\)').Build("N"))
+    .AddInputObject(chosenWaveFunction)
+    .AddInputObject(new NumberInputScheme(500, '', 1, 1).WithLabel('Количество итераций: ').Build("maxIter"))
+    .AddInputObject(probDomain)
+    .AddSubmitButton('submitButton', "Перестроить график", () => { mainObject.reloadModel(); });
+
+    form
+    .AddDisplay("probabilityDisplay", "Вероятность прохождения в область: 0%")
+    .AddDisplay("energyDisplay", "Энергия выбранной функции: 0 Дж");
+
+    probDomain.AddChangeHandler(form, () => { mainObject.updateProbabilityDisplay(); });
+
+    var mainObject = new Main(form);
+
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+
+    mainObject.reloadModel(false);
+}
+
+window.onload = main;
