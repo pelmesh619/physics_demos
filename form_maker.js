@@ -965,4 +965,8 @@ class FormMaker {
     GetElement(id) {
         return document.getElementById(makeInputId(this.formId, id));
     }
+
+    GetInputObject(id) {
+        return this.inputObjects.find((obj) => obj.id == id);
+    }
 }
