@@ -163,7 +163,7 @@ class GraphCalculator {
 
     renderPlot(renderer, ) {
         this.renderFunc(this.x_values, this.potentialFunc);
-        new Grid(new Vec2(0, 0), new Vec2(20, 20), new Vec2(0.25, 0.25)).render(renderer);
+        new Grid(new Vec2(0, 0), new Vec2(20, 20), new Vec2(1, 1)).render(renderer);
         if (this.wavefunctions.length != 0){
             this.renderFuncValues(this.x_values, this.wavefunctions.at(this.chosenWaveFunction), "red");
         }
