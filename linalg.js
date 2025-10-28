@@ -365,4 +365,25 @@ class LinearAlgorithms {
 
         return [new Matrix(Qmat), new Matrix(Rmat)];
     }
+
+    // Нахождение всех собственных значений через QR-алгоритм
+    static findEigenvalues(matrix, tol = 1e-10, maxIter = 1000) {
+        const [n, m] = matrix.dimension;
+        if (n !== m) throw new Error("Matrix must be square");
+
+        let A = matrix.copy();
+
+        for (let k = 0; k < maxIter; k++) {
+            let [Q, R] = LinearAlgorithms.qrDecomposition(A);
+            A = R.multiplyMatrix(Q); // A = R * Q
+        }
+
+        // Собственные значения — это элементы на диагонали
+        let eigenvalues = [];
+        for (let i = 0; i < n; i++) {
+            eigenvalues.push(A.get(i, i));
+        }
+        return eigenvalues;
+    }
+
 }
