@@ -240,14 +240,16 @@ function main() {
     .AddInputObject(functionBuilder)
     .AddInputObject(new Vec2InputScheme(new NumberInputScheme(-1, 'м', 0.001), new NumberInputScheme(1, 'м', 0.001)).WithLabel('').Build("domain"))
     .AddInputObject(new NumberInputScheme(100, '', 1, 1).WithLabel('\\( N = \\)').Build("N"))
-    .AddInputObject(chosenWaveFunction)
     .AddInputObject(new NumberInputScheme(500, '', 1, 1).WithLabel('Количество итераций: ').Build("maxIter"))
-    .AddInputObject(probDomain)
     .AddSubmitButton('submitButton', "Перестроить график", () => { mainObject.reloadModel(); });
 
+    form.DOMObject.appendChild(document.createElement("br"));
+
     form
-    .AddDisplay("probabilityDisplay", "Вероятность прохождения в область: 0%")
-    .AddDisplay("energyDisplay", "Энергия выбранной функции: 0 Дж");
+    .AddInputObject(chosenWaveFunction)
+    .AddDisplay("energyDisplay", "Энергия выбранной функции: 0 Дж")
+    .AddInputObject(probDomain)
+    .AddDisplay("probabilityDisplay", "Вероятность прохождения в область: 0%");
 
     probDomain.AddChangeHandler(form, () => { mainObject.updateProbabilityDisplay(); });
 
