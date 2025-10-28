@@ -130,3 +130,31 @@ class LinearVector {
         return new LinearVector(Array.from(this._v));
     }
 }
+
+class Matrix {
+    static zero(n, m) {
+        if (m === undefined) {
+            m = n;
+        }
+        let k = new Matrix(Array(n).fill(undefined));
+
+        for (let i = 0; i < n; i++) {
+            k._m[i] = LinearVector.zero(m);
+        }
+
+        return k;
+    }
+
+    constructor(m) {
+        this._m = m;
+    }
+    copy() {
+        let m = Array.from(this._m);
+
+        for (let i = 0; i < m.length; i++) {
+            m[i] = m[i].copy();
+        }
+
+        return new Matrix(m);
+    }
+}
