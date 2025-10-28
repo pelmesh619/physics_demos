@@ -874,8 +874,9 @@ class FormMaker {
         return this;
     }
 
-    AddDisplay(id) {
+    AddDisplay(id, text="") {
         const node = document.createElement("div");
+        node.innerHTML = text;
         node.id = makeInputId(this.formId, id);
 
         this.DOMObject.appendChild(node);
