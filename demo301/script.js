@@ -209,7 +209,7 @@ function main() {
             expr: new StringInputScheme('x').WithLabel('\\( U = \\)'),
             cond: new Vec2InputScheme(new NumberInputScheme(-100, 'м', 0.001), new NumberInputScheme(100, 'м', 0.001)).WithLabel(''),
         })
-    ).Build("potentialFunc", 'Функция потенциала')
+    ).Build("potentialFunc", 'Функция потенциала:')
     .WithAddButtonText('Добавить кусок')
     .WithRemoveButtonText('Удалить кусок')
 
