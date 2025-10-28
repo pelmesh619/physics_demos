@@ -148,6 +148,47 @@ class Matrix {
     constructor(m) {
         this._m = m;
     }
+
+    _reset() {
+        this._key = undefined;
+        this._det = undefined;
+    }
+
+    get(i, j) {
+        let [n, m] = this.dimension;
+        if (i >= n || i < 0 || j < 0 || j >= m) {
+            throw new IndexError("i or j are not an index for this matrix");
+        }
+        return this._m[i].get(j);
+    }
+
+    set(i, j, x) {
+        let [n, m] = this.dimension;
+        if (i >= n || i < 0 || j < 0 || j >= m) {
+            throw new IndexError("i is not an index for this vector");
+        }
+        this._m[i].set(j, x);
+    }
+
+    getVec(i) {
+        let [n, _] = this.dimension;
+        if (i >= n || i < 0) {
+            throw new IndexError("i or j are not an index for this matrix");
+        }
+        return this._m[i];
+    }
+
+    setVec(i, v) {
+        let [n, m] = this.dimension;
+        if (i >= n || i < 0) {
+            throw new IndexError("i is not an index for this vector");
+        }
+        if (m != v.length) {
+            throw new WrongDimensionsError("vector and matrix's vector have different sizes");
+        }
+        this._m[i] = v.copy();
+    }
+    
     copy() {
         let m = Array.from(this._m);
 
