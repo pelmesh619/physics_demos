@@ -110,6 +110,22 @@ class LinearVector {
         return new LinearVector(v);
     }
 
+    push(x) {
+        this._v.push(x);
+        this._reset();
+    }
+
+    pop() {
+        let x = this._v.pop();
+        this._reset();
+
+        return x
+    }
+
+    normalize() {
+        return this.hypot === 0 ? 0 : this.multiply(1 / this.hypot);
+    }
+
     copy() {
         return new LinearVector(Array.from(this._v));
     }
