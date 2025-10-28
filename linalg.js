@@ -315,3 +315,7 @@ class Matrix {
         return new LinearVector(col);
     }
 }
+
+
+class LinearAlgorithms {
+}
