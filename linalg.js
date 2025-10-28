@@ -318,4 +318,51 @@ class Matrix {
 
 
 class LinearAlgorithms {
+    // QR-разложение матрицы A на Q и R
+    static qrDecomposition(matrix) {
+        const [n, m] = matrix.dimension;
+        if (n !== m) throw new Error("Matrix must be square");
+
+        let A = matrix.copy();
+        let Q = Matrix.zero(n);
+
+        // Используем метод Грама-Шмидта
+        let vectors = [];
+        for (let j = 0; j < n; j++) {
+            let v = A.getColumn(j);
+            for (let k = 0; k < j; k++) {
+                let qk = vectors[k];
+                let dot = qk.scalarProduct(v);
+                for (let i = 0; i < v.length; i++) {
+                    v._v[i] -= dot * qk.get(i);
+                }
+            }
+            let norm = v.hypot;
+            if (norm === 0) throw new Error("Matrix is singular");
+            let q = v.multiply(1 / norm);
+            vectors.push(q);
+        }
+
+        // Собираем Q
+        let Qmat = [];
+        for (let i = 0; i < n; i++) {
+            let row = [];
+            for (let j = 0; j < n; j++) {
+                row.push(vectors[j].get(i)); // i-я строка, j-й столбец
+            }
+            Qmat.push(new LinearVector(row));
+        }
+
+        // R = Q^T * A
+        let Rmat = [];
+        for (let i = 0; i < n; i++) {
+            let row = [];
+            for (let j = 0; j < n; j++) {
+                row.push(vectors[i].scalarProduct(A.getColumn(j)));
+            }
+            Rmat.push(new LinearVector(row));
+        }
+
+        return [new Matrix(Qmat), new Matrix(Rmat)];
+    }
 }
