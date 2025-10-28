@@ -884,6 +884,13 @@ class FormMaker {
         return this;
     }
 
+    EditDisplay(id, text="") {
+        const node = document.getElementById(makeInputId(this.formId, id));
+        node.innerHTML = text;
+
+        return this;
+    }
+
     Clear() {
         this.DOMObject.innerHTML = '\n';
         this.inputIds = [];
