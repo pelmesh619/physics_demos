@@ -77,6 +77,13 @@ class Main {
         if (willCalculate) {
             this.calculator.calculate(values.maxIter);
         }
+        if (energies !== undefined) {
+            this.calculator.energies = energies;
+        }
+        if (wavefunctions !== undefined) {
+            this.calculator.wavefunctions = wavefunctions;
+        }
+
         this.render();
         this.updateProbabilityDisplay();
         this.updateEnergyDisplay();
