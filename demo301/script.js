@@ -109,3 +109,63 @@ class Main {
     }
 
 }
+
+class GraphCalculator {
+    constructor(renderer, domain, potentialFunc) {
+        this.reset();
+        this.domain = domain;
+        this.renderer = renderer;
+        this.potentialFunc = potentialFunc;
+        this.wavefunctions = [];
+        this.energies = [];
+
+    }
+
+    reset() {
+        this.values = {};
+        this.intensity = [];
+    }
+
+    calculate(maxIter) {
+        let r = solveSchrodinger(this.potentialFunc, ...this.domain.xy, this.N, maxIter);
+
+        this.x_values = r['x_values'];
+        this.energies = r['energies'];
+        this.wavefunctions = r['wavefunctions'];
+
+        console.log("Решение:", r);
+
+    }
+
+    renderFunc(x_values, func) {
+        let func_values = x_values.map(func);
+        this.renderFuncValues(x_values, func_values);
+    }
+
+    renderFuncValues(x_values, func_values, color='green') {
+        let len = Math.min(x_values.length, func_values.length);
+
+        if (x_values.length != func_values.length) {
+            console.warn("Array's lengths are not equal, minimal length was taken")
+        }
+        if (len == 0) {
+            return;
+        }
+
+        let prev = new Vec2(x_values.at(0), func_values.at(0));
+
+        for (let i = 1; i < len; i++) {
+            let a = new Vec2(x_values.at(i), func_values.at(i));
+            this.renderer.DrawLine(prev, a, color, 1);
+            prev = a;
+        }
+    }
+
+    renderPlot(renderer, ) {
+        this.renderFunc(this.x_values, this.potentialFunc);
+        new Grid(new Vec2(0, 0), new Vec2(20, 20), new Vec2(0.25, 0.25)).render(renderer);
+        if (this.wavefunctions.length != 0){
+            this.renderFuncValues(this.x_values, this.wavefunctions.at(this.chosenWaveFunction), "red");
+        }
+    }
+}
