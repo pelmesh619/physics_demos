@@ -584,7 +584,13 @@ class ListInput extends InputBase {
         return this.inputObjects.map((v) => v.GetValue(formId));
     }
 
-    SetValue(formId, value) {
+    SetValue(formId, value, doReload=true) {
+        while (value.length > this.inputObjects.length) { this.CreateNewInputObject() }
+        while (value.length < this.inputObjects.length) { this.RemoveInputObject(0) }
+
+        if (this.form !== undefined && doReload)
+            this.Reload(this.form);
+
         this.inputObjects.forEach((v, i) => {
             if (i < value.length) {
                 this.values[i] = value[i];
@@ -613,7 +619,7 @@ class ListInput extends InputBase {
             });
         });
 
-        this.SetValue(form.formId, this.values);
+        this.SetValue(form.formId, this.values, false);
 
         if (typeof MathJax !== undefined) {
             MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
@@ -664,6 +670,8 @@ class ListInput extends InputBase {
         divNode.id = inputId + '-div';
 
         this._buildNode(form, divNode);
+
+        this.form = form;
 
         return divNode;
     }
