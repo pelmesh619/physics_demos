@@ -306,4 +306,12 @@ class Matrix {
 
         return new Matrix(m);
     }
+
+    getColumn(j) {
+        let col = [];
+        for (let i = 0; i < this.dimension[0]; i++) {
+            col.push(this.get(i, j));
+        }
+        return new LinearVector(col);
+    }
 }
