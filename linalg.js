@@ -272,16 +272,14 @@ class Matrix {
             throw new WrongDimensionsError("Number of columns of first matrix must equal number of rows of second matrix");
         }
     
+        other = other.transpose();
+
         // Результат имеет размер nA x mB
         let m = Matrix.zero(nA, mB);
     
         for (let i = 0; i < nA; i++) {
             for (let j = 0; j < mB; j++) {
-                let s = 0;
-                for (let k = 0; k < mA; k++) {
-                    s += this.get(i, k) * other.get(k, j);
-                }
-                m.set(i, j, s);
+                m.set(i, j, this.getVec(i).scalarProduct(other.getVec(j)));
             }
         }
         return m;
