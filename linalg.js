@@ -350,13 +350,13 @@ class LinearAlgorithms {
         const [n, m] = matrix.dimension;
         if (n !== m) throw new Error("Matrix must be square");
 
-        let A = matrix.copy();
+        let A = matrix.transpose();
         let Q = Matrix.zero(n);
 
         // Используем метод Грама-Шмидта
         let vectors = [];
         for (let j = 0; j < n; j++) {
-            let v = A.getColumn(j);
+            let v = A.getVec(j).copy();
             for (let k = 0; k < j; k++) {
                 let qk = vectors[k];
                 let dot = qk.scalarProduct(v);
@@ -385,7 +385,7 @@ class LinearAlgorithms {
         for (let i = 0; i < n; i++) {
             let row = [];
             for (let j = 0; j < n; j++) {
-                row.push(vectors[i].scalarProduct(A.getColumn(j)));
+                row.push(vectors[i].scalarProduct(A.getVec(j)));
             }
             Rmat.push(new LinearVector(row));
         }
@@ -422,9 +422,7 @@ class LinearAlgorithms {
     
         // Q_total ← единичная матрица
         for (let i = 0; i < n; i++) {
-            let row = Array(n).fill(0);
-            row[i] = 1;
-            Q_total.setVec(i, new LinearVector(row));
+            Q_total.set(i, i, 1);
         }
         
         let startIter = 0;
