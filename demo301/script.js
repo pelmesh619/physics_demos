@@ -98,7 +98,8 @@ class Main {
             "energies": this.calculator.energies,
             "wavefunctions": this.calculator.wavefunctions,
             "chosenWaveFunction": this.calculator.chosenWaveFunction,
-            "probDomain": this.form.GetValues().probDomain
+            "probDomain": this.form.GetValues().probDomain,
+            "timeSpent": this.calculator.timeSpent,
         }
     }
 
