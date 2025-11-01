@@ -38,7 +38,7 @@ class LinearVector {
     }
 
     at(i) {
-        return this.get(i >= 0 ? i : (i - Math.floor(i / this.length) * this.length) % this.length);
+        return this.get((i >= 0 ? i : (i - Math.floor(i / this.length) * this.length)) % this.length);
     }
 
     set(i, x) {
