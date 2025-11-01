@@ -28,6 +28,20 @@ class LinearVector {
     _reset() {
         this._key = undefined;
         this._hypot = undefined;
+        this._nonzeroIndices = undefined;
+    }
+
+    get nonzeroIndices() {
+        if (this._nonzeroIndices === undefined) {
+            this._nonzeroIndices = [];
+            for (let i = 0; i < this.length; i++) {
+                if (this._v[i] !== 0) {
+                    this._nonzeroIndices.push(i);
+                }
+            }
+        }
+        return this._nonzeroIndices;
+        
     }
 
     get(i) {
