@@ -342,11 +342,19 @@ function main() {
         mainObject.reloadModel(); 
         form.GetElement("stopCalculation").removeAttribute("disabled");
         form.GetElement("submitButton").setAttribute("disabled", "");
+        form.EditDisplay(
+            "iterationStatus", 
+            `Вычисления начаты...`
+        );
     })
     .AddButton("stopCalculation", "Прервать вычисления", () => { 
         mainObject.calculator.stopCalculation(); 
         form.GetElement("submitButton").removeAttribute("disabled");
         form.GetElement("stopCalculation").setAttribute("disabled", "");
+        form.EditDisplay(
+            "iterationStatus", 
+            `Вычисления прерваны<br>Всего потрачено: ${(performance.now() - mainObject.calculator.startTime).toFixed(0)} мс`
+        );
     });
 
     form.GetElement("stopCalculation").setAttribute("disabled", "");
@@ -357,8 +365,10 @@ function main() {
     .AddInputObject(chosenWaveFunction)
     .AddDisplay("energyDisplay", "Энергия выбранной функции: 0 Дж")
     .AddInputObject(probDomain)
-    .AddDisplay("probabilityDisplay", "Вероятность прохождения в область: 0%")
-    .AddDisplay("iterationStatus", "");
+    .AddDisplay("probabilityDisplay", "Вероятность прохождения в область: 0%");
+
+    form.DOMObject.appendChild(document.createElement("br"));
+    form.AddDisplay("iterationStatus", "");
 
     probDomain.AddChangeHandler(form, () => { mainObject.updateProbabilityDisplay(); });
 
