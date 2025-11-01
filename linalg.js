@@ -483,7 +483,7 @@ class LinearAlgorithms {
     }
 }
 
-function assertEqual(a, b, message) {
+function assertEqual(a, b, message, verboseIfPassed=false) {
     if (Array.isArray(a) && Array.isArray(b)) {
         if (a.length !== b.length || !a.every((v, i) => Math.abs(v - b[i]) < 1e-6)) {
             console.error("❌ FAIL:", message, "Expected", b, "but got", a);
@@ -495,7 +495,9 @@ function assertEqual(a, b, message) {
             return;
         }
     }
-    console.log("✅ PASS:", message);
+    if (verboseIfPassed) {
+        console.log("✅ PASS:", message);
+    }
 }
 
 // Тест создания и методов матрицы
@@ -575,11 +577,8 @@ function testPushPop() {
 
 // Запуск всех тестов
 function runTests() {
-    console.log("Running Matrix basic tests...");
     testMatrixBasic();
-    console.log("\nRunning Eigenvalues tests...");
     testEigenvalues();
-    console.log("\nRunning Push/Pop tests...");
     testPushPop();
 }
 
