@@ -64,7 +64,7 @@ class Main {
         }
 
         this.rawPotentialFunc = values.potentialFunc;
-        this.calculator = new GraphCalculator(this.renderer, values.domain, potentialFunc);
+        this.calculator = new GraphCalculator(this, values.domain, potentialFunc);
         this.calculator.N = values.N;
         this.calculator.chosenWaveFunction = values.chosenWaveFunction - 1;
         this.calculator.x_values = [];
@@ -161,10 +161,11 @@ class Main {
 }
 
 class GraphCalculator {
-    constructor(renderer, domain, potentialFunc) {
+    constructor(mainObject, domain, potentialFunc) {
         this.reset();
+        this.mainObject = mainObject;
         this.domain = domain;
-        this.renderer = renderer;
+        this.renderer = mainObject.renderer;
         this.potentialFunc = potentialFunc;
         this.wavefunctions = [];
         this.energies = [];
