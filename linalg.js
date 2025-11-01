@@ -413,7 +413,7 @@ class LinearAlgorithms {
         return eigenvalues;
     }
 
-    static findEigenvaluesAndVectors(matrix, tol = 1e-10, maxIter = 500) {
+    static findEigenvaluesAndVectors(matrix, tol = 1e-10, maxIter = 500, iterFunction = () => {}) {
         const [n, m] = matrix.dimension;
         if (n !== m) throw new Error("Matrix must be square");
     
@@ -448,16 +448,23 @@ class LinearAlgorithms {
             if (offDiag < tol) break;
 
             deltaT += performance.now() - start;
-            if (deltaT > 2000) {
+            if (deltaT > 10000) {
                 let iterString = iter == startIter ? iter : `from ${startIter} to ${iter}`;
-                console.info(`Iteration ${iterString} completed! Took ${deltaT} ms. Last offDiag is ${offDiag}`);
+                console.info(`Iteration ${iterString} completed! Took ${deltaT.toFixed(1)} ms. Last offDiag is ${offDiag}`);
                 startIter = iter + 1;
                 deltaT = 0;
+            }
+            iterFunction(iter, performance.now() - start, offDiag);
+        }
+        let offDiag = 0;
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < i; j++) {
+                offDiag += Math.abs(A.get(i,j));
             }
         }
         if (deltaT != 0) {
             let iterString = lastIter == startIter ? lastIter : `from ${startIter} to ${lastIter}`;
-            console.info(`Iteration ${iterString} completed! Took ${deltaT} ms`);
+            console.info(`Iteration ${iterString} completed! Took ${deltaT.toFixed(1)} ms. Last offDiag is ${offDiag}`);
         }
     
         // Собственные значения — диагональные элементы
