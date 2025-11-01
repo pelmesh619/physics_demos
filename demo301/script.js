@@ -171,6 +171,12 @@ class GraphCalculator {
         this.wavefunctions = [];
         this.energies = [];
 
+        this.startTime = 0;
+        this.timeSpent = 0;
+        this.worker = undefined;
+
+        this.iterationTimes = [];
+        this.lastOffDiag = 0;
     }
 
     reset() {
@@ -179,14 +185,52 @@ class GraphCalculator {
     }
 
     calculate(maxIter) {
-        let r = solveSchrodinger(this.potentialFunc, ...this.domain.xy, this.N, maxIter);
+        this.worker = new Worker("./demo301/schrodinger_worker.js");
+        this.iterationTimes = [];
 
-        this.x_values = r['x_values'];
-        this.energies = r['energies'];
-        this.wavefunctions = r['wavefunctions'];
+        let t = this;
+        this.worker.onmessage = (event) => {
+            if (event.data.status == "done") {
+                t.timeSpent = performance.now() - t.startTime;
+                let r = event.data.data;
 
-        console.log("Решение:", r);
+                t.x_values = r['x_values'];
+                t.energies = r['energies'];
+                t.wavefunctions = r['wavefunctions'].map((arr) => new LinearVector(arr._v));
+                
+                console.log("Решение:", r);
 
+                t.renderPlot(t.renderer);
+            } else if (event.data.status == "iteration") {
+                let iter = event.data.data.iter;
+                let deltaT = event.data.data.deltaT;
+                let offDiag = event.data.data.offDiag;
+
+                t.iterationTimes.push(deltaT);
+                t.lastOffDiag = offDiag;
+
+                let sum = (t.iterationTimes).reduce((partialSum, a) => partialSum + a, 0);
+
+                t.mainObject.form.EditDisplay(
+                    "iterationStatus", 
+                    `Итерация ${iter + 1}/${maxIter} окончена, потрачено ${deltaT.toFixed(0)} мс<br>Всего потрачено: ${sum.toFixed(0)} мс<br>Сумма вне диагоналей: ${offDiag.toFixed(3)}`
+                );
+            }
+        };
+
+        this.worker.onerror = (err) => {
+            console.error("Ошибка в worker:", err);
+        };
+
+        let payload = [JSON.stringify(this.mainObject.rawPotentialFunc), this.domain.x, this.domain.y, this.N, maxIter];
+        this.startTime = performance.now();
+        this.worker.postMessage(payload);
+    }
+
+    stopCalculation() {
+        if (this.worker !== undefined) {
+            this.worker.terminate();
+        }
     }
 
     renderFunc(x_values, func) {
