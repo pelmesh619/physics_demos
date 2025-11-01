@@ -201,6 +201,13 @@ class GraphCalculator {
                 console.log("Решение:", r);
 
                 t.renderPlot(t.renderer);
+                t.mainObject.form.GetElement("submitButton").removeAttribute("disabled");
+                t.mainObject.form.GetElement("stopCalculation").setAttribute("disabled", "");
+                
+                t.mainObject.form.EditDisplay(
+                    "iterationStatus", 
+                    `Вычисления окончены<br>Итерация ${iter + 1}/${maxIter} окончена, потрачено ${deltaT.toFixed(0)} мс<br>Всего потрачено: ${sum.toFixed(0)} мс<br>Сумма вне диагоналей: ${offDiag.toFixed(3)}`
+                );
             } else if (event.data.status == "iteration") {
                 let iter = event.data.data.iter;
                 let deltaT = event.data.data.deltaT;
