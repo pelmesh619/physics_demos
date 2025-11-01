@@ -302,7 +302,8 @@ function main() {
     .AddInputObject(chosenWaveFunction)
     .AddDisplay("energyDisplay", "Энергия выбранной функции: 0 Дж")
     .AddInputObject(probDomain)
-    .AddDisplay("probabilityDisplay", "Вероятность прохождения в область: 0%");
+    .AddDisplay("probabilityDisplay", "Вероятность прохождения в область: 0%")
+    .AddDisplay("iterationStatus", "");
 
     probDomain.AddChangeHandler(form, () => { mainObject.updateProbabilityDisplay(); });
 
