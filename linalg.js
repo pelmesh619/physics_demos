@@ -328,6 +328,21 @@ class Matrix {
         }
         return new LinearVector(col);
     }
+
+    transpose() {
+        const [n, m] = this.dimension;
+        let transposed = [];
+    
+        for (let j = 0; j < m; j++) {
+            let row = [];
+            for (let i = 0; i < n; i++) {
+                row.push(this._m[i].get(j));
+            }
+            transposed.push(new LinearVector(row));
+        }
+    
+        return new Matrix(transposed);
+    }
 }
 
 
