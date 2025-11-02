@@ -206,7 +206,7 @@ class GraphCalculator {
                 
                 t.mainObject.form.EditDisplay(
                     "iterationStatus", 
-                    `Вычисления окончены<br>Итерация ${iter + 1}/${maxIter} окончена, потрачено ${deltaT.toFixed(0)} мс<br>Всего потрачено: ${sum.toFixed(0)} мс<br>Сумма вне диагоналей: ${offDiag.toFixed(3)}`
+                    "Вычисления окончены<br>" + t.mainObject.form.GetElement("iterationStatus").innerHTML
                 );
             } else if (event.data.status == "iteration") {
                 let iter = event.data.data.iter;
