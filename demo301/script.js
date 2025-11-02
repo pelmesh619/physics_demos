@@ -185,7 +185,7 @@ class GraphCalculator {
     }
 
     calculate(maxIter) {
-        this.worker = new Worker("./demo301/schrodinger_worker.js");
+        this.worker = new Worker("./schrodinger_worker.js");
         this.iterationTimes = [];
 
         let t = this;
