@@ -12,6 +12,8 @@ class ElectricConstants {
     static get k() { return 9 * Math.pow(10, 9); }
 
     static get epsilon0() { return 8.85 * Math.pow(10, -11); }
+
+    static get q_e() { return -1.602176634 * 10e-19; } 
 }
 
 class Planets {
