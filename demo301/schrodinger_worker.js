@@ -55,7 +55,7 @@ function solveSchrodinger(U, xMin, xMax, N, maxIter, hbar=1, m=1) {
     }
 
     let {energies, vectors} = LinearAlgorithms.findEigenvaluesAndVectors(
-        H, 1e-4, maxIter, 
+        H, hbar**2 / m * 1e-5, maxIter, 
         (iter, deltaT, offDiag) => {
             self.postMessage({ status: "iteration", data: { iter: iter, deltaT: deltaT, offDiag: offDiag } });
         }
